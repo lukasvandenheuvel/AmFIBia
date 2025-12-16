@@ -37,7 +37,7 @@ class DrawableImage(QLabel):
         self.active_rect_img = None   # green in **image coordinates**
 
         # polygon editor
-        self.polygons_img = []          # list[list[QPoint]]
+        self.polygons_img = [] # list[{"id": int, "points": list[QPoint]}]
         self.drag_start_img = None
         self.start_point_img = None
         self.is_dragging_shapes = False
@@ -82,28 +82,34 @@ class DrawableImage(QLabel):
             painter.setBrush(brush)
             for poly in self.polygons_img:
                 painter.drawPolygon(
-                    *[self._image_point_to_widget(p) for p in poly]
+                    *[self._image_point_to_widget(p) for p in poly["points"]]
                 )
 
     def load_shapes(self, shapes):
         self.polygons_img = [
-            [QPoint(x, y) for x, y in poly]
-            for poly in shapes
+            {
+                "id": sid,
+                "points": [QPoint(x, y) for x, y in pattern.coords]
+            }
+            for sid, pattern in shapes.items()
         ]
         self.update()
 
-    def get_shapes(self):
-        return [
-            [(p.x(), p.y()) for p in poly]
-            for poly in self.polygons_img
-        ]
 
-    def _point_in_polygon(self, point, polygon):
+    def get_shapes(self):
+        return {
+            poly["id"]: [(p.x(), p.y()) for p in poly["points"]]
+            for poly in self.polygons_img
+        }
+
+
+    def _point_in_polygon(self, point, poly):
         """
         Ray casting algorithm
         point: QPoint
         polygon: list[QPoint]
         """
+        polygon = poly["points"]
         x, y = point.x(), point.y()
         inside = False
         n = len(polygon)
@@ -159,7 +165,7 @@ class DrawableImage(QLabel):
             dy = current_img.y() - self.drag_start_img.y()
 
             for poly in self.polygons_img:
-                for p in poly:
+                for p in poly["points"]:
                     p.setX(p.x() + dx)
                     p.setY(p.y() + dy)
 
@@ -167,8 +173,8 @@ class DrawableImage(QLabel):
             self.shapes_dirty = True
             self.update()
 
-            if self.shapes_changed_callback:
-                self.shapes_changed_callback(self.get_shapes())
+            # if self.shapes_changed_callback:
+            #     self.shapes_changed_callback(self.get_shapes())
 
         elif self.is_drawing_rect and self.start_point_img:
             current_img = self._widget_to_image_point(event.pos())
@@ -370,7 +376,6 @@ class MainWindow(QWidget):
         main_layout.addWidget(self.image_widget, 4)
 
         self.last_loaded_patterns = None
-        self.last_loaded_shapes = None
 
     # -------------------------------
     # Logic
@@ -386,18 +391,16 @@ class MainWindow(QWidget):
             "coords": coords,
             "rect": None,
             "image": image_filename,
-            "shapes": [],
-            "patterns": []
+            "patterns": {}
         }
         # AUTO ADD LOGIC
         if (self.auto_add_checkbox.isChecked()
-            and self.last_loaded_shapes is not None):
+            and self.last_loaded_patterns is not None):
             # deep copy so positions are independent
-            data["shapes"] = [
-                [(x, y) for x, y in poly]
-                for poly in self.last_loaded_shapes
-            ]
-            data["patterns"] = self.last_loaded_patterns
+            data["patterns"] = {
+                pid: pattern.clone()
+                for pid, pattern in self.last_loaded_patterns.items()
+            }
 
         item.setData(Qt.UserRole, data)
         self.position_list.addItem(item)
@@ -405,8 +408,8 @@ class MainWindow(QWidget):
         self.rebuild_positions()
         # Load the image immediately into the DrawableImage widget
         self.image_widget.load_image(image_filename)
-        self.image_widget.load_shapes(data["shapes"])
-        self.image_widget.shapes_changed_callback = self.on_shapes_changed           
+        self.image_widget.load_shapes(data.get("patterns", {}))
+        self.image_widget.shapes_changed_callback = self.on_shapes_changed      
 
     def add_protocol(self):
 
@@ -421,7 +424,7 @@ class MainWindow(QWidget):
             return  # user cancelled
 
         print("Selected file:", file_path)
-        pattern_list = parse_ptf(file_path)
+        pattern_dict = parse_ptf(file_path)
 
         item = self.position_list.currentItem()
         if item:
@@ -429,38 +432,47 @@ class MainWindow(QWidget):
             # Load image so we know its size
             pixmap = QPixmap(data["image"])
             img_w, img_h = pixmap.width(), pixmap.height()
-            shape_list = list_shapes(pattern_list, offset_x=img_w//2, offset_y=img_h//2)
-            data["shapes"] = shape_list
-            data["patterns"] = pattern_list
+            pattern_dict = center_shapes(pattern_dict, offset_x=img_w//2, offset_y=img_h//2, flip_y_around=img_h)
+            data["patterns"] = {
+                pid: pattern.clone()
+                for pid, pattern in pattern_dict.items()
+            }
             item.setData(Qt.UserRole, data)
             self.rebuild_positions()
-            self.image_widget.load_shapes(shape_list)
+            self.image_widget.load_shapes(pattern_dict)
             self.image_widget.shapes_changed_callback = self.on_shapes_changed
             # Remember this pattern as the last loaded pattern
-            self.last_loaded_patterns = pattern_list
-            self.last_loaded_shapes = shape_list
+            self.last_loaded_patterns = {
+                pid: pattern.clone()
+                for pid, pattern in data["patterns"].items()
+            }
 
     def on_item_clicked(self, item):
         data = item.data(Qt.UserRole)
 
         self.image_widget.load_image(data["image"])
         self.image_widget.load_rectangle(data["rect"])
-        self.image_widget.load_shapes(data.get("shapes", []))
+        self.image_widget.load_shapes(data.get("patterns", {}))
 
         self.image_widget.shapes_changed_callback = (
             lambda shapes, item=item: self.update_shapes(item, shapes)
         )
         self.image_widget.shapes_changed_callback = self.on_shapes_changed
 
-    def on_shapes_changed(self, shapes):
+    def on_shapes_changed(self,updated_shapes):
         item = self.position_list.currentItem()
         if not item:
             return
 
         data = item.data(Qt.UserRole)
-        data["shapes"] = shapes
-        item.setData(Qt.UserRole, data)
+        patterns = data.get("patterns", {})
 
+        for pid, coords in updated_shapes.items():
+            if pid in patterns:
+                patterns[pid].coords = coords
+
+        data["patterns"] = patterns
+        item.setData(Qt.UserRole, data)
         self.rebuild_positions()
 
     def update_shapes(self, item, shapes):
@@ -468,7 +480,6 @@ class MainWindow(QWidget):
         data["shapes"] = shapes
         item.setData(Qt.UserRole, data)
         self.rebuild_positions()
-
 
     def rebuild_positions(self):
         self.positions.clear()
@@ -516,13 +527,26 @@ class Pattern():
         self.dwell_time = 0
         self.enable = True
 
+    def clone(self):
+        p = Pattern()
+        p.coords = [(x, y) for x, y in self.coords]
+        p.type = self.type
+        p.depth = self.depth
+        p.scan_direction = self.scan_direction
+        p.scan_type = self.scan_type
+        p.dwell_time = self.dwell_time
+        p.enable = self.enable
+        return p
+
 def parse_ptf(filepath):
     tree = ET.parse(filepath)
     root = tree.getroot()
     valid_tags = ['PatternRectangle','PatternPolygon']
-    pattern_list = []
+    pattern_dict = {}
+    pattern_id = -1
     for element in root:
         if element.tag in valid_tags:
+            pattern_id += 1
             p = Pattern()
             p.type = 'Rectangle'
             p.depth = float(element.find('Depth').text)
@@ -540,7 +564,7 @@ def parse_ptf(filepath):
                 (cx + width/2, cy + height/2),
                 (cx - width/2, cy + height/2),
             ]
-            pattern_list.append(p)
+            pattern_dict[pattern_id] = p
         elif element.tag == 'PatternPolygon':
             cx = float(element.find('CenterX').text)*1e6 / PIXEL_TO_MICRON
             cy = float(element.find('CenterY').text)*1e6 / PIXEL_TO_MICRON
@@ -556,16 +580,23 @@ def parse_ptf(filepath):
                 y = float(point.find("PositionY").text)*1e6 / PIXEL_TO_MICRON 
                 coords.append((x, y))
             p.coords = coords
-            pattern_list.append(p)
+            pattern_dict[pattern_id] = p
 
-    return pattern_list
+    return pattern_dict
 
-def list_shapes(pattern_list,offset_x=0,offset_y=0):
-    coord_list = []
-    for shape in pattern_list:
-        coord_list.append([(int(p[0]+offset_x), int(p[1]+offset_y)) for p in shape.coords])
-    return coord_list
-
+def center_shapes(pattern_dict,offset_x=0,offset_y=0,flip_y_around=None):
+    
+    for id,shape in pattern_dict.items():
+        if flip_y_around is not None:
+            shape.coords = [
+                (int(p[0]+offset_x), int(flip_y_around - (p[1]+offset_y))) for p in shape.coords
+            ]
+        else:
+            shape.coords = [
+                (int(p[0]+offset_x), int(p[1]+offset_y)) for p in shape.coords
+            ]
+        pattern_dict[id] = shape
+    return pattern_dict
 
 # -------------------------------------------------
 # Entry Point
