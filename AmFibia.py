@@ -13,14 +13,162 @@ import html
 import cv2
 
 PIXEL_TO_MICRON = 1/50
-MODE = "dev" # "scope" or "dev"
+MODE = "scope" # "scope" or "dev"
 
 if MODE == "scope":
     from src.AquilosDriver import fibsem
+    from src.CustomPatterns import DisplayablePattern, RectanglePattern, PolygonPattern, CirclePattern, LinePattern
     ### INITIALIZE MICROSCOPE FROM DRIVER
     scope = fibsem()
 elif MODE == "dev":
     from src.CustomPatterns import parse_pattern_file, load_patterns_for_display, DisplayablePattern
+
+
+def convert_xT_patterns_to_displayable(
+    xT_patterns,
+    image_width_px,
+    image_height_px,
+    field_of_view_width_m,
+    field_of_view_height_m=None
+):
+    """
+    Convert AutoScript xT patterns to DisplayablePattern objects for display.
+    
+    Args:
+        xT_patterns: List of AutoScript pattern objects from microscope.patterning.get_patterns()
+        image_width_px: Width of the image in pixels
+        image_height_px: Height of the image in pixels
+        field_of_view_width_m: Horizontal field of view in meters
+        field_of_view_height_m: Vertical field of view in meters (optional)
+    
+    Returns:
+        Dictionary of {id: DisplayablePattern} ready for rendering.
+    """
+    import math
+    
+    if field_of_view_height_m is None:
+        field_of_view_height_m = field_of_view_width_m * image_height_px / image_width_px
+    
+    # Calculate meters per pixel
+    m_per_px_x = field_of_view_width_m / image_width_px
+    m_per_px_y = field_of_view_height_m / image_height_px
+    
+    # Image center in pixels
+    center_px_x = image_width_px / 2
+    center_px_y = image_height_px / 2
+    
+    def meters_to_pixels(x_m, y_m):
+        """Convert from patterning coords (meters) to image coords (pixels)."""
+        x_px = x_m / m_per_px_x
+        y_px = y_m / m_per_px_y
+        img_x = int(center_px_x + x_px)
+        img_y = int(center_px_y - y_px)  # Flip Y axis
+        return (img_x, img_y)
+    
+    result = {}
+    for pid, xT_pattern in enumerate(xT_patterns):
+        # Get pattern type name
+        pattern_type = type(xT_pattern).__name__
+        
+        coords = []
+        
+        if 'Rectangle' in pattern_type or 'CrossSection' in pattern_type:
+            # Rectangle-like patterns: RectanglePattern, RegularCrossSectionPattern, CleaningCrossSectionPattern
+            cx = xT_pattern.center_x
+            cy = xT_pattern.center_y
+            w = xT_pattern.width / 2
+            h = xT_pattern.height / 2
+            rot = getattr(xT_pattern, 'rotation', 0)
+            
+            corners = [(-w, -h), (+w, -h), (+w, +h), (-w, +h)]
+            
+            if rot != 0:
+                cos_r, sin_r = math.cos(rot), math.sin(rot)
+                corners = [(x * cos_r - y * sin_r, x * sin_r + y * cos_r) for x, y in corners]
+            
+            coords = [meters_to_pixels(cx + x, cy + y) for x, y in corners]
+            
+            # Create a local Pattern-like object to store alongside coords
+            local_pattern = RectanglePattern(
+                center_x=cx, center_y=cy,
+                width=xT_pattern.width, height=xT_pattern.height,
+                depth=getattr(xT_pattern, 'depth', 0),
+                dwell_time=getattr(xT_pattern, 'dwell_time', 1e-6),
+                scan_direction=str(getattr(xT_pattern, 'scan_direction', 'TopToBottom')),
+                scan_type=str(getattr(xT_pattern, 'scan_type', 'Raster')),
+                enabled=getattr(xT_pattern, 'enabled', True),
+                rotation=rot
+            )
+        
+        elif 'Circle' in pattern_type:
+            cx = xT_pattern.center_x
+            cy = xT_pattern.center_y
+            r = xT_pattern.outer_diameter / 2
+            rot = getattr(xT_pattern, 'rotation', 0)
+            
+            num_points = 32
+            for i in range(num_points):
+                angle = 2 * math.pi * i / num_points + rot
+                x = cx + r * math.cos(angle)
+                y = cy + r * math.sin(angle)
+                coords.append(meters_to_pixels(x, y))
+            
+            local_pattern = CirclePattern(
+                center_x=cx, center_y=cy,
+                outer_diameter=xT_pattern.outer_diameter,
+                inner_diameter=getattr(xT_pattern, 'inner_diameter', 0),
+                depth=getattr(xT_pattern, 'depth', 0),
+                dwell_time=getattr(xT_pattern, 'dwell_time', 1e-6),
+                enabled=getattr(xT_pattern, 'enabled', True)
+            )
+        
+        elif 'Polygon' in pattern_type:
+            # Polygon patterns have vertices
+            cx = xT_pattern.center_x
+            cy = xT_pattern.center_y
+            vertices = getattr(xT_pattern, 'vertices', [])
+            
+            if vertices:
+                coords = [meters_to_pixels(x, y) for x, y in vertices]
+            else:
+                # Fallback: treat as a point
+                coords = [meters_to_pixels(cx, cy)]
+            
+            local_pattern = PolygonPattern(
+                center_x=cx, center_y=cy,
+                vertices=list(vertices),
+                depth=getattr(xT_pattern, 'depth', 0),
+                dwell_time=getattr(xT_pattern, 'dwell_time', 1e-6),
+                enabled=getattr(xT_pattern, 'enabled', True)
+            )
+        
+        elif 'Line' in pattern_type:
+            start_x = xT_pattern.start_x
+            start_y = xT_pattern.start_y
+            end_x = xT_pattern.end_x
+            end_y = xT_pattern.end_y
+            coords = [meters_to_pixels(start_x, start_y), meters_to_pixels(end_x, end_y)]
+            
+            local_pattern = LinePattern(
+                start_x=start_x,
+                start_y=start_y,
+                end_x=end_x,
+                end_y=end_y,
+                depth=getattr(xT_pattern, 'depth', 0),
+                dwell_time=getattr(xT_pattern, 'dwell_time', 1e-6),
+                enabled=getattr(xT_pattern, 'enabled', True)
+            )
+        
+        else:
+            # Unknown pattern type - try to extract center and make a point
+            cx = getattr(xT_pattern, 'center_x', 0)
+            cy = getattr(xT_pattern, 'center_y', 0)
+            coords = [meters_to_pixels(cx, cy)]
+            local_pattern = RectanglePattern(center_x=cx, center_y=cy)
+        
+        result[pid] = DisplayablePattern(pattern=local_pattern, coords=coords)
+    
+    return result
 
 # -------------------------------------------------
 # Drawable Image Widget
@@ -505,17 +653,42 @@ class MainWindow(QWidget):
             self.add_protocol()
 
         elif MODE == "scope":
+            item = self.position_list.currentItem()
+            if not item:
+                print("Warning: No position selected.")
+                return
+                
+            data = item.data(Qt.UserRole)
+            
+            # Check if we have an image loaded
+            pixmap = data.get("image")
+            if pixmap is None or pixmap.isNull():
+                print("Warning: No image loaded for this position. Please update position first.")
+                return
+            
             # Read all patterns from the active view
             all_patterns = scope.retreive_xT_patterns()
-            item = self.position_list.currentItem()
-            data = item.data(Qt.UserRole)
-            data["patterns"] = {
-                pid: pattern
-                for pid, pattern in enumerate(all_patterns)
-            }
+            
+            # Get image dimensions and FOV for coordinate conversion
+            img_w = data["image_width"]
+            img_h = data["image_height"]
+            pixel_to_um = data["pixel_to_um"]
+            
+            # Calculate field of view in meters
+            fov_width_m = img_w * pixel_to_um * 1e-6
+            fov_height_m = img_h * pixel_to_um * 1e-6
+            
+            # Convert xT patterns to displayable patterns
+            pattern_dict = convert_xT_patterns_to_displayable(
+                all_patterns,
+                img_w, img_h,
+                fov_width_m, fov_height_m
+            )
+            
+            data["patterns"] = pattern_dict
             item.setData(Qt.UserRole, data)
             self.rebuild_positions()
-            self.image_widget.load_shapes(data["patterns"])
+            self.image_widget.load_shapes(data["patterns"], locked=True)
             self.image_widget.shapes_changed_callback = self.on_shapes_changed
 
     def add_protocol(self):
