@@ -752,3 +752,40 @@ def load_patterns_for_display(
         )
     
     return result
+
+
+def convert_xT_patterns_to_displayable(
+    xT_patterns,
+    image_width_px: int,
+    image_height_px: int,
+    field_of_view_width_m: float,
+    field_of_view_height_m: Optional[float] = None
+) -> dict:
+    """
+    Convert AutoScript xT patterns to DisplayablePattern objects for display.
+    
+    The xT patterns already contain all necessary attributes (depth, dwell_time, etc.),
+    so this function only computes the pixel coordinates for rendering.
+    
+    Args:
+        xT_patterns: List of AutoScript pattern objects from microscope.patterning.get_patterns()
+        image_width_px: Width of the image in pixels
+        image_height_px: Height of the image in pixels
+        field_of_view_width_m: Horizontal field of view in meters
+        field_of_view_height_m: Vertical field of view in meters (optional)
+    
+    Returns:
+        Dictionary of {id: DisplayablePattern} ready for rendering.
+    """
+    result = {}
+    for pid, xT_pattern in enumerate(xT_patterns):
+        coords = pattern_to_image_coords(
+            xT_pattern,
+            image_width_px,
+            image_height_px,
+            field_of_view_width_m,
+            field_of_view_height_m
+        )
+        result[pid] = DisplayablePattern(pattern=xT_pattern, coords=coords)
+    
+    return result

@@ -39,12 +39,12 @@ try:
 
     from autoscript_toolkit.template_matchers import * 
     import autoscript_toolkit.vision as vision_toolkit
-    from src.custom_matchers_v3 import *
+    # from src.custom_matchers_v3 import *
 except:
     print("No Autoscript installed")
 
 
-from src.read_SAV import read_SAV_params
+# from src.read_SAV import read_SAV_params
 import cv2
 import numpy as np
 import time
