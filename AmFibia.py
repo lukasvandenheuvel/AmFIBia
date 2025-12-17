@@ -5,29 +5,35 @@ from PyQt5.QtWidgets import (
     QListWidgetItem, QHBoxLayout, QVBoxLayout,
     QSizePolicy, QFrame, QFileDialog, QCheckBox
 )
-from PyQt5.QtGui import QPixmap, QPainter, QPen, QFont, QColor, QBrush
+from PyQt5.QtGui import QPixmap, QPainter, QPen, QFont, QColor, QBrush, QImage
 from PyQt5.QtCore import Qt, QRect, QPoint
 import numpy as np
 import xml.etree.ElementTree as ET
 import html
-
-
+import cv2
 
 PIXEL_TO_MICRON = 1/50
+MODE = "dev" # "scope" or "dev"
 
+if MODE == "scope":
+    from src.AquilosDriver import fibsem
+    ### INITIALIZE MICROSCOPE FROM DRIVER
+    scope = fibsem()
+elif MODE == "dev":
+    from src.CustomPatterns import parse_pattern_file, load_patterns_for_display, DisplayablePattern
 
 # -------------------------------------------------
 # Drawable Image Widget
 # -------------------------------------------------
 
 class DrawableImage(QLabel):
-    def __init__(self, image_path):
+    def __init__(self, pixmap):
         super().__init__()
         self.setAlignment(Qt.AlignCenter)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setMinimumSize(1,1)
 
-        self.original_pixmap = QPixmap(image_path)
+        self.original_pixmap = pixmap
         self.scaled_pixmap = None
         self.offset_x = 0
         self.offset_y = 0
@@ -85,11 +91,13 @@ class DrawableImage(QLabel):
                     *[self._image_point_to_widget(p) for p in poly["points"]]
                 )
 
-    def load_shapes(self, shapes):
+    def load_shapes(self, shapes, locked=False):
+        """Load shapes for display. If locked=True, shapes cannot be dragged."""
         self.polygons_img = [
             {
                 "id": sid,
-                "points": [QPoint(x, y) for x, y in pattern.coords]
+                "points": [QPoint(x, y) for x, y in pattern.coords],
+                "locked": locked
             }
             for sid, pattern in shapes.items()
         ]
@@ -131,6 +139,13 @@ class DrawableImage(QLabel):
                 return True
         return False
 
+    def _point_in_any_unlocked_polygon(self, point):
+        """Check if point is inside any unlocked (draggable) polygon."""
+        for poly in self.polygons_img:
+            if not poly.get("locked", False) and self._point_in_polygon(point, poly):
+                return True
+        return False
+
     # -------------------------------
     # Mouse interactions
     # -------------------------------
@@ -142,7 +157,8 @@ class DrawableImage(QLabel):
         img_point = self._widget_to_image_point(event.pos())
 
         if event.button() == Qt.LeftButton:
-            if self.polygons_img and self._point_in_any_polygon(img_point):
+            # Only allow dragging unlocked shapes
+            if self.polygons_img and self._point_in_any_unlocked_polygon(img_point):
                 self.drag_start_img = img_point
                 self.is_dragging_shapes = True
             else:
@@ -165,6 +181,9 @@ class DrawableImage(QLabel):
             dy = current_img.y() - self.drag_start_img.y()
 
             for poly in self.polygons_img:
+                # Only move unlocked shapes
+                if poly.get("locked", False):
+                    continue
                 for p in poly["points"]:
                     p.setX(p.x() + dx)
                     p.setY(p.y() + dy)
@@ -199,10 +218,9 @@ class DrawableImage(QLabel):
 
         self.update()
 
-    def load_image(self, filename):
-        pixmap = QPixmap(filename)
-        if pixmap.isNull():
-            print(f"Failed to load image: {filename}")
+    def load_image(self, pixmap):
+        if pixmap is None or pixmap.isNull():
+            self.clear()
             return
         self.original_pixmap = pixmap
         self.scaled_pixmap = None
@@ -220,6 +238,18 @@ class DrawableImage(QLabel):
         self.offset_x = (self.width() - self.scaled_pixmap.width()) // 2
         self.offset_y = (self.height() - self.scaled_pixmap.height()) // 2
 
+        self.update()
+
+    def clear(self):
+        """Clear the image widget to show nothing."""
+        self.original_pixmap = QPixmap()
+        self.scaled_pixmap = None
+        self.preview_rect_img = None
+        self.active_rect_img = None
+        self.start_point_img = None
+        self.polygons_img = []
+        self.is_dragging_shapes = False
+        self.shapes_dirty = False
         self.update()
 
     # -------------------------------
@@ -351,19 +381,24 @@ class MainWindow(QWidget):
         add_position_btn = QPushButton("Add Position")
         add_position_btn.clicked.connect(self.add_position)
 
-        add_protocol_btn = QPushButton("Add Protocol")
-        add_protocol_btn.clicked.connect(self.add_protocol)
+        update_position_btn = QPushButton("Update")
+        update_position_btn.clicked.connect(self.update_position)
+
+        attach_pattern_btn = QPushButton("Attach pattern from xT")
+        attach_pattern_btn.clicked.connect(self.attach_xT_pattern)
 
         self.auto_add_checkbox = QCheckBox("Auto add")
 
         left_layout.addWidget(self.position_list, stretch=3)
         left_layout.addWidget(add_position_btn)
-        left_layout.addWidget(add_protocol_btn)
+        left_layout.addWidget(update_position_btn)
+        left_layout.addWidget(attach_pattern_btn)
         left_layout.addWidget(self.auto_add_checkbox)
         left_layout.addStretch(1)
 
         # Image panel
-        self.image_widget = DrawableImage("logo.png")
+        pixmap = QPixmap("logo.png")
+        self.image_widget = DrawableImage(pixmap)
 
         # Separator
         separator = QFrame()
@@ -376,6 +411,7 @@ class MainWindow(QWidget):
         main_layout.addWidget(self.image_widget, 4)
 
         self.last_loaded_patterns = None
+        self.last_loaded_pattern_file = None  # Store file path for auto-add with re-conversion
 
     # -------------------------------
     # Logic
@@ -384,32 +420,103 @@ class MainWindow(QWidget):
     def add_position(self):
         index = self.position_list.count()
         coords = (index * 1.0, index * 2.0, index * 3.0)
-        # Choose image filename. Later: take image
-        image_filename = os.path.join("images",np.random.choice([f for f in os.listdir("images") if ".png" in f]))
+
         item = QListWidgetItem()
         data = {
             "coords": coords,
             "rect": None,
-            "image": image_filename,
+            "image": None,
+            "image_data": None,
+            "image_metadata": None,
+            "image_width": None,
+            "image_height": None,
+            "pixel_to_um": None,
             "patterns": {}
         }
-        # AUTO ADD LOGIC
-        if (self.auto_add_checkbox.isChecked()
-            and self.last_loaded_patterns is not None):
-            # deep copy so positions are independent
-            data["patterns"] = {
-                pid: pattern.clone()
-                for pid, pattern in self.last_loaded_patterns.items()
-            }
 
         item.setData(Qt.UserRole, data)
         self.position_list.addItem(item)
         self.position_list.setCurrentItem(item)
         self.rebuild_positions()
-        # Load the image immediately into the DrawableImage widget
-        self.image_widget.load_image(image_filename)
-        self.image_widget.load_shapes(data.get("patterns", {}))
+        # Clear the image widget since no image has been taken yet
+        self.image_widget.clear()
+
+    def update_position(self):
+        item = self.position_list.currentItem()
+        if not item:
+            return
+
+        data = item.data(Qt.UserRole)
+
+        # Take image
+        if MODE == "scope":
+            adorned_img = scope.take_image_IB()
+            img = adorned_img.data
+            img_metadata = adorned_img.metadata
+            width = adorned_img.width
+            height = adorned_img.height
+            pixel_to_um = 1e6 * adorned_img.metadata.optics.scan_field_of_view.width / width
+            pixel_to_um_h = 1e6 * adorned_img.metadata.optics.scan_field_of_view.height / height
+            if abs(pixel_to_um - pixel_to_um_h) > 1e-6:
+                print("Warning: non-square pixels detected!")
+            pixmap = QPixmap.fromImage(
+                QImage(
+                    img, width, height, QImage.Format_Grayscale8
+                )
+            )
+        else:
+            image_filename = os.path.join("images", np.random.choice([f for f in os.listdir("images") if ".png" in f]))
+            pixmap = QPixmap(image_filename)
+            img = cv2.imread(image_filename, cv2.IMREAD_GRAYSCALE)
+            img_metadata = image_filename
+            height, width = img.shape[:2]
+            pixel_to_um = PIXEL_TO_MICRON
+
+        # Update data
+        data["image"] = pixmap
+        data["image_data"] = img
+        data["image_metadata"] = img_metadata
+        data["image_width"] = width
+        data["image_height"] = height
+        data["pixel_to_um"] = pixel_to_um
+
+        # Auto-add patterns if checkbox is checked
+        if (self.auto_add_checkbox.isChecked()
+            and self.last_loaded_pattern_file is not None):
+            # Re-load and convert patterns for this image's FOV
+            fov_width_m = width * pixel_to_um * 1e-6
+            fov_height_m = height * pixel_to_um * 1e-6
+            data["patterns"] = load_patterns_for_display(
+                self.last_loaded_pattern_file,
+                width, height,
+                fov_width_m, fov_height_m
+            )
+
+        item.setData(Qt.UserRole, data)
+        self.rebuild_positions()
+
+        # Load the image into the DrawableImage widget
+        self.image_widget.load_image(pixmap)
+        self.image_widget.load_shapes(data.get("patterns", {}), locked=True)  # Auto-added patterns are locked
         self.image_widget.shapes_changed_callback = self.on_shapes_changed      
+
+    def attach_xT_pattern(self):
+        if MODE == "dev":
+            self.add_protocol()
+
+        elif MODE == "scope":
+            # Read all patterns from the active view
+            all_patterns = scope.retreive_xT_patterns()
+            item = self.position_list.currentItem()
+            data = item.data(Qt.UserRole)
+            data["patterns"] = {
+                pid: pattern
+                for pid, pattern in enumerate(all_patterns)
+            }
+            item.setData(Qt.UserRole, data)
+            self.rebuild_positions()
+            self.image_widget.load_shapes(data["patterns"])
+            self.image_widget.shapes_changed_callback = self.on_shapes_changed
 
     def add_protocol(self):
 
@@ -424,24 +531,44 @@ class MainWindow(QWidget):
             return  # user cancelled
 
         print("Selected file:", file_path)
-        pattern_dict = parse_ptf(file_path)
 
         item = self.position_list.currentItem()
         if item:
             data = item.data(Qt.UserRole)
-            # Load image so we know its size
-            pixmap = QPixmap(data["image"])
-            img_w, img_h = pixmap.width(), pixmap.height()
-            pattern_dict = center_shapes(pattern_dict, offset_x=img_w//2, offset_y=img_h//2, flip_y_around=img_h)
-            data["patterns"] = {
-                pid: pattern.clone()
-                for pid, pattern in pattern_dict.items()
-            }
+            
+            # Check if we have an image loaded
+            pixmap = data.get("image")
+            if pixmap is None or pixmap.isNull():
+                print("Warning: No image loaded for this position. Please update position first.")
+                return
+            
+            img_w = data["image_width"]
+            img_h = data["image_height"]
+            pixel_to_um = data["pixel_to_um"]
+            
+            # Calculate field of view in meters
+            # pixel_to_um is µm/pixel, so FOV = pixels * µm/pixel * 1e-6 = meters
+            fov_width_m = img_w * pixel_to_um * 1e-6
+            fov_height_m = img_h * pixel_to_um * 1e-6
+            
+            print(f"Image size: {img_w} x {img_h} pixels")
+            print(f"FOV: {fov_width_m*1e6:.1f} x {fov_height_m*1e6:.1f} µm")
+            
+            # Load patterns and convert to image coordinates
+            pattern_dict = load_patterns_for_display(
+                file_path,
+                img_w, img_h,
+                fov_width_m, fov_height_m
+            )
+            
+            data["patterns"] = pattern_dict
             item.setData(Qt.UserRole, data)
             self.rebuild_positions()
-            self.image_widget.load_shapes(pattern_dict)
+            self.image_widget.load_shapes(pattern_dict, locked=True)  # xT patterns are locked
             self.image_widget.shapes_changed_callback = self.on_shapes_changed
-            # Remember this pattern as the last loaded pattern
+            
+            # Remember this pattern file for auto-add
+            self.last_loaded_pattern_file = file_path
             self.last_loaded_patterns = {
                 pid: pattern.clone()
                 for pid, pattern in data["patterns"].items()
@@ -450,13 +577,13 @@ class MainWindow(QWidget):
     def on_item_clicked(self, item):
         data = item.data(Qt.UserRole)
 
-        self.image_widget.load_image(data["image"])
-        self.image_widget.load_rectangle(data["rect"])
-        self.image_widget.load_shapes(data.get("patterns", {}))
+        if data["image"] is not None:
+            self.image_widget.load_image(data["image"])
+            self.image_widget.load_rectangle(data["rect"])
+            self.image_widget.load_shapes(data.get("patterns", {}), locked=True)  # xT patterns are locked
+        else:
+            self.image_widget.clear()
 
-        self.image_widget.shapes_changed_callback = (
-            lambda shapes, item=item: self.update_shapes(item, shapes)
-        )
         self.image_widget.shapes_changed_callback = self.on_shapes_changed
 
     def on_shapes_changed(self,updated_shapes):
@@ -472,12 +599,6 @@ class MainWindow(QWidget):
                 patterns[pid].coords = coords
 
         data["patterns"] = patterns
-        item.setData(Qt.UserRole, data)
-        self.rebuild_positions()
-
-    def update_shapes(self, item, shapes):
-        data = item.data(Qt.UserRole)
-        data["shapes"] = shapes
         item.setData(Qt.UserRole, data)
         self.rebuild_positions()
 
