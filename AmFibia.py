@@ -383,19 +383,28 @@ class MainWindow(QWidget):
         add_position_btn = QPushButton("Add Position")
         add_position_btn.clicked.connect(self.add_position)
 
-        update_position_btn = QPushButton("Update")
-        update_position_btn.clicked.connect(self.update_position)
+        # Take IB image button with auto checkbox
+        take_ib_layout = QHBoxLayout()
+        take_ib_layout.setSpacing(5)
+        take_ion_beam_image_btn = QPushButton("Take IB image")
+        take_ion_beam_image_btn.clicked.connect(self.take_ion_beam_image)
+        self.auto_take_image_checkbox = QCheckBox("auto")
+        take_ib_layout.addWidget(take_ion_beam_image_btn, stretch=1)
+        take_ib_layout.addWidget(self.auto_take_image_checkbox, stretch=0)
 
+        # Attach pattern button with auto checkbox
+        attach_pattern_layout = QHBoxLayout()
+        attach_pattern_layout.setSpacing(5)
         attach_pattern_btn = QPushButton("Attach pattern from xT")
         attach_pattern_btn.clicked.connect(self.attach_xT_pattern)
-
-        self.auto_add_checkbox = QCheckBox("Auto add")
+        self.auto_attach_pattern_checkbox = QCheckBox("auto")
+        attach_pattern_layout.addWidget(attach_pattern_btn, stretch=1)
+        attach_pattern_layout.addWidget(self.auto_attach_pattern_checkbox, stretch=0)
 
         left_layout.addWidget(self.position_list, stretch=3)
         left_layout.addWidget(add_position_btn)
-        left_layout.addWidget(update_position_btn)
-        left_layout.addWidget(attach_pattern_btn)
-        left_layout.addWidget(self.auto_add_checkbox)
+        left_layout.addLayout(take_ib_layout)
+        left_layout.addLayout(attach_pattern_layout)
         left_layout.addStretch(1)
 
         # Image panel
@@ -421,7 +430,14 @@ class MainWindow(QWidget):
 
     def add_position(self):
         index = self.position_list.count()
-        coords = (index * 1.0, index * 2.0, index * 3.0)
+        
+        # Get current stage coordinates
+        if MODE == "scope":
+            # Returns dict with keys: x, y, z, r, t (all in meters/radians)
+            coords = scope.getStagePosition()
+        else:
+            # Dummy coordinates for dev mode
+            coords = {'x': index * 1.0, 'y': index * 2.0, 'z': index * 3.0, 'r': 0.0, 't': 0.0}
 
         item = QListWidgetItem()
         data = {
@@ -443,7 +459,15 @@ class MainWindow(QWidget):
         # Clear the image widget since no image has been taken yet
         self.image_widget.clear()
 
-    def update_position(self):
+        # Auto take image if checkbox is checked
+        if self.auto_take_image_checkbox.isChecked():
+            self.take_ion_beam_image()
+
+        # Auto-attach patterns if checkbox is checked
+        if self.auto_attach_pattern_checkbox.isChecked():
+            self.attach_xT_pattern()      
+
+    def take_ion_beam_image(self):
         item = self.position_list.currentItem()
         if not item:
             return
@@ -482,38 +506,29 @@ class MainWindow(QWidget):
         data["image_height"] = height
         data["pixel_to_um"] = pixel_to_um
 
-        # Auto-add patterns if checkbox is checked
-        if (self.auto_add_checkbox.isChecked()
-            and self.last_loaded_pattern_file is not None):
-            # Re-load and convert patterns for this image's FOV
-            fov_width_m = width * pixel_to_um * 1e-6
-            fov_height_m = height * pixel_to_um * 1e-6
-            data["patterns"] = load_patterns_for_display(
-                self.last_loaded_pattern_file,
-                width, height,
-                fov_width_m, fov_height_m
-            )
-
         item.setData(Qt.UserRole, data)
         self.rebuild_positions()
 
         # Load the image into the DrawableImage widget
         self.image_widget.load_image(pixmap)
-        self.image_widget.load_shapes(data.get("patterns", {}), locked=True)  # Auto-added patterns are locked
-        self.image_widget.shapes_changed_callback = self.on_shapes_changed      
+        self.image_widget.load_shapes(data.get("patterns", {}), locked=True)
+        self.image_widget.shapes_changed_callback = self.on_shapes_changed
 
     def attach_xT_pattern(self):
+        item = self.position_list.currentItem()
+        if not item:
+            print("Warning: No position selected.")
+            return
+        
         if MODE == "dev":
-            self.add_protocol()
+            # In dev mode with auto checkbox checked, use last loaded pattern file
+            if self.auto_attach_pattern_checkbox.isChecked() and self.last_loaded_pattern_file is not None:
+                self._load_pattern_file(self.last_loaded_pattern_file)
+            else:
+                self.add_protocol()
 
         elif MODE == "scope":
-            item = self.position_list.currentItem()
-            if not item:
-                print("Warning: No position selected.")
-                return
-                
             data = item.data(Qt.UserRole)
-            
             # Check if we have an image loaded
             pixmap = data.get("image")
             if pixmap is None or pixmap.isNull():
@@ -558,48 +573,53 @@ class MainWindow(QWidget):
             return  # user cancelled
 
         print("Selected file:", file_path)
+        self._load_pattern_file(file_path)
 
+    def _load_pattern_file(self, file_path):
+        """Load patterns from a .ptf file and attach to current position."""
         item = self.position_list.currentItem()
-        if item:
-            data = item.data(Qt.UserRole)
+        if not item:
+            return
             
-            # Check if we have an image loaded
-            pixmap = data.get("image")
-            if pixmap is None or pixmap.isNull():
-                print("Warning: No image loaded for this position. Please update position first.")
-                return
-            
-            img_w = data["image_width"]
-            img_h = data["image_height"]
-            pixel_to_um = data["pixel_to_um"]
-            
-            # Calculate field of view in meters
-            # pixel_to_um is µm/pixel, so FOV = pixels * µm/pixel * 1e-6 = meters
-            fov_width_m = img_w * pixel_to_um * 1e-6
-            fov_height_m = img_h * pixel_to_um * 1e-6
-            
-            print(f"Image size: {img_w} x {img_h} pixels")
-            print(f"FOV: {fov_width_m*1e6:.1f} x {fov_height_m*1e6:.1f} µm")
-            
-            # Load patterns and convert to image coordinates
-            pattern_dict = load_patterns_for_display(
-                file_path,
-                img_w, img_h,
-                fov_width_m, fov_height_m
-            )
-            
-            data["patterns"] = pattern_dict
-            item.setData(Qt.UserRole, data)
-            self.rebuild_positions()
-            self.image_widget.load_shapes(pattern_dict, locked=True)  # xT patterns are locked
-            self.image_widget.shapes_changed_callback = self.on_shapes_changed
-            
-            # Remember this pattern file for auto-add
-            self.last_loaded_pattern_file = file_path
-            self.last_loaded_patterns = {
-                pid: pattern.clone()
-                for pid, pattern in data["patterns"].items()
-            }
+        data = item.data(Qt.UserRole)
+        
+        # Check if we have an image loaded
+        pixmap = data.get("image")
+        if pixmap is None or pixmap.isNull():
+            print("Warning: No image loaded for this position. Please update position first.")
+            return
+        
+        img_w = data["image_width"]
+        img_h = data["image_height"]
+        pixel_to_um = data["pixel_to_um"]
+        
+        # Calculate field of view in meters
+        # pixel_to_um is µm/pixel, so FOV = pixels * µm/pixel * 1e-6 = meters
+        fov_width_m = img_w * pixel_to_um * 1e-6
+        fov_height_m = img_h * pixel_to_um * 1e-6
+        
+        print(f"Image size: {img_w} x {img_h} pixels")
+        print(f"FOV: {fov_width_m*1e6:.1f} x {fov_height_m*1e6:.1f} µm")
+        
+        # Load patterns and convert to image coordinates
+        pattern_dict = load_patterns_for_display(
+            file_path,
+            img_w, img_h,
+            fov_width_m, fov_height_m
+        )
+        
+        data["patterns"] = pattern_dict
+        item.setData(Qt.UserRole, data)
+        self.rebuild_positions()
+        self.image_widget.load_shapes(pattern_dict, locked=True)
+        self.image_widget.shapes_changed_callback = self.on_shapes_changed
+        
+        # Remember this pattern file for auto-add
+        self.last_loaded_pattern_file = file_path
+        self.last_loaded_patterns = {
+            pid: pattern.clone()
+            for pid, pattern in data["patterns"].items()
+        }
 
     def on_item_clicked(self, item):
         data = item.data(Qt.UserRole)
@@ -638,7 +658,13 @@ class MainWindow(QWidget):
 
             self.positions[i] = data
 
-            text = f"Position {i}: {data['coords']}"
+            coords = data['coords']
+            if isinstance(coords, dict):
+                coord_str = f"x={coords['x']*1e6:.1f}, y={coords['y']*1e6:.1f} µm"
+            else:
+                coord_str = str(coords)
+            
+            text = f"Position {i}: {coord_str}"
             if data["rect"]:
                 text += f" | Rect: {data['rect']}"
 
