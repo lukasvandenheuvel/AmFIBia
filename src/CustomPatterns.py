@@ -676,6 +676,7 @@ class DisplayablePattern:
     """
     pattern: BasePattern
     coords: List[Tuple[int, int]] = field(default_factory=list)
+    milling_current: float = 0.0  # Milling current in Amperes
     
     @classmethod
     def from_pattern(
@@ -701,7 +702,8 @@ class DisplayablePattern:
         import copy
         return DisplayablePattern(
             pattern=copy.deepcopy(self.pattern),
-            coords=[(x, y) for x, y in self.coords]
+            coords=[(x, y) for x, y in self.coords],
+            milling_current=self.milling_current
         )
 
 

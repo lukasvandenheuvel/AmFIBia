@@ -3,7 +3,9 @@ import os
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QListWidget,
     QListWidgetItem, QHBoxLayout, QVBoxLayout,
-    QSizePolicy, QFrame, QFileDialog, QCheckBox
+    QSizePolicy, QFrame, QFileDialog, QCheckBox,
+    QLineEdit, QComboBox, QGroupBox, QScrollArea, QFormLayout,
+    QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView
 )
 from PyQt5.QtGui import QPixmap, QPainter, QPen, QFont, QColor, QBrush, QImage
 from PyQt5.QtCore import Qt, QRect, QPoint
@@ -12,16 +14,18 @@ import xml.etree.ElementTree as ET
 import html
 import cv2
 
-PIXEL_TO_MICRON = 1/50
+PIXEL_TO_MICRON = 1/2
 MODE = "dev" # "scope" or "dev"
+
+from src.ProtocolEditor import ProtocolEditor
 
 if MODE == "scope":
     from src.AquilosDriver import fibsem
-    from src.CustomPatterns import DisplayablePattern, convert_xT_patterns_to_displayable
+    from src.CustomPatterns import DisplayablePattern, convert_xT_patterns_to_displayable, RectanglePattern
     ### INITIALIZE MICROSCOPE FROM DRIVER
     scope = fibsem()
 elif MODE == "dev":
-    from src.CustomPatterns import parse_pattern_file, load_patterns_for_display, DisplayablePattern
+    from src.CustomPatterns import parse_pattern_file, load_patterns_for_display, DisplayablePattern, RectanglePattern
 
 
 # -------------------------------------------------
@@ -45,13 +49,18 @@ class DrawableImage(QLabel):
         self.active_rect_img = None   # green in **image coordinates**
 
         # polygon editor
-        self.polygons_img = [] # list[{"id": int, "points": list[QPoint]}]
+        self.polygons_img = [] # list[{"id": int, "points": list[QPoint], "pattern": DisplayablePattern}]
         self.drag_start_img = None
         self.start_point_img = None
         self.is_dragging_shapes = False
         self.is_drawing_rect = False
         self.shapes_dirty = False
         self.shapes_changed_callback = None
+        self.pattern_selected_callback = None  # Callback when patterns are clicked
+        self.selected_polygon_ids = set()  # Currently selected polygon ids (supports multi-select)
+        self.selection_rect_img = None  # White selection rectangle for drag-select
+        self.is_drawing_selection = False  # Flag for selection rectangle drawing
+        self.selection_start_img = None  # Start point for selection rectangle
 
 
     def resizeEvent(self, event):
@@ -84,25 +93,91 @@ class DrawableImage(QLabel):
             self._draw_rect_with_measurements_widget(painter, rect_widget, Qt.green)
     
         if self.polygons_img:
-            pen = QPen(Qt.yellow, 2)
-            painter.setPen(pen)
-            brush = QBrush(QColor(255, 255, 0, 50))
-            painter.setBrush(brush)
             for poly in self.polygons_img:
+                # Use per-polygon color if available, otherwise default to yellow
+                color = poly.get("color", QColor(255, 255, 0))
+                pen = QPen(color, 2)
+                painter.setPen(pen)
+                # Use 60% opacity (153/255) for selected polygon, 50 for others
+                is_selected = poly.get("id") in self.selected_polygon_ids
+                alpha = 153 if is_selected else 50
+                brush_color = QColor(color.red(), color.green(), color.blue(), alpha)
+                brush = QBrush(brush_color)
+                painter.setBrush(brush)
                 painter.drawPolygon(
                     *[self._image_point_to_widget(p) for p in poly["points"]]
                 )
+        
+        # Draw selection rectangle (white)
+        if self.selection_rect_img:
+            rect_widget = self._image_rect_to_widget(self.selection_rect_img)
+            pen = QPen(Qt.white, 1, Qt.DashLine)
+            painter.setPen(pen)
+            painter.setBrush(Qt.NoBrush)
+            painter.drawRect(rect_widget)
 
-    def load_shapes(self, shapes, locked=False):
-        """Load shapes for display. If locked=True, shapes cannot be dragged."""
-        self.polygons_img = [
-            {
+    def load_shapes(self, shapes, locked=False, color=None):
+        """Load shapes for display. If locked=True, shapes cannot be dragged.
+        
+        shapes should be a list of dicts [{id: pattern}, ...]
+        Each dict in the list is drawn with a different color.
+        
+        Predefined colors (in order): Yellow, Red, Blue, Orange, Green
+        If more than 5 items, random colors are used for additional items.
+        """
+        import random
+        
+        # Predefined colors for list entries
+        PREDEFINED_COLORS = [
+            QColor(255, 255, 0),   # Yellow
+            QColor(255, 0, 0),     # Red
+            QColor(0, 100, 255),   # Blue
+            QColor(255, 165, 0),   # Orange
+            QColor(0, 200, 0),     # Green
+        ]
+        
+        self.polygons_img = []
+        
+        # Handle both list and dict for backwards compatibility
+        if not isinstance(shapes, list):
+            shapes = [shapes] if shapes else []
+        
+        for i, pattern_dict in enumerate(shapes):
+            # Choose color: predefined for first 5, random after
+            if i < len(PREDEFINED_COLORS):
+                c = PREDEFINED_COLORS[i]
+            else:
+                c = QColor(random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
+            
+            for sid, pattern in pattern_dict.items():
+                self.polygons_img.append({
+                    "id": sid,
+                    "points": [QPoint(x, y) for x, y in pattern.coords],
+                    "locked": locked,
+                    "color": c,
+                    "displayable_pattern": pattern  # Store reference for property display
+                })
+        
+        self.selected_polygon_ids = set()  # Clear selection when loading new shapes
+        self.update()
+
+    def add_shapes(self, shapes, locked=False, color=None):
+        """Add shapes to existing shapes (without clearing). 
+        color can be a QColor or None for default yellow."""
+        for sid, pattern in shapes.items():
+            self.polygons_img.append({
                 "id": sid,
                 "points": [QPoint(x, y) for x, y in pattern.coords],
-                "locked": locked
-            }
-            for sid, pattern in shapes.items()
-        ]
+                "locked": locked,
+                "color": color if color else QColor(255, 255, 0),
+                "displayable_pattern": pattern  # Store reference for property display
+            })
+        self.update()
+
+    def clear_shapes(self):
+        """Clear all shapes."""
+        self.polygons_img = []
+        self.selected_polygon_ids = set()
         self.update()
 
 
@@ -148,6 +223,64 @@ class DrawableImage(QLabel):
                 return True
         return False
 
+    def _get_polygon_at_point(self, point):
+        """Return the polygon at the given point, or None."""
+        for poly in self.polygons_img:
+            if self._point_in_polygon(point, poly):
+                return poly
+        return None
+
+    def _get_selected_displayable_patterns(self):
+        """Return list of DisplayablePatterns for all selected polygons."""
+        patterns = []
+        for poly in self.polygons_img:
+            if poly.get("id") in self.selected_polygon_ids:
+                dp = poly.get("displayable_pattern")
+                if dp:
+                    patterns.append(dp)
+        return patterns
+
+    def _polygon_intersects_rect(self, poly, rect):
+        """Check if a polygon intersects or is inside a rectangle.
+        
+        Uses bounding box check first, then checks if any polygon edge
+        intersects the rectangle or if polygon is fully inside rect.
+        """
+        points = poly["points"]
+        if not points:
+            return False
+        
+        # Get polygon bounding box
+        min_x = min(p.x() for p in points)
+        max_x = max(p.x() for p in points)
+        min_y = min(p.y() for p in points)
+        max_y = max(p.y() for p in points)
+        
+        # Quick bounding box check
+        if (max_x < rect.left() or min_x > rect.right() or
+            max_y < rect.top() or min_y > rect.bottom()):
+            return False
+        
+        # Check if any polygon vertex is inside rect
+        for p in points:
+            if rect.contains(p):
+                return True
+        
+        # Check if any rect corner is inside polygon
+        rect_corners = [
+            QPoint(rect.left(), rect.top()),
+            QPoint(rect.right(), rect.top()),
+            QPoint(rect.right(), rect.bottom()),
+            QPoint(rect.left(), rect.bottom())
+        ]
+        for corner in rect_corners:
+            if self._point_in_polygon(corner, poly):
+                return True
+        
+        # If bounding boxes overlap but no points inside, they likely intersect
+        # This is a simplification - for more accuracy would need edge intersection tests
+        return True
+
     # -------------------------------
     # Mouse interactions
     # -------------------------------
@@ -159,6 +292,40 @@ class DrawableImage(QLabel):
         img_point = self._widget_to_image_point(event.pos())
 
         if event.button() == Qt.LeftButton:
+            # Check if clicking on any polygon (for selection)
+            clicked_poly = self._get_polygon_at_point(img_point)
+            shift_held = event.modifiers() & Qt.ShiftModifier
+            
+            if clicked_poly:
+                poly_id = clicked_poly.get("id")
+                if shift_held:
+                    # Toggle selection with Shift
+                    if poly_id in self.selected_polygon_ids:
+                        self.selected_polygon_ids.discard(poly_id)
+                    else:
+                        self.selected_polygon_ids.add(poly_id)
+                else:
+                    # Replace selection without Shift
+                    self.selected_polygon_ids = {poly_id}
+                
+                # Notify callback about pattern selection (pass list of selected patterns)
+                if self.pattern_selected_callback:
+                    selected_patterns = self._get_selected_displayable_patterns()
+                    self.pattern_selected_callback(selected_patterns)
+                self.update()
+            else:
+                # Clicked outside a polygon - start selection rectangle
+                self.selection_start_img = img_point
+                self.selection_rect_img = None
+                self.is_drawing_selection = True
+                
+                # Clear selection immediately only if Shift not held
+                if not shift_held and self.selected_polygon_ids:
+                    self.selected_polygon_ids.clear()
+                    if self.pattern_selected_callback:
+                        self.pattern_selected_callback([])
+                    self.update()
+            
             # Only allow dragging unlocked shapes
             if self.polygons_img and self._point_in_any_unlocked_polygon(img_point):
                 self.drag_start_img = img_point
@@ -177,7 +344,15 @@ class DrawableImage(QLabel):
         if not self.scaled_pixmap:
             return
 
-        if self.is_dragging_shapes and self.drag_start_img:
+        if self.is_drawing_selection and self.selection_start_img:
+            # Drawing selection rectangle
+            current_img = self._widget_to_image_point(event.pos())
+            self.selection_rect_img = QRect(
+                self.selection_start_img, current_img
+            ).normalized()
+            self.update()
+
+        elif self.is_dragging_shapes and self.drag_start_img:
             current_img = self._widget_to_image_point(event.pos())
             dx = current_img.x() - self.drag_start_img.x()
             dy = current_img.y() - self.drag_start_img.y()
@@ -206,6 +381,33 @@ class DrawableImage(QLabel):
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
+            if self.is_drawing_selection:
+                if self.selection_rect_img:
+                    # Find all polygons touching the selection rectangle
+                    shift_held = event.modifiers() & Qt.ShiftModifier
+                    newly_selected = set()
+                    
+                    for poly in self.polygons_img:
+                        if self._polygon_intersects_rect(poly, self.selection_rect_img):
+                            newly_selected.add(poly.get("id"))
+                    
+                    if shift_held:
+                        # Add to existing selection
+                        self.selected_polygon_ids.update(newly_selected)
+                    else:
+                        # Replace selection
+                        self.selected_polygon_ids = newly_selected
+                    
+                    # Notify callback
+                    if self.pattern_selected_callback:
+                        selected_patterns = self._get_selected_displayable_patterns()
+                        self.pattern_selected_callback(selected_patterns)
+                
+                # Always clear selection rectangle state on left button release
+                self.selection_rect_img = None
+                self.selection_start_img = None
+                self.is_drawing_selection = False
+            
             if self.is_dragging_shapes and self.shapes_dirty:
                 if self.shapes_changed_callback:
                     self.shapes_changed_callback(self.get_shapes())
@@ -232,6 +434,10 @@ class DrawableImage(QLabel):
         self.polygons_img = []
         self.is_dragging_shapes = False
         self.shapes_dirty = False
+        self.selected_polygon_ids = set()
+        self.selection_rect_img = None
+        self.selection_start_img = None
+        self.is_drawing_selection = False
 
         # Force scaled pixmap update
         self.scaled_pixmap = self.original_pixmap.scaled(
@@ -252,6 +458,10 @@ class DrawableImage(QLabel):
         self.polygons_img = []
         self.is_dragging_shapes = False
         self.shapes_dirty = False
+        self.selected_polygon_ids = set()
+        self.selection_rect_img = None
+        self.selection_start_img = None
+        self.is_drawing_selection = False
         self.update()
 
     # -------------------------------
@@ -354,17 +564,23 @@ class PositionList(QListWidget):
         self.setSelectionMode(QListWidget.SingleSelection)
 
 
+
 # -------------------------------------------------
 # Main Window
 # -------------------------------------------------
 
 class MainWindow(QWidget):
+    # Default currents in Amperes for dev mode
+    DEV_MODE_CURRENTS = [0.0, 0.1e-9, 15e-9, 50e-9, 65e-9]  # Not set, 0.1nA, 15nA, 50nA, 65nA
+    
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Protocol Editor")
-        #self.showFullScreen()
+        self.showFullScreen()
 
         self.positions = {}
+        self.selected_displayable_patterns = []  # Track currently selected patterns (list)
+        self.available_currents = self._get_available_currents()
 
         # Layout
         main_layout = QHBoxLayout(self)
@@ -375,6 +591,10 @@ class MainWindow(QWidget):
         left_widget = QWidget()
         left_layout = QVBoxLayout(left_widget)
         left_layout.setContentsMargins(10, 10, 10, 10)
+
+        # Protocol Editor toggle button at top
+        self.protocol_editor_btn = QPushButton("Protocol Editor ▶")
+        self.protocol_editor_btn.clicked.connect(self.toggle_protocol_editor)
 
         self.position_list = PositionList()
         self.position_list.model().rowsMoved.connect(self.rebuild_positions)
@@ -401,32 +621,140 @@ class MainWindow(QWidget):
         attach_pattern_layout.addWidget(attach_pattern_btn, stretch=1)
         attach_pattern_layout.addWidget(self.auto_attach_pattern_checkbox, stretch=0)
 
-        left_layout.addWidget(self.position_list, stretch=3)
+        # Pattern properties table
+        self.pattern_properties_label = QLabel("Pattern Properties")
+        self.pattern_properties_label.setFont(QFont("Arial", 12, QFont.Bold))
+        self.pattern_properties_table = QTableWidget()
+        self.pattern_properties_table.setColumnCount(2)
+        self.pattern_properties_table.setHorizontalHeaderLabels(["Property", "Value"])
+        self.pattern_properties_table.horizontalHeader().setStretchLastSection(True)
+        self.pattern_properties_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.pattern_properties_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.pattern_properties_table.setSelectionMode(QAbstractItemView.NoSelection)
+        self.pattern_properties_table.verticalHeader().setVisible(False)
+
+        left_layout.addWidget(self.protocol_editor_btn)
+        left_layout.addWidget(self.position_list, stretch=1)  # 50% for position list
         left_layout.addWidget(add_position_btn)
         left_layout.addLayout(take_ib_layout)
         left_layout.addLayout(attach_pattern_layout)
-        left_layout.addStretch(1)
+        left_layout.addWidget(self.pattern_properties_label)
+        left_layout.addWidget(self.pattern_properties_table, stretch=1)  # 50% for property table
 
         # Image panel
         pixmap = QPixmap("logo.png")
         self.image_widget = DrawableImage(pixmap)
+        self.image_widget.pattern_selected_callback = self.on_pattern_selected
 
-        # Separator
-        separator = QFrame()
-        separator.setFrameShape(QFrame.VLine)
-        separator.setFrameShadow(QFrame.Sunken)
+        # Protocol Editor panel (initially hidden)
+        # Pass mode and scope for current dropdown population
+        scope_ref = scope if MODE == "scope" else None
+        self.protocol_editor = ProtocolEditor(self, mode=MODE, scope=scope_ref)
+        self.protocol_editor.setVisible(False)
+        self.protocol_editor.setFixedWidth(350)
+
+        # Separators
+        separator1 = QFrame()
+        separator1.setFrameShape(QFrame.VLine)
+        separator1.setFrameShadow(QFrame.Sunken)
+
+        self.separator2 = QFrame()
+        self.separator2.setFrameShape(QFrame.VLine)
+        self.separator2.setFrameShadow(QFrame.Sunken)
+        self.separator2.setVisible(False)
 
         # Assemble
         main_layout.addWidget(left_widget, 1)
-        main_layout.addWidget(separator)
+        main_layout.addWidget(separator1)
+        main_layout.addWidget(self.protocol_editor, 0)
+        main_layout.addWidget(self.separator2)
         main_layout.addWidget(self.image_widget, 4)
 
         self.last_loaded_patterns = None
         self.last_loaded_pattern_file = None  # Store file path for auto-add with re-conversion
 
     # -------------------------------
+    # Current helpers
+    # -------------------------------
+    
+    def _get_available_currents(self):
+        """Get available milling currents based on mode."""
+        if MODE == "scope":
+            try:
+                # Get from microscope - values are in Amperes
+                values = scope.beams.ion_beam.beam_current.available_values
+                return [0.0] + sorted(values)  # Add "Not set" option
+            except Exception as e:
+                print(f"Warning: Could not get beam currents from scope: {e}")
+                return self.DEV_MODE_CURRENTS
+        else:
+            return self.DEV_MODE_CURRENTS
+    
+    def _current_to_nA_str(self, current_A):
+        """Convert current in Amperes to nA string for display."""
+        if current_A == 0:
+            return "Not set"
+        nA = current_A * 1e9
+        if nA < 1:
+            return f"{nA:.1f} nA"
+        else:
+            return f"{nA:.0f} nA"
+    
+    def _set_combo_to_current(self, combo, target_current_A):
+        """Set combo box to the closest available current value."""
+        # Find closest available current
+        closest_idx = 0
+        min_diff = float('inf')
+        for i, curr in enumerate(self.available_currents):
+            diff = abs(curr - target_current_A)
+            if diff < min_diff:
+                min_diff = diff
+                closest_idx = i
+        combo.setCurrentIndex(closest_idx)
+    
+    def _on_milling_current_changed(self, index):
+        """Handle milling current dropdown change - updates all selected patterns."""
+        if not self.selected_displayable_patterns:
+            return
+        
+        # Get the combo box to check if "(mixed)" option exists
+        combo = self.pattern_properties_table.cellWidget(0, 1)
+        if combo and combo.itemText(0) == "(mixed)":
+            if index == 0:
+                # User selected "(mixed)" - don't change anything
+                return
+            # Adjust index since "(mixed)" is at position 0
+            adjusted_index = index - 1
+        else:
+            adjusted_index = index
+        
+        # Get the new current value
+        new_current = self.available_currents[adjusted_index]
+        
+        # Update all selected patterns
+        for dp in self.selected_displayable_patterns:
+            dp.milling_current = new_current
+        
+        # Update the stored data in position list
+        item = self.position_list.currentItem()
+        if item:
+            data = item.data(Qt.UserRole)
+            # The patterns are already updated by reference, but ensure data is saved
+            item.setData(Qt.UserRole, data)
+
+    # -------------------------------
     # Logic
     # -------------------------------
+
+    def toggle_protocol_editor(self):
+        """Toggle visibility of the Protocol Editor panel."""
+        is_visible = self.protocol_editor.isVisible()
+        self.protocol_editor.setVisible(not is_visible)
+        self.separator2.setVisible(not is_visible)
+        if is_visible:
+            self.protocol_editor_btn.setText("Protocol Editor ▶")
+        else:
+            self.protocol_editor_btn.setText("Protocol Editor ◀")
 
     def add_position(self):
         index = self.position_list.count()
@@ -449,7 +777,7 @@ class MainWindow(QWidget):
             "image_width": None,
             "image_height": None,
             "pixel_to_um": None,
-            "patterns": {}
+            "patterns": []  # List of pattern dicts
         }
 
         item.setData(Qt.UserRole, data)
@@ -511,7 +839,7 @@ class MainWindow(QWidget):
 
         # Load the image into the DrawableImage widget
         self.image_widget.load_image(pixmap)
-        self.image_widget.load_shapes(data.get("patterns", {}), locked=True)
+        self.image_widget.load_shapes(data.get("patterns", []), locked=False)
         self.image_widget.shapes_changed_callback = self.on_shapes_changed
 
     def attach_xT_pattern(self):
@@ -521,9 +849,16 @@ class MainWindow(QWidget):
             return
         
         if MODE == "dev":
-            # In dev mode with auto checkbox checked, use last loaded pattern file
-            if self.auto_attach_pattern_checkbox.isChecked() and self.last_loaded_pattern_file is not None:
-                self._load_pattern_file(self.last_loaded_pattern_file)
+            # In dev mode with auto checkbox checked, use last loaded patterns
+            if self.auto_attach_pattern_checkbox.isChecked():
+                if self.last_loaded_pattern_file is not None:
+                    # Reload from file (re-converts coordinates for current image)
+                    self._load_pattern_file(self.last_loaded_pattern_file)
+                elif self.last_loaded_patterns is not None:
+                    # Use stored patterns from Protocol Editor
+                    self._apply_stored_patterns()
+                else:
+                    self.add_protocol()
             else:
                 self.add_protocol()
 
@@ -554,10 +889,10 @@ class MainWindow(QWidget):
                 fov_width_m, fov_height_m
             )
             
-            data["patterns"] = pattern_dict
+            data["patterns"] = [pattern_dict]  # Store as list with one element
             item.setData(Qt.UserRole, data)
             self.rebuild_positions()
-            self.image_widget.load_shapes(data["patterns"], locked=True)
+            self.image_widget.load_shapes(data["patterns"], locked=False)
             self.image_widget.shapes_changed_callback = self.on_shapes_changed
 
     def add_protocol(self):
@@ -608,18 +943,50 @@ class MainWindow(QWidget):
             fov_width_m, fov_height_m
         )
         
-        data["patterns"] = pattern_dict
+        data["patterns"] = [pattern_dict]  # Store as list with one element
         item.setData(Qt.UserRole, data)
         self.rebuild_positions()
-        self.image_widget.load_shapes(pattern_dict, locked=True)
+        self.image_widget.load_shapes(data["patterns"], locked=False)
         self.image_widget.shapes_changed_callback = self.on_shapes_changed
         
-        # Remember this pattern file for auto-add
+        # Remember this pattern file for auto-add (clear stored patterns since we use file)
         self.last_loaded_pattern_file = file_path
-        self.last_loaded_patterns = {
-            pid: pattern.clone()
-            for pid, pattern in data["patterns"].items()
-        }
+        self.last_loaded_patterns = None
+    
+    def set_last_loaded_patterns(self, patterns_list):
+        """Store patterns from Protocol Editor for auto-add functionality."""
+        # Clone the patterns to avoid reference issues
+        self.last_loaded_patterns = [
+            {pid: dp.clone() for pid, dp in pattern_dict.items()}
+            for pattern_dict in patterns_list
+        ]
+        # Clear file path since these patterns are from Protocol Editor
+        self.last_loaded_pattern_file = None
+    
+    def _apply_stored_patterns(self):
+        """Apply stored patterns (from Protocol Editor) to current position."""
+        item = self.position_list.currentItem()
+        if not item or not self.last_loaded_patterns:
+            return
+        
+        data = item.data(Qt.UserRole)
+        
+        # Clone the stored patterns for this position
+        patterns_list = [
+            {pid: dp.clone() for pid, dp in pattern_dict.items()}
+            for pattern_dict in self.last_loaded_patterns
+        ]
+        
+        # Store patterns in position data (even without image)
+        data["patterns"] = patterns_list
+        item.setData(Qt.UserRole, data)
+        self.rebuild_positions()
+        
+        # Only display if we have an image loaded
+        pixmap = data.get("image")
+        if pixmap is not None and not pixmap.isNull():
+            self.image_widget.load_shapes(data["patterns"], locked=False)
+            self.image_widget.shapes_changed_callback = self.on_shapes_changed
 
     def on_item_clicked(self, item):
         data = item.data(Qt.UserRole)
@@ -627,25 +994,167 @@ class MainWindow(QWidget):
         if data["image"] is not None:
             self.image_widget.load_image(data["image"])
             self.image_widget.load_rectangle(data["rect"])
-            self.image_widget.load_shapes(data.get("patterns", {}), locked=True)  # xT patterns are locked
+            self.image_widget.load_shapes(data.get("patterns", []), locked=False)
         else:
             self.image_widget.clear()
 
         self.image_widget.shapes_changed_callback = self.on_shapes_changed
+        # Clear property table when switching positions
+        self.pattern_properties_table.setRowCount(0)
 
-    def on_shapes_changed(self,updated_shapes):
+    def on_pattern_selected(self, displayable_patterns):
+        """Handle pattern selection - display properties in table.
+        
+        displayable_patterns is now a list of selected patterns.
+        Shows shared values, blank for different values.
+        """
+        self.pattern_properties_table.setRowCount(0)
+        self.selected_displayable_patterns = displayable_patterns  # Store reference
+        
+        if not displayable_patterns:
+            return
+        
+        # Properties to exclude from display
+        exclude_props = {'coords', '_id'}
+        
+        # Helper to format values
+        def format_value(value):
+            if isinstance(value, float):
+                if abs(value) < 1e-3 and value != 0:
+                    return f"{value:.2e}"
+                elif abs(value) < 1:
+                    return f"{value:.4f}"
+                else:
+                    return f"{value:.2f}"
+            return str(value)
+        
+        # Check if all milling currents are the same
+        milling_currents = [dp.milling_current for dp in displayable_patterns]
+        all_same_current = len(set(milling_currents)) == 1
+        
+        # Build property list - collect values from all patterns
+        # Get field names from first pattern
+        first_pattern = displayable_patterns[0].pattern
+        if not first_pattern:
+            return
+        
+        from dataclasses import fields
+        properties = []
+        for f in fields(first_pattern):
+            name = f.name
+            if name in exclude_props or name.startswith('_'):
+                continue
+            
+            # Collect values from all selected patterns
+            values = []
+            for dp in displayable_patterns:
+                if dp.pattern:
+                    values.append(getattr(dp.pattern, name))
+            
+            # Check if all values are the same
+            if len(set(str(v) for v in values)) == 1:
+                # All same - show the value
+                value_str = format_value(values[0])
+            else:
+                # Different - show blank/mixed
+                value_str = "(mixed)"
+            
+            properties.append((name.replace('_', ' ').title(), value_str))
+        
+        # Populate the table: row 0 is milling current dropdown, rest are properties
+        self.pattern_properties_table.setRowCount(1 + len(properties))
+        
+        # Row 0: Milling current with dropdown
+        self.pattern_properties_table.setItem(0, 0, QTableWidgetItem("Milling Current"))
+        current_combo = QComboBox()
+        current_options = [self._current_to_nA_str(c) for c in self.available_currents]
+        current_combo.addItems(current_options)
+        
+        if all_same_current:
+            # Set to common value
+            self._set_combo_to_current(current_combo, milling_currents[0])
+        else:
+            # Add "(mixed)" option and select it
+            current_combo.insertItem(0, "(mixed)")
+            current_combo.setCurrentIndex(0)
+        
+        current_combo.currentIndexChanged.connect(self._on_milling_current_changed)
+        self.pattern_properties_table.setCellWidget(0, 1, current_combo)
+        
+        # Remaining rows: other properties
+        for row, (prop_name, prop_value) in enumerate(properties, start=1):
+            self.pattern_properties_table.setItem(row, 0, QTableWidgetItem(prop_name))
+            self.pattern_properties_table.setItem(row, 1, QTableWidgetItem(prop_value))
+
+    def on_shapes_changed(self, updated_shapes):
+        """Handle shape changes - updates patterns in position data."""
         item = self.position_list.currentItem()
         if not item:
             return
 
         data = item.data(Qt.UserRole)
-        patterns = data.get("patterns", {})
+        patterns_list = data.get("patterns", [])
+        
+        # Get image dimensions and pixel_to_um for coordinate conversion
+        img_w = data.get("image_width")
+        img_h = data.get("image_height")
+        pixel_to_um = data.get("pixel_to_um")
+        
+        # Calculate meters per pixel and image center
+        if pixel_to_um is not None and img_w is not None and img_h is not None:
+            m_per_px = pixel_to_um * 1e-6
+            center_px_x = img_w / 2
+            center_px_y = img_h / 2
+        else:
+            m_per_px = None
 
-        for pid, coords in updated_shapes.items():
-            if pid in patterns:
-                patterns[pid].coords = coords
+        # Update coords in all pattern dicts in the list
+        for pattern_dict in patterns_list:
+            for pid, coords in updated_shapes.items():
+                if pid in pattern_dict:
+                    dp = pattern_dict[pid]
+                    # Update pixel coords
+                    dp.coords = coords
+                    
+                    # Also update the pattern's meter coordinates if we have the conversion factor
+                    if m_per_px is not None and len(coords) > 0:
+                        # Convert pixel coords to meters
+                        meter_coords = []
+                        for x_px, y_px in coords:
+                            x_m = (x_px - center_px_x) * m_per_px
+                            y_m = (center_px_y - y_px) * m_per_px  # Flip Y
+                            meter_coords.append((x_m, y_m))
+                        
+                        pattern = dp.pattern
+                        # Update pattern center (average of all vertices)
+                        avg_x = sum(c[0] for c in meter_coords) / len(meter_coords)
+                        avg_y = sum(c[1] for c in meter_coords) / len(meter_coords)
+                        
+                        if hasattr(pattern, 'center_x'):
+                            pattern.center_x = avg_x
+                        if hasattr(pattern, 'center_y'):
+                            pattern.center_y = avg_y
+                        
+                        # Handle different pattern types
+                        # PolygonPattern: update vertices
+                        if hasattr(pattern, 'vertices'):
+                            pattern.vertices = meter_coords
+                        
+                        # LinePattern: update start/end points and length
+                        if hasattr(pattern, 'start_x') and hasattr(pattern, 'end_x') and len(meter_coords) >= 2:
+                            pattern.start_x = meter_coords[0][0]
+                            pattern.start_y = meter_coords[0][1]
+                            pattern.end_x = meter_coords[1][0]
+                            pattern.end_y = meter_coords[1][1]
+                            # Recalculate length
+                            import math
+                            pattern.length = math.sqrt(
+                                (pattern.end_x - pattern.start_x)**2 + 
+                                (pattern.end_y - pattern.start_y)**2
+                            )
 
-        data["patterns"] = patterns
+
+        data["patterns"] = patterns_list
         item.setData(Qt.UserRole, data)
         self.rebuild_positions()
 
@@ -660,7 +1169,7 @@ class MainWindow(QWidget):
 
             coords = data['coords']
             if isinstance(coords, dict):
-                coord_str = f"x={coords['x']*1e6:.1f}, y={coords['y']*1e6:.1f} µm"
+                coord_str = f"x={coords['x']*1e6:.1f}, y={coords['y']*1e6:.1f}, z={coords['z']*1e6:.1f} µm"
             else:
                 coord_str = str(coords)
             
@@ -678,19 +1187,7 @@ class MainWindow(QWidget):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
             self.close()
-
-    def random_polygon(self, img_w, img_h):
-        cx = np.random.randint(img_w // 4, 3 * img_w // 4)
-        cy = np.random.randint(img_h // 4, 3 * img_h // 4)
-        size = min(img_w, img_h) // 10
-
-        return [
-            (cx - size, cy - size),
-            (cx + size, cy - size),
-            (cx + size, cy + size),
-            (cx - size, cy + size),
-        ]
-    
+# -------------------------------------------------    
 class Pattern():
     def __init__(self):
         self.coords = []

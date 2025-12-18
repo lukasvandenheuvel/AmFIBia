@@ -359,6 +359,7 @@ class fibsem:
         #### Microscope independent code####
         stage_dict={'x':float(x),'y':float(y),'z':float(z),'r':float(r),'t':float(t)}
         return(stage_dict)
+    
     def moveStageAbsolute(self, stageposition):
         '''
         Input: Stage position as dictionnary
@@ -378,6 +379,7 @@ class fibsem:
         stagepos=StagePosition(x=x,y=y,z=z,t=t,r=r)
         microscope.specimen.stage.absolute_move(stagepos)
         return()
+    
     def moveStageRelative(self,stageposition):
         '''
         Input: Change in stage position as directory
