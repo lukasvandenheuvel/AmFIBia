@@ -86,6 +86,7 @@ class fibsem:
         self.continuerun = True
         
         self.GIS=None
+        
         try:
             microscope.specimen.stage.set_default_coordinate_system('Raw')
         except:

@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
     QLineEdit, QComboBox, QGroupBox, QScrollArea, QFormLayout,
     QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView
 )
-from PyQt5.QtGui import QPixmap, QPainter, QPen, QFont, QColor, QBrush, QImage
+from PyQt5.QtGui import QPixmap, QPainter, QPen, QFont, QColor, QBrush, QImage, QDoubleValidator
 from PyQt5.QtCore import Qt, QRect, QPoint
 import numpy as np
 import xml.etree.ElementTree as ET
@@ -38,15 +38,40 @@ class DrawableImage(QLabel):
         self.setAlignment(Qt.AlignCenter)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setMinimumSize(1,1)
+        self.setFocusPolicy(Qt.StrongFocus)  # Enable keyboard focus for spacebar
 
         self.original_pixmap = pixmap
         self.scaled_pixmap = None
         self.offset_x = 0
         self.offset_y = 0
 
+        # Zoom and pan state
+        self.zoom_factor = 1.0
+        self.pan_offset_x = 0.0  # Pan offset in image coordinates
+        self.pan_offset_y = 0.0
+        self.is_panning = False
+        self.pan_start_pos = None
+        self.spacebar_held = False
+
         self.start_point = None
         self.preview_rect_img = None      # red in widget coords
         self.active_rect_img = None   # green in **image coordinates**
+        self.pixel_to_um = PIXEL_TO_MICRON  # Default, can be overridden per image
+        
+        # Tracking area (green rectangle with transparency)
+        self.tracking_area_img = None  # Stored in image coordinates
+        self.tracking_area_preview_img = None  # Preview while drawing
+        self.right_mouse_mode = "measure"  # "measure" or "tracking_area"
+        self.tracking_area_callback = None  # Callback when tracking area is set
+        
+        # Rectangle selection and manipulation
+        self.selected_rect = None  # "measure" or "tracking_area" or None
+        self.rect_drag_start_img = None  # Start point for dragging rectangle
+        self.rect_resize_handle = None  # Which handle is being dragged (0-7 for corners/edges)
+        self.is_dragging_rect = False
+        self.is_resizing_rect = False
+        self.HANDLE_SIZE = 8  # Size of resize handles in pixels (widget coords)
+        self.rect_selected_callback = None  # Callback when rectangle is selected/deselected
 
         # polygon editor
         self.polygons_img = [] # list[{"id": int, "points": list[QPoint], "pattern": DisplayablePattern}]
@@ -62,15 +87,66 @@ class DrawableImage(QLabel):
         self.is_drawing_selection = False  # Flag for selection rectangle drawing
         self.selection_start_img = None  # Start point for selection rectangle
 
+        # Reset zoom button
+        self._setup_reset_zoom_button()
+
+    def _setup_reset_zoom_button(self):
+        """Create the reset zoom button overlay."""
+        from PyQt5.QtWidgets import QPushButton
+        self.reset_zoom_btn = QPushButton("⬜", self)
+        self.reset_zoom_btn.setFixedSize(30, 30)
+        self.reset_zoom_btn.setToolTip("Reset zoom (fit to window)")
+        self.reset_zoom_btn.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(50, 50, 50, 180);
+                color: white;
+                border: 1px solid #666;
+                border-radius: 4px;
+                font-size: 14px;
+            }
+            QPushButton:hover {
+                background-color: rgba(80, 80, 80, 200);
+            }
+        """)
+        self.reset_zoom_btn.clicked.connect(self.reset_zoom)
+        self.reset_zoom_btn.hide()  # Hidden when zoom is 1.0
+
+    def reset_zoom(self):
+        """Reset zoom to fit image in widget."""
+        self.zoom_factor = 1.0
+        self.pan_offset_x = 0.0
+        self.pan_offset_y = 0.0
+        self.reset_zoom_btn.hide()
+        self._update_scaled_pixmap()
+        self.update()
+
+    def _update_scaled_pixmap(self):
+        """Update scaled pixmap based on current zoom level."""
+        if self.original_pixmap.isNull():
+            return
+        
+        # Base size that fits the widget
+        base_scaled = self.original_pixmap.scaled(
+            self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        
+        # Apply zoom factor
+        zoomed_width = int(base_scaled.width() * self.zoom_factor)
+        zoomed_height = int(base_scaled.height() * self.zoom_factor)
+        
+        self.scaled_pixmap = self.original_pixmap.scaled(
+            zoomed_width, zoomed_height, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        
+        # Compute offset to center the zoomed image, then apply pan
+        self.offset_x = (self.width() - self.scaled_pixmap.width()) // 2 + int(self.pan_offset_x * self.zoom_factor)
+        self.offset_y = (self.height() - self.scaled_pixmap.height()) // 2 + int(self.pan_offset_y * self.zoom_factor)
 
     def resizeEvent(self, event):
         if not self.original_pixmap.isNull():
-            self.scaled_pixmap = self.original_pixmap.scaled(
-                self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
-            )
-            # Compute top-left offset to center the image
-            self.offset_x = (self.width() - self.scaled_pixmap.width()) // 2
-            self.offset_y = (self.height() - self.scaled_pixmap.height()) // 2
+            self._update_scaled_pixmap()
+            # Position reset button at bottom-left
+            self.reset_zoom_btn.move(10, self.height() - 40)
         super().resizeEvent(event)
         self.update()
 
@@ -82,15 +158,32 @@ class DrawableImage(QLabel):
         if self.scaled_pixmap:
             painter.drawPixmap(self.offset_x, self.offset_y, self.scaled_pixmap)
 
-        # Draw preview rectangle (red)
+        # Draw preview rectangle (red) - measure mode
         if self.preview_rect_img:
             rect_widget = self._image_rect_to_widget(self.preview_rect_img)
-            self._draw_rect_with_measurements_widget(painter, rect_widget, Qt.red)
+            self._draw_rect_with_measurements_widget(painter, rect_widget, self.preview_rect_img, Qt.red)
 
-        # Draw active rectangle (green)
+        # Draw active rectangle (green) - measure mode
         if self.active_rect_img:
             rect_widget = self._image_rect_to_widget(self.active_rect_img)
-            self._draw_rect_with_measurements_widget(painter, rect_widget, Qt.green)
+            self._draw_rect_with_measurements_widget(painter, rect_widget, self.active_rect_img, Qt.green)
+        
+        # Draw tracking area preview (green with 20% transparency)
+        if self.tracking_area_preview_img:
+            rect_widget = self._image_rect_to_widget(self.tracking_area_preview_img)
+            self._draw_tracking_area_rect(painter, rect_widget, preview=True)
+        
+        # Draw committed tracking area (green with 20% transparency)
+        if self.tracking_area_img:
+            rect_widget = self._image_rect_to_widget(self.tracking_area_img)
+            self._draw_tracking_area_rect(painter, rect_widget, preview=False)
+            # Draw handles if selected
+            if self.selected_rect == "tracking_area":
+                self._draw_rect_handles(painter, self.tracking_area_img)
+        
+        # Draw handles on selected measure rectangle
+        if self.active_rect_img and self.selected_rect == "measure":
+            self._draw_rect_handles(painter, self.active_rect_img)
     
         if self.polygons_img:
             for poly in self.polygons_img:
@@ -115,6 +208,103 @@ class DrawableImage(QLabel):
             painter.setPen(pen)
             painter.setBrush(Qt.NoBrush)
             painter.drawRect(rect_widget)
+
+    def _draw_tracking_area_rect(self, painter, rect, preview=False):
+        """Draw a tracking area rectangle with 20% green transparency."""
+        # Green with 20% opacity (51/255)
+        fill_color = QColor(0, 255, 0, 51)
+        border_color = QColor(0, 255, 0) if not preview else QColor(0, 200, 0)
+        
+        pen = QPen(border_color, 2)
+        if preview:
+            pen.setStyle(Qt.DashLine)
+        painter.setPen(pen)
+        painter.setBrush(QBrush(fill_color))
+        painter.drawRect(rect)
+    
+    def _get_rect_handles(self, rect_img):
+        """Get the 8 handle positions for a rectangle (in image coordinates).
+        Returns list of (x, y) tuples for: TL, T, TR, R, BR, B, BL, L
+        """
+        if not rect_img:
+            return []
+        r = rect_img
+        cx = (r.left() + r.right()) / 2
+        cy = (r.top() + r.bottom()) / 2
+        return [
+            (r.left(), r.top()),      # 0: top-left
+            (cx, r.top()),             # 1: top-center
+            (r.right(), r.top()),      # 2: top-right
+            (r.right(), cy),           # 3: right-center
+            (r.right(), r.bottom()),   # 4: bottom-right
+            (cx, r.bottom()),          # 5: bottom-center
+            (r.left(), r.bottom()),    # 6: bottom-left
+            (r.left(), cy),            # 7: left-center
+        ]
+    
+    def _draw_rect_handles(self, painter, rect_img):
+        """Draw resize handles on a rectangle."""
+        handles = self._get_rect_handles(rect_img)
+        painter.setPen(QPen(Qt.white, 1))
+        painter.setBrush(QBrush(Qt.white))
+        
+        hs = self.HANDLE_SIZE
+        for hx, hy in handles:
+            widget_pt = self._image_point_to_widget(QPoint(int(hx), int(hy)))
+            painter.drawRect(widget_pt.x() - hs//2, widget_pt.y() - hs//2, hs, hs)
+    
+    def _get_handle_at_point(self, img_point, rect_img):
+        """Check if img_point is on a handle. Returns handle index (0-7) or -1."""
+        if not rect_img:
+            return -1
+        
+        handles = self._get_rect_handles(rect_img)
+        # Convert handle size to image coordinates
+        scale = self.original_pixmap.width() / self.scaled_pixmap.width() if self.scaled_pixmap else 1
+        tolerance = self.HANDLE_SIZE * scale
+        
+        for i, (hx, hy) in enumerate(handles):
+            if abs(img_point.x() - hx) <= tolerance and abs(img_point.y() - hy) <= tolerance:
+                return i
+        return -1
+    
+    def _point_in_rect(self, img_point, rect_img):
+        """Check if point is inside rectangle (but not on handles)."""
+        if not rect_img:
+            return False
+        return rect_img.contains(img_point)
+    
+    def _resize_rect_by_handle(self, rect_img, handle_idx, new_img_point):
+        """Resize rectangle by moving a handle. Returns new QRect."""
+        if not rect_img:
+            return rect_img
+        
+        left = rect_img.left()
+        top = rect_img.top()
+        right = rect_img.right()
+        bottom = rect_img.bottom()
+        
+        nx, ny = new_img_point.x(), new_img_point.y()
+        
+        # Handle indices: 0=TL, 1=T, 2=TR, 3=R, 4=BR, 5=B, 6=BL, 7=L
+        if handle_idx == 0:  # top-left
+            left, top = nx, ny
+        elif handle_idx == 1:  # top-center
+            top = ny
+        elif handle_idx == 2:  # top-right
+            right, top = nx, ny
+        elif handle_idx == 3:  # right-center
+            right = nx
+        elif handle_idx == 4:  # bottom-right
+            right, bottom = nx, ny
+        elif handle_idx == 5:  # bottom-center
+            bottom = ny
+        elif handle_idx == 6:  # bottom-left
+            left, bottom = nx, ny
+        elif handle_idx == 7:  # left-center
+            left = nx
+        
+        return QRect(QPoint(int(left), int(top)), QPoint(int(right), int(bottom))).normalized()
 
     def load_shapes(self, shapes, locked=False, color=None):
         """Load shapes for display. If locked=True, shapes cannot be dragged.
@@ -304,16 +494,220 @@ class DrawableImage(QLabel):
         return True
 
     # -------------------------------
+    # Zoom and Pan
+    # -------------------------------
+
+    def wheelEvent(self, event):
+        """Handle mouse wheel for zooming towards mouse position."""
+        if self.original_pixmap.isNull() or not self.scaled_pixmap:
+            return
+        
+        # Get mouse position in widget coordinates
+        mouse_pos = event.pos()
+        
+        # Convert mouse position to image coordinates BEFORE zoom change
+        img_x_before = (mouse_pos.x() - self.offset_x) * self.original_pixmap.width() / self.scaled_pixmap.width()
+        img_y_before = (mouse_pos.y() - self.offset_y) * self.original_pixmap.height() / self.scaled_pixmap.height()
+        
+        # Calculate zoom delta
+        delta = event.angleDelta().y()
+        zoom_in = delta > 0
+        
+        # Zoom factor change
+        old_zoom = self.zoom_factor
+        if zoom_in:
+            new_zoom = min(self.zoom_factor * 1.15, 10.0)  # Max 10x zoom
+        else:
+            new_zoom = max(self.zoom_factor / 1.15, 1.0)  # Min 1x (fit to window)
+        
+        if new_zoom == old_zoom:
+            return
+        
+        self.zoom_factor = new_zoom
+        
+        # Calculate new scaled pixmap dimensions
+        base_scaled = self.original_pixmap.scaled(
+            self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        new_scaled_width = base_scaled.width() * self.zoom_factor
+        new_scaled_height = base_scaled.height() * self.zoom_factor
+        
+        # Calculate where the same image point would be in widget coords after zoom (without pan adjustment)
+        new_widget_x = img_x_before * new_scaled_width / self.original_pixmap.width()
+        new_widget_y = img_y_before * new_scaled_height / self.original_pixmap.height()
+        
+        # Calculate new center offset (before pan)
+        new_center_offset_x = (self.width() - new_scaled_width) / 2
+        new_center_offset_y = (self.height() - new_scaled_height) / 2
+        
+        # The point under mouse should stay at mouse_pos
+        # mouse_pos.x() = new_center_offset_x + pan_offset_x * zoom + new_widget_x
+        # Solve for pan_offset_x:
+        # pan_offset_x = (mouse_pos.x() - new_center_offset_x - new_widget_x) / zoom
+        self.pan_offset_x = (mouse_pos.x() - new_center_offset_x - new_widget_x) / self.zoom_factor
+        self.pan_offset_y = (mouse_pos.y() - new_center_offset_y - new_widget_y) / self.zoom_factor
+        
+        # When zooming out to 1.0, reset pan
+        if self.zoom_factor == 1.0:
+            self.pan_offset_x = 0.0
+            self.pan_offset_y = 0.0
+        
+        # Clamp pan to reasonable bounds
+        self._clamp_pan()
+        
+        self._update_scaled_pixmap()
+        
+        # Show/hide reset button based on zoom level
+        if self.zoom_factor > 1.0:
+            self.reset_zoom_btn.show()
+        else:
+            self.reset_zoom_btn.hide()
+        
+        self.update()
+
+    def _clamp_pan(self):
+        """Clamp pan offset to keep image visible."""
+        if self.original_pixmap.isNull():
+            return
+        
+        # Allow panning up to half the image size beyond edges
+        max_pan_x = self.original_pixmap.width() * 0.5
+        max_pan_y = self.original_pixmap.height() * 0.5
+        
+        self.pan_offset_x = max(-max_pan_x, min(max_pan_x, self.pan_offset_x))
+        self.pan_offset_y = max(-max_pan_y, min(max_pan_y, self.pan_offset_y))
+
+    def keyPressEvent(self, event):
+        """Handle key press for spacebar panning and arrow keys for pattern/rectangle movement."""
+        if event.key() == Qt.Key_Space and not event.isAutoRepeat():
+            self.spacebar_held = True
+            self.setCursor(Qt.OpenHandCursor)
+        elif event.key() in (Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down):
+            # Determine movement delta (1 pixel, or 10 with Shift held)
+            step = 10 if event.modifiers() & Qt.ShiftModifier else 1
+            dx, dy = 0, 0
+            if event.key() == Qt.Key_Left:
+                dx = -step
+            elif event.key() == Qt.Key_Right:
+                dx = step
+            elif event.key() == Qt.Key_Up:
+                dy = -step
+            elif event.key() == Qt.Key_Down:
+                dy = step
+            
+            # Check if a rectangle is selected - move it
+            if self.selected_rect:
+                if self.selected_rect == "measure" and self.active_rect_img:
+                    self.active_rect_img.translate(dx, dy)
+                    self.update()
+                    # Notify callback
+                    if self.rect_selected_callback:
+                        self.rect_selected_callback(self.selected_rect, self._get_rect_dimensions_um(self.selected_rect))
+                elif self.selected_rect == "tracking_area" and self.tracking_area_img:
+                    self.tracking_area_img.translate(dx, dy)
+                    self.update()
+                    # Notify callbacks
+                    if self.tracking_area_callback:
+                        self.tracking_area_callback(self._get_tracking_area_um())
+                    if self.rect_selected_callback:
+                        self.rect_selected_callback(self.selected_rect, self._get_rect_dimensions_um(self.selected_rect))
+            # If any pattern is selected, move ALL unlocked patterns
+            elif self.selected_polygon_ids:
+                moved = False
+                for poly in self.polygons_img:
+                    if not poly.get("locked", False):
+                        for p in poly["points"]:
+                            p.setX(p.x() + dx)
+                            p.setY(p.y() + dy)
+                        moved = True
+                
+                if moved:
+                    self.update()
+                    # Notify callback about shape changes
+                    if self.shapes_changed_callback:
+                        self.shapes_changed_callback(self.get_shapes())
+        else:
+            super().keyPressEvent(event)
+
+    def keyReleaseEvent(self, event):
+        """Handle key release for spacebar panning."""
+        if event.key() == Qt.Key_Space and not event.isAutoRepeat():
+            self.spacebar_held = False
+            self.is_panning = False
+            self.pan_start_pos = None
+            self.setCursor(Qt.ArrowCursor)
+        else:
+            super().keyReleaseEvent(event)
+
+    def enterEvent(self, event):
+        """Grab focus when mouse enters the widget for keyboard events."""
+        self.setFocus()
+        super().enterEvent(event)
+
+    # -------------------------------
     # Mouse interactions
     # -------------------------------
 
     def mousePressEvent(self, event):
         if not self.scaled_pixmap:
             return
+        
+        # Ensure we have focus for keyboard events
+        self.setFocus()
+
+        # Handle spacebar + click for panning
+        if self.spacebar_held and event.button() == Qt.LeftButton:
+            self.is_panning = True
+            self.pan_start_pos = event.pos()
+            self.setCursor(Qt.ClosedHandCursor)
+            return
 
         img_point = self._widget_to_image_point(event.pos())
 
         if event.button() == Qt.LeftButton:
+            # First check if clicking on rectangle handles (for resizing)
+            handle_measure = self._get_handle_at_point(img_point, self.active_rect_img) if self.selected_rect == "measure" else -1
+            handle_tracking = self._get_handle_at_point(img_point, self.tracking_area_img) if self.selected_rect == "tracking_area" else -1
+            
+            if handle_measure >= 0:
+                # Start resizing measure rectangle
+                self.is_resizing_rect = True
+                self.rect_resize_handle = handle_measure
+                self.update()
+                return
+            elif handle_tracking >= 0:
+                # Start resizing tracking area
+                self.is_resizing_rect = True
+                self.rect_resize_handle = handle_tracking
+                self.update()
+                return
+            
+            # Check if clicking inside a rectangle (for moving or selecting)
+            in_measure = self._point_in_rect(img_point, self.active_rect_img)
+            in_tracking = self._point_in_rect(img_point, self.tracking_area_img)
+            
+            if in_measure or in_tracking:
+                # Select the rectangle and start dragging
+                if in_measure:
+                    self.selected_rect = "measure"
+                else:
+                    self.selected_rect = "tracking_area"
+                self.is_dragging_rect = True
+                self.rect_drag_start_img = self._widget_to_image_point_unclamped(event.pos())
+                # Notify callback about rectangle selection
+                if self.rect_selected_callback:
+                    self.rect_selected_callback(self.selected_rect, self._get_rect_dimensions_um(self.selected_rect))
+                self.update()
+                return
+            else:
+                # Clicked outside rectangles - deselect
+                if self.selected_rect:
+                    self.selected_rect = None
+                    # Notify callback about deselection
+                    if self.rect_selected_callback:
+                        self.rect_selected_callback(None, None)
+                    self.update()
+            
             # Check if clicking on any polygon (for selection)
             clicked_poly = self._get_polygon_at_point(img_point)
             shift_held = event.modifiers() & Qt.ShiftModifier
@@ -357,13 +751,58 @@ class DrawableImage(QLabel):
 
         elif event.button() == Qt.RightButton:
             self.start_point_img = img_point
-            self.preview_rect_img = None
+            if self.right_mouse_mode == "measure":
+                self.preview_rect_img = None
+            else:  # tracking_area mode
+                self.tracking_area_preview_img = None
             self.is_drawing_rect = True
 
         self.update()
 
     def mouseMoveEvent(self, event):
         if not self.scaled_pixmap:
+            return
+
+        # Handle panning when spacebar is held
+        if self.is_panning and self.pan_start_pos:
+            delta = event.pos() - self.pan_start_pos
+            # Convert widget delta to image coordinate delta
+            scale = self.original_pixmap.width() / self.scaled_pixmap.width()
+            self.pan_offset_x += delta.x() * scale
+            self.pan_offset_y += delta.y() * scale
+            self._clamp_pan()
+            self._update_scaled_pixmap()
+            self.pan_start_pos = event.pos()
+            self.update()
+            return
+        
+        # Handle rectangle resizing
+        if self.is_resizing_rect and self.rect_resize_handle >= 0:
+            current_img = self._widget_to_image_point(event.pos())
+            if self.selected_rect == "measure" and self.active_rect_img:
+                self.active_rect_img = self._resize_rect_by_handle(
+                    self.active_rect_img, self.rect_resize_handle, current_img
+                )
+            elif self.selected_rect == "tracking_area" and self.tracking_area_img:
+                self.tracking_area_img = self._resize_rect_by_handle(
+                    self.tracking_area_img, self.rect_resize_handle, current_img
+                )
+            self.update()
+            return
+        
+        # Handle rectangle dragging (moving)
+        if self.is_dragging_rect and self.rect_drag_start_img:
+            current_img = self._widget_to_image_point_unclamped(event.pos())
+            dx = current_img.x() - self.rect_drag_start_img.x()
+            dy = current_img.y() - self.rect_drag_start_img.y()
+            
+            if self.selected_rect == "measure" and self.active_rect_img:
+                self.active_rect_img.translate(dx, dy)
+            elif self.selected_rect == "tracking_area" and self.tracking_area_img:
+                self.tracking_area_img.translate(dx, dy)
+            
+            self.rect_drag_start_img = current_img
+            self.update()
             return
 
         if self.is_drawing_selection and self.selection_start_img:
@@ -396,13 +835,39 @@ class DrawableImage(QLabel):
 
         elif self.is_drawing_rect and self.start_point_img:
             current_img = self._widget_to_image_point(event.pos())
-            self.preview_rect_img = QRect(
-                self.start_point_img, current_img
-            ).normalized()
+            rect = QRect(self.start_point_img, current_img).normalized()
+            if self.right_mouse_mode == "measure":
+                self.preview_rect_img = rect
+            else:  # tracking_area mode
+                self.tracking_area_preview_img = rect
             self.update()
 
     def mouseReleaseEvent(self, event):
+        # Handle panning release
+        if self.is_panning and event.button() == Qt.LeftButton:
+            self.is_panning = False
+            self.pan_start_pos = None
+            if self.spacebar_held:
+                self.setCursor(Qt.OpenHandCursor)
+            else:
+                self.setCursor(Qt.ArrowCursor)
+            return
+
         if event.button() == Qt.LeftButton:
+            # Handle rectangle resize/drag completion
+            if self.is_resizing_rect or self.is_dragging_rect:
+                if self.selected_rect == "tracking_area" and self.tracking_area_callback:
+                    self.tracking_area_callback(self._get_tracking_area_um())
+                # Notify about updated dimensions
+                if self.rect_selected_callback and self.selected_rect:
+                    self.rect_selected_callback(self.selected_rect, self._get_rect_dimensions_um(self.selected_rect))
+                self.is_resizing_rect = False
+                self.is_dragging_rect = False
+                self.rect_resize_handle = -1
+                self.rect_drag_start_img = None
+                self.update()
+                return
+            
             if self.is_drawing_selection:
                 if self.selection_rect_img:
                     # Find all polygons touching the selection rectangle
@@ -439,12 +904,26 @@ class DrawableImage(QLabel):
             self.shapes_dirty = False
 
         elif event.button() == Qt.RightButton:
+            if self.is_drawing_rect:
+                if self.right_mouse_mode == "measure":
+                    # Commit measure preview to active rectangle
+                    if self.preview_rect_img:
+                        self.active_rect_img = self.preview_rect_img
+                        self.preview_rect_img = None
+                elif self.right_mouse_mode == "tracking_area":
+                    # Commit tracking area preview
+                    if self.tracking_area_preview_img:
+                        self.tracking_area_img = self.tracking_area_preview_img
+                        self.tracking_area_preview_img = None
+                        # Notify callback with coordinates in µm
+                        if self.tracking_area_callback:
+                            self.tracking_area_callback(self._get_tracking_area_um())
             self.is_drawing_rect = False
             self.start_point_img = None
 
         self.update()
 
-    def load_image(self, pixmap):
+    def load_image(self, pixmap, pixel_to_um=None):
         if pixmap is None or pixmap.isNull():
             self.clear()
             return
@@ -460,13 +939,26 @@ class DrawableImage(QLabel):
         self.selection_rect_img = None
         self.selection_start_img = None
         self.is_drawing_selection = False
+        self.tracking_area_img = None
+        self.tracking_area_preview_img = None
+        # Reset rectangle selection state
+        self.selected_rect = None
+        self.is_dragging_rect = False
+        self.is_resizing_rect = False
+        self.rect_resize_handle = -1
+        self.rect_drag_start_img = None
+        
+        # Set pixel to micron conversion factor
+        self.pixel_to_um = pixel_to_um if pixel_to_um is not None else PIXEL_TO_MICRON
+        
+        # Reset zoom and pan
+        self.zoom_factor = 1.0
+        self.pan_offset_x = 0.0
+        self.pan_offset_y = 0.0
+        self.reset_zoom_btn.hide()
 
         # Force scaled pixmap update
-        self.scaled_pixmap = self.original_pixmap.scaled(
-            self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
-        )
-        self.offset_x = (self.width() - self.scaled_pixmap.width()) // 2
-        self.offset_y = (self.height() - self.scaled_pixmap.height()) // 2
+        self._update_scaled_pixmap()
 
         self.update()
 
@@ -484,6 +976,19 @@ class DrawableImage(QLabel):
         self.selection_rect_img = None
         self.selection_start_img = None
         self.is_drawing_selection = False
+        self.tracking_area_img = None
+        self.tracking_area_preview_img = None
+        # Reset rectangle selection state
+        self.selected_rect = None
+        self.is_dragging_rect = False
+        self.is_resizing_rect = False
+        self.rect_resize_handle = -1
+        self.rect_drag_start_img = None
+        # Reset zoom and pan
+        self.zoom_factor = 1.0
+        self.pan_offset_x = 0.0
+        self.pan_offset_y = 0.0
+        self.reset_zoom_btn.hide()
         self.update()
 
     # -------------------------------
@@ -530,6 +1035,13 @@ class DrawableImage(QLabel):
         x = max(0, min(int(x), self.original_pixmap.width()-1))
         y = max(0, min(int(y), self.original_pixmap.height()-1))
         return QPoint(x, y)
+    
+    def _widget_to_image_point_unclamped(self, pos):
+        """Convert widget coordinates to image coordinates without clamping.
+        Used for drag operations where we need accurate deltas."""
+        x = (pos.x() - self.offset_x) * self.original_pixmap.width() / self.scaled_pixmap.width()
+        y = (pos.y() - self.offset_y) * self.original_pixmap.height() / self.scaled_pixmap.height()
+        return QPoint(int(x), int(y))
 
     # -------------------------------
     # Commit / load rectangle
@@ -548,27 +1060,145 @@ class DrawableImage(QLabel):
 
     def get_active_rectangle(self):
         return self.active_rect_img
+    
+    def _get_tracking_area_um(self):
+        """Get tracking area coordinates in µm relative to image center."""
+        if not self.tracking_area_img or self.original_pixmap.isNull():
+            return None
+        
+        rect = self.tracking_area_img
+        img_w = self.original_pixmap.width()
+        img_h = self.original_pixmap.height()
+        center_x = img_w / 2
+        center_y = img_h / 2
+        
+        # Convert pixel coordinates to µm relative to center
+        # Note: Y is flipped (image Y increases downward, stage Y increases upward)
+        left_um = (rect.left() - center_x) * self.pixel_to_um
+        right_um = (rect.right() - center_x) * self.pixel_to_um
+        top_um = (center_y - rect.top()) * self.pixel_to_um  # Flip Y
+        bottom_um = (center_y - rect.bottom()) * self.pixel_to_um  # Flip Y
+        
+        return {
+            "left": left_um,
+            "right": right_um,
+            "top": top_um,
+            "bottom": bottom_um,
+            "width": abs(right_um - left_um),
+            "height": abs(top_um - bottom_um),
+            "center_x": (left_um + right_um) / 2,
+            "center_y": (top_um + bottom_um) / 2
+        }
+    
+    def load_tracking_area(self, tracking_area_um):
+        """Load tracking area from µm coordinates."""
+        if not tracking_area_um or self.original_pixmap.isNull():
+            self.tracking_area_img = None
+            return
+        
+        img_w = self.original_pixmap.width()
+        img_h = self.original_pixmap.height()
+        center_x = img_w / 2
+        center_y = img_h / 2
+        
+        # Convert µm coordinates back to pixels
+        left_px = tracking_area_um["left"] / self.pixel_to_um + center_x
+        right_px = tracking_area_um["right"] / self.pixel_to_um + center_x
+        top_px = center_y - tracking_area_um["top"] / self.pixel_to_um  # Flip Y
+        bottom_px = center_y - tracking_area_um["bottom"] / self.pixel_to_um  # Flip Y
+        
+        self.tracking_area_img = QRect(
+            int(min(left_px, right_px)),
+            int(min(top_px, bottom_px)),
+            int(abs(right_px - left_px)),
+            int(abs(bottom_px - top_px))
+        )
+        self.update()
+    
+    def clear_tracking_area(self):
+        """Clear the tracking area."""
+        self.tracking_area_img = None
+        self.tracking_area_preview_img = None
+        self.update()
+    
+    def _get_rect_dimensions_um(self, rect_type):
+        """Get rectangle dimensions in µm."""
+        if rect_type == "measure":
+            rect = self.active_rect_img
+        elif rect_type == "tracking_area":
+            rect = self.tracking_area_img
+        else:
+            return None
+        
+        if not rect:
+            return None
+        
+        width_um = rect.width() * self.pixel_to_um
+        height_um = rect.height() * self.pixel_to_um
+        return {"width": width_um, "height": height_um}
+    
+    def set_rect_dimensions_um(self, rect_type, width_um, height_um):
+        """Set rectangle dimensions in µm, keeping center fixed."""
+        if rect_type == "measure":
+            rect = self.active_rect_img
+        elif rect_type == "tracking_area":
+            rect = self.tracking_area_img
+        else:
+            return
+        
+        if not rect:
+            return
+        
+        # Get current center using floating point to avoid drift
+        # QRect.center() uses integer division which can cause 1px shifts
+        center_x = rect.left() + rect.width() / 2.0
+        center_y = rect.top() + rect.height() / 2.0
+        
+        # Convert µm to pixels
+        new_width_px = int(round(width_um / self.pixel_to_um))
+        new_height_px = int(round(height_um / self.pixel_to_um))
+        
+        # Create new rect centered on same point
+        new_left = int(round(center_x - new_width_px / 2.0))
+        new_top = int(round(center_y - new_height_px / 2.0))
+        
+        new_rect = QRect(new_left, new_top, new_width_px, new_height_px)
+        
+        if rect_type == "measure":
+            self.active_rect_img = new_rect
+        elif rect_type == "tracking_area":
+            self.tracking_area_img = new_rect
+            # Notify tracking area callback
+            if self.tracking_area_callback:
+                self.tracking_area_callback(self._get_tracking_area_um())
+        
+        self.update()
 
     # -------------------------------
     # Draw rectangle + measurements
     # -------------------------------
-    def _draw_rect_with_measurements_widget(self, painter, rect, color):
+    def _draw_rect_with_measurements_widget(self, painter, rect_widget, rect_img, color):
+        """Draw rectangle with measurements.
+        
+        rect_widget: QRect in widget coordinates (for drawing)
+        rect_img: QRect in image coordinates (for measurements)
+        """
         pen = QPen(color, 2)
         painter.setPen(pen)
-        painter.drawRect(rect)
+        painter.drawRect(rect_widget)
 
-        # width and height in µm using image coordinates
-        width_um = rect.width() / self.scaled_pixmap.width() * self.original_pixmap.width() * PIXEL_TO_MICRON
-        height_um = rect.height() / self.scaled_pixmap.height() * self.original_pixmap.height() * PIXEL_TO_MICRON
+        # width and height in µm using image coordinates directly
+        width_um = rect_img.width() * self.pixel_to_um
+        height_um = rect_img.height() * self.pixel_to_um
 
         # Width text
         width_text = f"{width_um:.1f} µm"
-        painter.drawText(rect.center().x() - 30, rect.top() - 5, width_text)
+        painter.drawText(rect_widget.center().x() - 30, rect_widget.top() - 5, width_text)
 
         # Height text (rotated)
         height_text = f"{height_um:.1f} µm"
         painter.save()
-        painter.translate(rect.left() - 10, rect.center().y() + 30)
+        painter.translate(rect_widget.left() - 10, rect_widget.center().y() + 30)
         painter.rotate(-90)
         painter.drawText(0, 0, height_text)
         painter.restore()
@@ -644,6 +1274,16 @@ class MainWindow(QWidget):
         attach_pattern_layout.addWidget(attach_pattern_btn, stretch=1)
         attach_pattern_layout.addWidget(self.auto_attach_pattern_checkbox, stretch=0)
 
+        # Right mouse mode dropdown
+        right_mouse_layout = QHBoxLayout()
+        right_mouse_layout.setSpacing(5)
+        right_mouse_label = QLabel("Right mouse:")
+        self.right_mouse_combo = QComboBox()
+        self.right_mouse_combo.addItems(["Measure", "Tracking area"])
+        self.right_mouse_combo.currentIndexChanged.connect(self._on_right_mouse_mode_changed)
+        right_mouse_layout.addWidget(right_mouse_label)
+        right_mouse_layout.addWidget(self.right_mouse_combo, stretch=1)
+
         # PatternGroup properties table (milling current, color, sequential group)
         self.group_properties_label = QLabel("Group Properties")
         self.group_properties_label.setFont(QFont("Arial", 12, QFont.Bold))
@@ -674,6 +1314,7 @@ class MainWindow(QWidget):
         left_layout.addWidget(add_position_btn)
         left_layout.addLayout(take_ib_layout)
         left_layout.addLayout(attach_pattern_layout)
+        left_layout.addLayout(right_mouse_layout)
         left_layout.addWidget(self.group_properties_label)
         left_layout.addWidget(self.group_properties_table)
         left_layout.addWidget(self.pattern_properties_label)
@@ -683,6 +1324,11 @@ class MainWindow(QWidget):
         pixmap = QPixmap("logo.png")
         self.image_widget = DrawableImage(pixmap)
         self.image_widget.pattern_selected_callback = self.on_pattern_selected
+        self.image_widget.tracking_area_callback = self.on_tracking_area_changed
+        self.image_widget.rect_selected_callback = self.on_rect_selected
+        
+        # Track currently selected rectangle type
+        self.selected_rect_type = None
 
         # Protocol Editor panel (initially hidden)
         # Pass mode and scope for current dropdown population
@@ -737,6 +1383,95 @@ class MainWindow(QWidget):
             return f"{nA:.1f} nA"
         else:
             return f"{nA:.0f} nA"
+    
+    def _on_right_mouse_mode_changed(self, index):
+        """Handle right mouse mode dropdown change."""
+        mode = "measure" if index == 0 else "tracking_area"
+        self.image_widget.right_mouse_mode = mode
+    
+    def on_tracking_area_changed(self, tracking_area_um):
+        """Handle tracking area change - save to position data."""
+        item = self.position_list.currentItem()
+        if not item:
+            return
+        
+        data = item.data(Qt.UserRole)
+        data["tracking_area"] = tracking_area_um
+        item.setData(Qt.UserRole, data)
+        
+        if tracking_area_um:
+            print(f"Tracking area set: center=({tracking_area_um['center_x']:.1f}, {tracking_area_um['center_y']:.1f}) µm, "
+                  f"size={tracking_area_um['width']:.1f}x{tracking_area_um['height']:.1f} µm")
+    
+    def on_rect_selected(self, rect_type, dimensions):
+        """Handle rectangle selection - display properties in pattern_properties_table.
+        
+        rect_type: "measure", "tracking_area", or None (deselected)
+        dimensions: dict with "width" and "height" in µm, or None
+        """
+        self.selected_rect_type = rect_type
+        
+        # Clear both tables when a rectangle is selected (not a pattern)
+        self.group_properties_table.setRowCount(0)
+        self.pattern_properties_table.setRowCount(0)
+        self.selected_displayable_patterns = []
+        self.selected_pattern_groups = []
+        
+        if rect_type is None or dimensions is None:
+            return
+        
+        # Display rectangle properties
+        rect_label = "Measurement" if rect_type == "measure" else "Tracking Area"
+        
+        # Set up 3 rows: Type, Width, Height
+        self.pattern_properties_table.setRowCount(3)
+        
+        # Row 0: Type (display only)
+        self.pattern_properties_table.setItem(0, 0, QTableWidgetItem("Type"))
+        self.pattern_properties_table.setItem(0, 1, QTableWidgetItem(rect_label))
+        
+        # Row 1: Width with editable QLineEdit
+        self.pattern_properties_table.setItem(1, 0, QTableWidgetItem("Width (µm)"))
+        width_edit = QLineEdit()
+        width_edit.setText(f"{dimensions['width']:.3f}")
+        width_edit.setValidator(QDoubleValidator(0.001, 10000, 3))
+        width_edit.editingFinished.connect(self._on_rect_dimension_changed)
+        width_edit.setProperty("dimension", "width")
+        self.pattern_properties_table.setCellWidget(1, 1, width_edit)
+        
+        # Row 2: Height with editable QLineEdit
+        self.pattern_properties_table.setItem(2, 0, QTableWidgetItem("Height (µm)"))
+        height_edit = QLineEdit()
+        height_edit.setText(f"{dimensions['height']:.3f}")
+        height_edit.setValidator(QDoubleValidator(0.001, 10000, 3))
+        height_edit.editingFinished.connect(self._on_rect_dimension_changed)
+        height_edit.setProperty("dimension", "height")
+        self.pattern_properties_table.setCellWidget(2, 1, height_edit)
+    
+    def _on_rect_dimension_changed(self):
+        """Handle rectangle dimension edit - update the rectangle size."""
+        if not self.selected_rect_type:
+            return
+        
+        # Get width and height from QLineEdit widgets
+        width_widget = self.pattern_properties_table.cellWidget(1, 1)
+        height_widget = self.pattern_properties_table.cellWidget(2, 1)
+        
+        if not width_widget or not height_widget:
+            return
+        
+        try:
+            new_width = float(width_widget.text())
+            new_height = float(height_widget.text())
+        except ValueError:
+            return
+        
+        # Ensure positive values
+        if new_width <= 0 or new_height <= 0:
+            return
+        
+        # Update the rectangle
+        self.image_widget.set_rect_dimensions_um(self.selected_rect_type, new_width, new_height)
     
     def _set_combo_to_current(self, combo, target_current_A):
         """Set combo box to the closest available current value."""
@@ -815,7 +1550,8 @@ class MainWindow(QWidget):
             "image_width": None,
             "image_height": None,
             "pixel_to_um": None,
-            "patterns": []  # List of pattern dicts
+            "patterns": [],  # List of pattern dicts
+            "tracking_area": None  # Tracking area in µm coordinates
         }
 
         item.setData(Qt.UserRole, data)
@@ -839,6 +1575,16 @@ class MainWindow(QWidget):
             return
 
         data = item.data(Qt.UserRole)
+        index = self.position_list.count()
+
+        # Obtain coordinates
+        # Get current stage coordinates
+        if MODE == "scope":
+            # Returns dict with keys: x, y, z, r, t (all in meters/radians)
+            coords = scope.getStagePosition()
+        else:
+            # Dummy coordinates for dev mode
+            coords = {'x': index * 1.0, 'y': index * 2.0, 'z': index * 3.0, 'r': 0.0, 't': 0.0}
 
         # Take image
         if MODE == "scope":
@@ -865,6 +1611,7 @@ class MainWindow(QWidget):
             pixel_to_um = PIXEL_TO_MICRON
 
         # Update data
+        data["coords"] = coords # Update coordinates in case they changed since the position was added
         data["image"] = pixmap
         data["image_data"] = img
         data["image_metadata"] = img_metadata
@@ -876,7 +1623,7 @@ class MainWindow(QWidget):
         self.rebuild_positions()
 
         # Load the image into the DrawableImage widget
-        self.image_widget.load_image(pixmap)
+        self.image_widget.load_image(pixmap, pixel_to_um=pixel_to_um)
         self.image_widget.load_shapes(data.get("patterns", []), locked=False)
         self.image_widget.shapes_changed_callback = self.on_shapes_changed
 
@@ -1027,9 +1774,12 @@ class MainWindow(QWidget):
         data = item.data(Qt.UserRole)
 
         if data["image"] is not None:
-            self.image_widget.load_image(data["image"])
+            self.image_widget.load_image(data["image"], pixel_to_um=data.get("pixel_to_um"))
             self.image_widget.load_rectangle(data["rect"])
             self.image_widget.load_shapes(data.get("patterns", []), locked=False)
+            # Load tracking area if it exists
+            if data.get("tracking_area"):
+                self.image_widget.load_tracking_area(data["tracking_area"])
         else:
             self.image_widget.clear()
 
@@ -1048,6 +1798,7 @@ class MainWindow(QWidget):
         self.group_properties_table.setRowCount(0)
         self.pattern_properties_table.setRowCount(0)
         self.selected_displayable_patterns = displayable_patterns  # Store reference
+        self.selected_rect_type = None  # Clear rectangle selection when patterns are selected
         
         # Get the PatternGroups for the selected patterns
         self.selected_pattern_groups = self.image_widget._get_selected_pattern_groups()
