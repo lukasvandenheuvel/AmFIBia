@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 
-from src.CustomPatterns import RectanglePattern, PolygonPattern, DisplayablePattern
+from src.CustomPatterns import RectanglePattern, PolygonPattern, DisplayablePattern, PatternGroup
 
 
 class ProtocolEditor(QWidget):
@@ -519,6 +519,9 @@ class ProtocolEditor(QWidget):
         if do_fine:
             current_groups['fine'] = fine_current
         
+        # Store current_groups for use in store_and_display_patterns
+        self.current_groups = current_groups
+        
         # Store generated patterns grouped by current group
         self.generated_patterns = {group: {} for group in current_groups.keys()}
         
@@ -547,7 +550,7 @@ class ProtocolEditor(QWidget):
                     )
                     # Convert to pixel coordinates for display
                     coords = [(verts[j, 0], verts[j, 1]) for j in range(4)]
-                    displayable = DisplayablePattern(pattern=pattern, coords=coords, milling_current=current_A)
+                    displayable = DisplayablePattern(pattern=pattern, coords=coords)
                     self.generated_patterns[group][f"{group}_{i}"] = displayable
                     pattern_id += 1
         
@@ -581,9 +584,10 @@ class ProtocolEditor(QWidget):
         center_px_x = img_w / 2
         center_px_y = img_h / 2
         
-        # Convert patterns to pixel coords and store as list
-        # Order: coarse, medium, fine (matching predefined colors in load_shapes)
+        # Convert patterns to pixel coords and store as list of PatternGroups
+        # Order: coarse, medium, fine (matching predefined colors)
         patterns_list = []
+        group_index = 0
         for group in ['coarse', 'medium', 'fine']:
             if group in self.generated_patterns:
                 converted = {}
@@ -593,15 +597,24 @@ class ProtocolEditor(QWidget):
                         x_px = int(center_px_x + x_m / m_per_px)
                         y_px = int(center_px_y - y_m / m_per_px)  # Flip Y
                         pixel_coords.append((x_px, y_px))
-                    new_dp = DisplayablePattern(pattern=dp.pattern, coords=pixel_coords, milling_current=dp.milling_current)
+                    new_dp = DisplayablePattern(pattern=dp.pattern, coords=pixel_coords)
                     converted[pid] = new_dp
-                patterns_list.append(converted)
+                
+                # Create PatternGroup with color based on index
+                milling_current = self.current_groups.get(group, 0.0)
+                pattern_group = PatternGroup.create_with_index(
+                    patterns=converted,
+                    milling_current=milling_current,
+                    index=group_index
+                )
+                patterns_list.append(pattern_group)
+                group_index += 1
         
         # Store in position data
         data["patterns"] = patterns_list
         item.setData(Qt.UserRole, data)
         
-        # Display via main window's load_shapes (handles list with colors)
+        # Display via main window's load_shapes (handles list of PatternGroups)
         self.main_window.image_widget.load_shapes(patterns_list, locked=False)
         
         # Store as last loaded patterns for auto-add functionality
@@ -722,8 +735,11 @@ class ProtocolEditor(QWidget):
         )
         
         # Create displayable patterns
-        top_displayable = DisplayablePattern(pattern=top_pattern, coords=top_coords, milling_current=polish_current)
-        bottom_displayable = DisplayablePattern(pattern=bottom_pattern, coords=bottom_coords, milling_current=polish_current)
+        top_displayable = DisplayablePattern(pattern=top_pattern, coords=top_coords)
+        bottom_displayable = DisplayablePattern(pattern=bottom_pattern, coords=bottom_coords)
+        
+        # Store polish current for use in store_and_display_polishing_patterns
+        self.polish_current = polish_current
         
         # Store in generated_patterns structure (use 'polish' as the group)
         self.generated_patterns = {
@@ -763,7 +779,7 @@ class ProtocolEditor(QWidget):
         center_px_x = img_w / 2
         center_px_y = img_h / 2
         
-        # Convert polish patterns to pixel coords
+        # Convert polish patterns to pixel coords and create PatternGroup
         patterns_list = []
         if 'polish' in self.generated_patterns:
             converted = {}
@@ -773,15 +789,23 @@ class ProtocolEditor(QWidget):
                     x_px = int(center_px_x + x_m / m_per_px)
                     y_px = int(center_px_y - y_m / m_per_px)  # Flip Y
                     pixel_coords.append((x_px, y_px))
-                new_dp = DisplayablePattern(pattern=dp.pattern, coords=pixel_coords, milling_current=dp.milling_current)
+                new_dp = DisplayablePattern(pattern=dp.pattern, coords=pixel_coords)
                 converted[pid] = new_dp
-            patterns_list.append(converted)
+            
+            # Create PatternGroup with index 0 (first/yellow color)
+            milling_current = getattr(self, 'polish_current', 0.0)
+            pattern_group = PatternGroup.create_with_index(
+                patterns=converted,
+                milling_current=milling_current,
+                index=0
+            )
+            patterns_list.append(pattern_group)
         
         # Store in position data
         data["patterns"] = patterns_list
         item.setData(Qt.UserRole, data)
         
-        # Display via main window's load_shapes (handles list with colors)
+        # Display via main window's load_shapes (handles list of PatternGroups)
         self.main_window.image_widget.load_shapes(patterns_list, locked=False)
         
         # Store as last loaded patterns for auto-add functionality

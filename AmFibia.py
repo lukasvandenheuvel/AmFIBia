@@ -21,11 +21,11 @@ from src.ProtocolEditor import ProtocolEditor
 
 if MODE == "scope":
     from src.AquilosDriver import fibsem
-    from src.CustomPatterns import DisplayablePattern, convert_xT_patterns_to_displayable, RectanglePattern
+    from src.CustomPatterns import DisplayablePattern, convert_xT_patterns_to_displayable, RectanglePattern, PatternGroup
     ### INITIALIZE MICROSCOPE FROM DRIVER
     scope = fibsem()
 elif MODE == "dev":
-    from src.CustomPatterns import parse_pattern_file, load_patterns_for_display, DisplayablePattern, RectanglePattern
+    from src.CustomPatterns import parse_pattern_file, load_patterns_for_display, DisplayablePattern, RectanglePattern, PatternGroup
 
 
 # -------------------------------------------------
@@ -119,15 +119,15 @@ class DrawableImage(QLabel):
     def load_shapes(self, shapes, locked=False, color=None):
         """Load shapes for display. If locked=True, shapes cannot be dragged.
         
-        shapes should be a list of dicts [{id: pattern}, ...]
-        Each dict in the list is drawn with a different color.
+        shapes should be a list of PatternGroup objects.
+        Each PatternGroup contains its own color attribute.
         
-        Predefined colors (in order): Yellow, Red, Blue, Orange, Green
-        If more than 5 items, random colors are used for additional items.
+        For backwards compatibility, also supports list of dicts [{id: pattern}, ...]
+        with predefined colors (Yellow, Red, Blue, Orange, Green).
         """
         import random
         
-        # Predefined colors for list entries
+        # Predefined colors for backwards compatibility with dict format
         PREDEFINED_COLORS = [
             QColor(255, 255, 0),   # Yellow
             QColor(255, 0, 0),     # Red
@@ -142,12 +142,21 @@ class DrawableImage(QLabel):
         if not isinstance(shapes, list):
             shapes = [shapes] if shapes else []
         
-        for i, pattern_dict in enumerate(shapes):
-            # Choose color: predefined for first 5, random after
-            if i < len(PREDEFINED_COLORS):
-                c = PREDEFINED_COLORS[i]
+        for i, item in enumerate(shapes):
+            # Check if item is a PatternGroup (has 'patterns' and 'color' attributes)
+            if hasattr(item, 'patterns') and hasattr(item, 'color'):
+                # PatternGroup object
+                pattern_group = item
+                c = QColor(*pattern_group.color)  # Convert RGB tuple to QColor
+                pattern_dict = pattern_group.patterns
             else:
-                c = QColor(random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
+                # Legacy dict format - use predefined colors and create temporary PatternGroup
+                pattern_dict = item
+                pattern_group = None  # No PatternGroup for legacy format
+                if i < len(PREDEFINED_COLORS):
+                    c = PREDEFINED_COLORS[i]
+                else:
+                    c = QColor(random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
             
             for sid, pattern in pattern_dict.items():
                 self.polygons_img.append({
@@ -155,7 +164,8 @@ class DrawableImage(QLabel):
                     "points": [QPoint(x, y) for x, y in pattern.coords],
                     "locked": locked,
                     "color": c,
-                    "displayable_pattern": pattern  # Store reference for property display
+                    "displayable_pattern": pattern,  # Store reference for property display
+                    "pattern_group": pattern_group   # Store reference to PatternGroup
                 })
         
         self.selected_polygon_ids = set()  # Clear selection when loading new shapes
@@ -239,6 +249,18 @@ class DrawableImage(QLabel):
                 if dp:
                     patterns.append(dp)
         return patterns
+    
+    def _get_selected_pattern_groups(self):
+        """Return list of unique PatternGroups for all selected polygons."""
+        groups = []
+        seen_ids = set()
+        for poly in self.polygons_img:
+            if poly.get("id") in self.selected_polygon_ids:
+                pg = poly.get("pattern_group")
+                if pg and id(pg) not in seen_ids:
+                    groups.append(pg)
+                    seen_ids.add(id(pg))
+        return groups
 
     def _polygon_intersects_rect(self, poly, rect):
         """Check if a polygon intersects or is inside a rectangle.
@@ -580,6 +602,7 @@ class MainWindow(QWidget):
 
         self.positions = {}
         self.selected_displayable_patterns = []  # Track currently selected patterns (list)
+        self.selected_pattern_groups = []  # Track PatternGroups for selected patterns
         self.available_currents = self._get_available_currents()
 
         # Layout
@@ -621,6 +644,19 @@ class MainWindow(QWidget):
         attach_pattern_layout.addWidget(attach_pattern_btn, stretch=1)
         attach_pattern_layout.addWidget(self.auto_attach_pattern_checkbox, stretch=0)
 
+        # PatternGroup properties table (milling current, color, sequential group)
+        self.group_properties_label = QLabel("Group Properties")
+        self.group_properties_label.setFont(QFont("Arial", 12, QFont.Bold))
+        self.group_properties_table = QTableWidget()
+        self.group_properties_table.setColumnCount(2)
+        self.group_properties_table.setHorizontalHeaderLabels(["Property", "Value"])
+        self.group_properties_table.horizontalHeader().setStretchLastSection(True)
+        self.group_properties_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.group_properties_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.group_properties_table.setSelectionMode(QAbstractItemView.NoSelection)
+        self.group_properties_table.verticalHeader().setVisible(False)
+        self.group_properties_table.setMaximumHeight(120)  # Keep it compact
+
         # Pattern properties table
         self.pattern_properties_label = QLabel("Pattern Properties")
         self.pattern_properties_label.setFont(QFont("Arial", 12, QFont.Bold))
@@ -638,8 +674,10 @@ class MainWindow(QWidget):
         left_layout.addWidget(add_position_btn)
         left_layout.addLayout(take_ib_layout)
         left_layout.addLayout(attach_pattern_layout)
+        left_layout.addWidget(self.group_properties_label)
+        left_layout.addWidget(self.group_properties_table)
         left_layout.addWidget(self.pattern_properties_label)
-        left_layout.addWidget(self.pattern_properties_table, stretch=1)  # 50% for property table
+        left_layout.addWidget(self.pattern_properties_table, stretch=1)  # Remaining space for pattern properties
 
         # Image panel
         pixmap = QPixmap("logo.png")
@@ -713,8 +751,8 @@ class MainWindow(QWidget):
         combo.setCurrentIndex(closest_idx)
     
     def _on_milling_current_changed(self, index):
-        """Handle milling current dropdown change - updates all selected patterns."""
-        if not self.selected_displayable_patterns:
+        """Handle milling current dropdown change - updates all selected PatternGroups."""
+        if not self.selected_pattern_groups:
             return
         
         # Get the combo box to check if "(mixed)" option exists
@@ -731,9 +769,9 @@ class MainWindow(QWidget):
         # Get the new current value
         new_current = self.available_currents[adjusted_index]
         
-        # Update all selected patterns
-        for dp in self.selected_displayable_patterns:
-            dp.milling_current = new_current
+        # Update all selected PatternGroups
+        for pg in self.selected_pattern_groups:
+            pg.milling_current = new_current
         
         # Update the stored data in position list
         item = self.position_list.currentItem()
@@ -882,14 +920,14 @@ class MainWindow(QWidget):
             fov_width_m = img_w * pixel_to_um * 1e-6
             fov_height_m = img_h * pixel_to_um * 1e-6
             
-            # Convert xT patterns to displayable patterns
-            pattern_dict = convert_xT_patterns_to_displayable(
+            # Convert xT patterns to PatternGroup
+            pattern_group = convert_xT_patterns_to_displayable(
                 all_patterns,
                 img_w, img_h,
                 fov_width_m, fov_height_m
             )
             
-            data["patterns"] = [pattern_dict]  # Store as list with one element
+            data["patterns"] = [pattern_group]  # Store as list with one PatternGroup
             item.setData(Qt.UserRole, data)
             self.rebuild_positions()
             self.image_widget.load_shapes(data["patterns"], locked=False)
@@ -936,14 +974,14 @@ class MainWindow(QWidget):
         print(f"Image size: {img_w} x {img_h} pixels")
         print(f"FOV: {fov_width_m*1e6:.1f} x {fov_height_m*1e6:.1f} µm")
         
-        # Load patterns and convert to image coordinates
-        pattern_dict = load_patterns_for_display(
+        # Load patterns and convert to PatternGroup
+        pattern_group = load_patterns_for_display(
             file_path,
             img_w, img_h,
             fov_width_m, fov_height_m
         )
         
-        data["patterns"] = [pattern_dict]  # Store as list with one element
+        data["patterns"] = [pattern_group]  # Store as list with one PatternGroup
         item.setData(Qt.UserRole, data)
         self.rebuild_positions()
         self.image_widget.load_shapes(data["patterns"], locked=False)
@@ -954,12 +992,12 @@ class MainWindow(QWidget):
         self.last_loaded_patterns = None
     
     def set_last_loaded_patterns(self, patterns_list):
-        """Store patterns from Protocol Editor for auto-add functionality."""
-        # Clone the patterns to avoid reference issues
-        self.last_loaded_patterns = [
-            {pid: dp.clone() for pid, dp in pattern_dict.items()}
-            for pattern_dict in patterns_list
-        ]
+        """Store patterns from Protocol Editor for auto-add functionality.
+        
+        patterns_list is now a list of PatternGroup objects.
+        """
+        # Clone the PatternGroups to avoid reference issues
+        self.last_loaded_patterns = [pg.clone() for pg in patterns_list]
         # Clear file path since these patterns are from Protocol Editor
         self.last_loaded_pattern_file = None
     
@@ -971,11 +1009,8 @@ class MainWindow(QWidget):
         
         data = item.data(Qt.UserRole)
         
-        # Clone the stored patterns for this position
-        patterns_list = [
-            {pid: dp.clone() for pid, dp in pattern_dict.items()}
-            for pattern_dict in self.last_loaded_patterns
-        ]
+        # Clone the stored PatternGroups for this position
+        patterns_list = [pg.clone() for pg in self.last_loaded_patterns]
         
         # Store patterns in position data (even without image)
         data["patterns"] = patterns_list
@@ -1003,19 +1038,22 @@ class MainWindow(QWidget):
         self.pattern_properties_table.setRowCount(0)
 
     def on_pattern_selected(self, displayable_patterns):
-        """Handle pattern selection - display properties in table.
+        """Handle pattern selection - display properties in tables.
         
         displayable_patterns is now a list of selected patterns.
         Shows shared values, blank for different values.
+        Group properties (milling current, color, sequential group) shown in group table.
+        Pattern properties shown in pattern table.
         """
+        self.group_properties_table.setRowCount(0)
         self.pattern_properties_table.setRowCount(0)
         self.selected_displayable_patterns = displayable_patterns  # Store reference
         
+        # Get the PatternGroups for the selected patterns
+        self.selected_pattern_groups = self.image_widget._get_selected_pattern_groups()
+        
         if not displayable_patterns:
             return
-        
-        # Properties to exclude from display
-        exclude_props = {'coords', '_id'}
         
         # Helper to format values
         def format_value(value):
@@ -1028,12 +1066,64 @@ class MainWindow(QWidget):
                     return f"{value:.2f}"
             return str(value)
         
-        # Check if all milling currents are the same
-        milling_currents = [dp.milling_current for dp in displayable_patterns]
-        all_same_current = len(set(milling_currents)) == 1
+        # =====================
+        # Populate Group Properties Table
+        # =====================
+        if self.selected_pattern_groups:
+            # Get values from PatternGroups
+            milling_currents = [pg.milling_current for pg in self.selected_pattern_groups]
+            colors = [pg.color for pg in self.selected_pattern_groups]
+            sequential_groups = [pg.sequential_group for pg in self.selected_pattern_groups]
+            
+            all_same_current = len(set(milling_currents)) == 1
+            all_same_color = len(set(colors)) == 1
+            all_same_seq_group = len(set(sequential_groups)) == 1
+            
+            # 3 rows: Milling Current, Color, Sequential Group
+            self.group_properties_table.setRowCount(3)
+            
+            # Row 0: Milling current with dropdown
+            self.group_properties_table.setItem(0, 0, QTableWidgetItem("Milling Current"))
+            current_combo = QComboBox()
+            current_options = [self._current_to_nA_str(c) for c in self.available_currents]
+            current_combo.addItems(current_options)
+            
+            if all_same_current:
+                self._set_combo_to_current(current_combo, milling_currents[0])
+            else:
+                current_combo.insertItem(0, "(mixed)")
+                current_combo.setCurrentIndex(0)
+            
+            current_combo.currentIndexChanged.connect(self._on_milling_current_changed)
+            self.group_properties_table.setCellWidget(0, 1, current_combo)
+            
+            # Row 1: Color (display only)
+            self.group_properties_table.setItem(1, 0, QTableWidgetItem("Color"))
+            if all_same_color:
+                r, g, b = colors[0]
+                color_item = QTableWidgetItem(f"RGB({r}, {g}, {b})")
+                color_item.setBackground(QColor(r, g, b))
+                # Set text color for contrast
+                brightness = (r * 299 + g * 587 + b * 114) / 1000
+                color_item.setForeground(QColor(0, 0, 0) if brightness > 128 else QColor(255, 255, 255))
+                self.group_properties_table.setItem(1, 1, color_item)
+            else:
+                self.group_properties_table.setItem(1, 1, QTableWidgetItem("(mixed)"))
+            
+            # Row 2: Sequential Group (display only for now)
+            self.group_properties_table.setItem(2, 0, QTableWidgetItem("Sequential Group"))
+            if all_same_seq_group:
+                self.group_properties_table.setItem(2, 1, QTableWidgetItem(str(sequential_groups[0])))
+            else:
+                self.group_properties_table.setItem(2, 1, QTableWidgetItem("(mixed)"))
+        
+        # =====================
+        # Populate Pattern Properties Table
+        # =====================
+        # Properties to exclude from display
+        exclude_props = {'coords', '_id'}
         
         # Build property list - collect values from all patterns
-        # Get field names from first pattern
         first_pattern = displayable_patterns[0].pattern
         if not first_pattern:
             return
@@ -1053,36 +1143,16 @@ class MainWindow(QWidget):
             
             # Check if all values are the same
             if len(set(str(v) for v in values)) == 1:
-                # All same - show the value
                 value_str = format_value(values[0])
             else:
-                # Different - show blank/mixed
                 value_str = "(mixed)"
             
             properties.append((name.replace('_', ' ').title(), value_str))
         
-        # Populate the table: row 0 is milling current dropdown, rest are properties
-        self.pattern_properties_table.setRowCount(1 + len(properties))
+        # Populate the pattern properties table
+        self.pattern_properties_table.setRowCount(len(properties))
         
-        # Row 0: Milling current with dropdown
-        self.pattern_properties_table.setItem(0, 0, QTableWidgetItem("Milling Current"))
-        current_combo = QComboBox()
-        current_options = [self._current_to_nA_str(c) for c in self.available_currents]
-        current_combo.addItems(current_options)
-        
-        if all_same_current:
-            # Set to common value
-            self._set_combo_to_current(current_combo, milling_currents[0])
-        else:
-            # Add "(mixed)" option and select it
-            current_combo.insertItem(0, "(mixed)")
-            current_combo.setCurrentIndex(0)
-        
-        current_combo.currentIndexChanged.connect(self._on_milling_current_changed)
-        self.pattern_properties_table.setCellWidget(0, 1, current_combo)
-        
-        # Remaining rows: other properties
-        for row, (prop_name, prop_value) in enumerate(properties, start=1):
+        for row, (prop_name, prop_value) in enumerate(properties):
             self.pattern_properties_table.setItem(row, 0, QTableWidgetItem(prop_name))
             self.pattern_properties_table.setItem(row, 1, QTableWidgetItem(prop_value))
 
@@ -1108,8 +1178,14 @@ class MainWindow(QWidget):
         else:
             m_per_px = None
 
-        # Update coords in all pattern dicts in the list
-        for pattern_dict in patterns_list:
+        # Update coords in all PatternGroups in the list
+        for item_pg in patterns_list:
+            # Handle both PatternGroup objects and legacy dict format
+            if hasattr(item_pg, 'patterns'):
+                pattern_dict = item_pg.patterns
+            else:
+                pattern_dict = item_pg
+                
             for pid, coords in updated_shapes.items():
                 if pid in pattern_dict:
                     dp = pattern_dict[pid]
@@ -1152,7 +1228,6 @@ class MainWindow(QWidget):
                                 (pattern.end_x - pattern.start_x)**2 + 
                                 (pattern.end_y - pattern.start_y)**2
                             )
-
 
         data["patterns"] = patterns_list
         item.setData(Qt.UserRole, data)

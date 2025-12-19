@@ -676,7 +676,6 @@ class DisplayablePattern:
     """
     pattern: BasePattern
     coords: List[Tuple[int, int]] = field(default_factory=list)
-    milling_current: float = 0.0  # Milling current in Amperes
     
     @classmethod
     def from_pattern(
@@ -702,8 +701,74 @@ class DisplayablePattern:
         import copy
         return DisplayablePattern(
             pattern=copy.deepcopy(self.pattern),
-            coords=[(x, y) for x, y in self.coords],
-            milling_current=self.milling_current
+            coords=[(x, y) for x, y in self.coords]
+        )
+
+
+# Predefined colors for PatternGroup (in order)
+PATTERN_GROUP_COLORS = [
+    (255, 255, 0),   # Yellow
+    (255, 0, 0),     # Red
+    (0, 100, 255),   # Blue
+    (255, 165, 0),   # Orange
+    (0, 200, 0),     # Green
+]
+
+
+@dataclass
+class PatternGroup:
+    """
+    A group of displayable patterns that share common milling parameters.
+    
+    This class groups multiple DisplayablePattern objects that should be milled
+    together with the same current setting.
+    
+    Attributes:
+        patterns: Dictionary mapping pattern IDs to DisplayablePattern objects
+        milling_current: The milling current in Amperes for all patterns in this group
+        color: RGB tuple for display color (assigned based on group order)
+        sequential_group: Integer for ordering/grouping patterns during milling
+    """
+    patterns: dict = field(default_factory=dict)  # Dict of {id: DisplayablePattern}
+    milling_current: float = 0.0  # Milling current in Amperes
+    color: Tuple[int, int, int] = (255, 255, 0)  # RGB color tuple, default yellow
+    sequential_group: int = 0  # Group ordering for milling sequence
+    
+    @classmethod
+    def create_with_index(cls, patterns: dict, milling_current: float, index: int, sequential_group: int = 0) -> "PatternGroup":
+        """
+        Create a PatternGroup with color automatically assigned based on index.
+        
+        Args:
+            patterns: Dictionary of {id: DisplayablePattern}
+            milling_current: Milling current in Amperes
+            index: Index of this group (0=first, 1=second, etc.) for color assignment
+            sequential_group: Optional group ordering number
+            
+        Returns:
+            PatternGroup with appropriate color assigned
+        """
+        import random
+        if index < len(PATTERN_GROUP_COLORS):
+            color = PATTERN_GROUP_COLORS[index]
+        else:
+            # Random color for groups beyond predefined colors
+            color = (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
+        
+        return cls(
+            patterns=patterns,
+            milling_current=milling_current,
+            color=color,
+            sequential_group=sequential_group
+        )
+    
+    def clone(self) -> "PatternGroup":
+        """Create a deep copy of this pattern group."""
+        return PatternGroup(
+            patterns={pid: dp.clone() for pid, dp in self.patterns.items()},
+            milling_current=self.milling_current,
+            color=self.color,
+            sequential_group=self.sequential_group
         )
 
 
@@ -712,10 +777,12 @@ def load_patterns_for_display(
     image_width_px: int,
     image_height_px: int,
     field_of_view_width_m: float,
-    field_of_view_height_m: Optional[float] = None
-) -> dict:
+    field_of_view_height_m: Optional[float] = None,
+    milling_current: float = 0.0,
+    group_index: int = 0
+) -> "PatternGroup":
     """
-    Load patterns from a .ptf file and convert them to displayable patterns.
+    Load patterns from a .ptf file and convert them to a PatternGroup.
     
     This is a convenience function that combines parse_pattern_file() and
     coordinate conversion into a single call.
@@ -726,26 +793,28 @@ def load_patterns_for_display(
         image_height_px: Height of the target image in pixels
         field_of_view_width_m: Horizontal field of view in meters
         field_of_view_height_m: Vertical field of view in meters (optional)
+        milling_current: Milling current in Amperes (default 0.0)
+        group_index: Index for color assignment (default 0 = yellow)
     
     Returns:
-        Dictionary of {id: DisplayablePattern} ready for rendering.
+        PatternGroup containing DisplayablePatterns ready for rendering.
     
     Example:
-        >>> patterns = load_patterns_for_display(
+        >>> pattern_group = load_patterns_for_display(
         ...     "my_patterns.ptf",
         ...     image_width_px=1536,
         ...     image_height_px=1024,
         ...     field_of_view_width_m=100e-6
         ... )
-        >>> for pid, dp in patterns.items():
+        >>> for pid, dp in pattern_group.patterns.items():
         ...     print(f"Pattern {pid}: {dp.coords}")
         ...     print(f"  Depth: {dp.pattern.depth}")
     """
     raw_patterns = parse_pattern_file(file_path)
     
-    result = {}
+    patterns_dict = {}
     for pid, pattern in raw_patterns.items():
-        result[pid] = DisplayablePattern.from_pattern(
+        patterns_dict[pid] = DisplayablePattern.from_pattern(
             pattern,
             image_width_px,
             image_height_px,
@@ -753,7 +822,11 @@ def load_patterns_for_display(
             field_of_view_height_m
         )
     
-    return result
+    return PatternGroup.create_with_index(
+        patterns=patterns_dict,
+        milling_current=milling_current,
+        index=group_index
+    )
 
 
 def convert_xT_patterns_to_displayable(
@@ -761,10 +834,12 @@ def convert_xT_patterns_to_displayable(
     image_width_px: int,
     image_height_px: int,
     field_of_view_width_m: float,
-    field_of_view_height_m: Optional[float] = None
-) -> dict:
+    field_of_view_height_m: Optional[float] = None,
+    milling_current: float = 0.0,
+    group_index: int = 0
+) -> "PatternGroup":
     """
-    Convert AutoScript xT patterns to DisplayablePattern objects for display.
+    Convert AutoScript xT patterns to a PatternGroup for display.
     
     The xT patterns already contain all necessary attributes (depth, dwell_time, etc.),
     so this function only computes the pixel coordinates for rendering.
@@ -775,11 +850,13 @@ def convert_xT_patterns_to_displayable(
         image_height_px: Height of the image in pixels
         field_of_view_width_m: Horizontal field of view in meters
         field_of_view_height_m: Vertical field of view in meters (optional)
+        milling_current: Milling current in Amperes (default 0.0)
+        group_index: Index for color assignment (default 0 = yellow)
     
     Returns:
-        Dictionary of {id: DisplayablePattern} ready for rendering.
+        PatternGroup containing DisplayablePatterns ready for rendering.
     """
-    result = {}
+    patterns_dict = {}
     for pid, xT_pattern in enumerate(xT_patterns):
         coords = pattern_to_image_coords(
             xT_pattern,
@@ -788,6 +865,10 @@ def convert_xT_patterns_to_displayable(
             field_of_view_width_m,
             field_of_view_height_m
         )
-        result[pid] = DisplayablePattern(pattern=xT_pattern, coords=coords)
+        patterns_dict[pid] = DisplayablePattern(pattern=xT_pattern, coords=coords)
     
-    return result
+    return PatternGroup.create_with_index(
+        patterns=patterns_dict,
+        milling_current=milling_current,
+        index=group_index
+    )
