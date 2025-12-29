@@ -728,14 +728,16 @@ class PatternGroup:
         milling_current: The milling current in Amperes for all patterns in this group
         color: RGB tuple for display color (assigned based on group order)
         sequential_group: Integer for ordering/grouping patterns during milling
+        delay: Delay in seconds before milling this group (integer)
     """
     patterns: dict = field(default_factory=dict)  # Dict of {id: DisplayablePattern}
     milling_current: float = 0.0  # Milling current in Amperes
     color: Tuple[int, int, int] = (255, 255, 0)  # RGB color tuple, default yellow
     sequential_group: int = 0  # Group ordering for milling sequence
+    delay: int = 0  # Delay in seconds before milling this group
     
     @classmethod
-    def create_with_index(cls, patterns: dict, milling_current: float, index: int, sequential_group: int = 0) -> "PatternGroup":
+    def create_with_index(cls, patterns: dict, milling_current: float, index: int, sequential_group: int = 0, delay: int = 0) -> "PatternGroup":
         """
         Create a PatternGroup with color automatically assigned based on index.
         
@@ -744,6 +746,7 @@ class PatternGroup:
             milling_current: Milling current in Amperes
             index: Index of this group (0=first, 1=second, etc.) for color assignment
             sequential_group: Optional group ordering number
+            delay: Delay in seconds before milling this group
             
         Returns:
             PatternGroup with appropriate color assigned
@@ -759,7 +762,8 @@ class PatternGroup:
             patterns=patterns,
             milling_current=milling_current,
             color=color,
-            sequential_group=sequential_group
+            sequential_group=sequential_group,
+            delay=delay
         )
     
     def clone(self) -> "PatternGroup":
@@ -768,7 +772,8 @@ class PatternGroup:
             patterns={pid: dp.clone() for pid, dp in self.patterns.items()},
             milling_current=self.milling_current,
             color=self.color,
-            sequential_group=self.sequential_group
+            sequential_group=self.sequential_group,
+            delay=self.delay
         )
 
 

@@ -1,13 +1,15 @@
 import sys
 import os
+import time
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QListWidget,
     QListWidgetItem, QHBoxLayout, QVBoxLayout,
     QSizePolicy, QFrame, QFileDialog, QCheckBox,
     QLineEdit, QComboBox, QGroupBox, QScrollArea, QFormLayout,
-    QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView
+    QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView,
+    QSpinBox
 )
-from PyQt5.QtGui import QPixmap, QPainter, QPen, QFont, QColor, QBrush, QImage, QDoubleValidator
+from PyQt5.QtGui import QPixmap, QPainter, QPen, QFont, QColor, QBrush, QImage, QDoubleValidator, QIntValidator
 from PyQt5.QtCore import Qt, QRect, QPoint
 import numpy as np
 import xml.etree.ElementTree as ET
@@ -15,12 +17,13 @@ import html
 import cv2
 
 PIXEL_TO_MICRON = 1/2
+MAX_DELAY_NO_HOME = 300  # seconds
 MODE = "dev" # "scope" or "dev"
 
 from src.ProtocolEditor import ProtocolEditor
 
 if MODE == "scope":
-    from src.AquilosDriver import fibsem
+    from src.AutoscriptHelpers import fibsem
     from src.CustomPatterns import DisplayablePattern, convert_xT_patterns_to_displayable, RectanglePattern, PatternGroup
     ### INITIALIZE MICROSCOPE FROM DRIVER
     scope = fibsem()
@@ -1295,7 +1298,7 @@ class MainWindow(QWidget):
         self.group_properties_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.group_properties_table.setSelectionMode(QAbstractItemView.NoSelection)
         self.group_properties_table.verticalHeader().setVisible(False)
-        self.group_properties_table.setMaximumHeight(120)  # Keep it compact
+        self.group_properties_table.setMaximumHeight(145)  # Keep it compact
 
         # Pattern properties table
         self.pattern_properties_label = QLabel("Pattern Properties")
@@ -1319,6 +1322,11 @@ class MainWindow(QWidget):
         left_layout.addWidget(self.group_properties_table)
         left_layout.addWidget(self.pattern_properties_label)
         left_layout.addWidget(self.pattern_properties_table, stretch=1)  # Remaining space for pattern properties
+
+        # Run button
+        run_btn = QPushButton("Run")
+        run_btn.clicked.connect(self.run)
+        left_layout.addWidget(run_btn)
 
         # Image panel
         pixmap = QPixmap("logo.png")
@@ -1366,7 +1374,7 @@ class MainWindow(QWidget):
         if MODE == "scope":
             try:
                 # Get from microscope - values are in Amperes
-                values = scope.beams.ion_beam.beam_current.available_values
+                values = scope.get_available_ion_beam_currents()
                 return [0.0] + sorted(values)  # Add "Not set" option
             except Exception as e:
                 print(f"Warning: Could not get beam currents from scope: {e}")
@@ -1514,6 +1522,57 @@ class MainWindow(QWidget):
             data = item.data(Qt.UserRole)
             # The patterns are already updated by reference, but ensure data is saved
             item.setData(Qt.UserRole, data)
+    
+    def _on_sequential_group_changed(self, value):
+        """Handle sequential group spinbox change - updates all selected PatternGroups."""
+        if not self.selected_pattern_groups:
+            return
+        
+        # Update all selected PatternGroups
+        for pg in self.selected_pattern_groups:
+            pg.sequential_group = value
+        
+        # Update the stored data in position list
+        item = self.position_list.currentItem()
+        if item:
+            data = item.data(Qt.UserRole)
+            # The patterns are already updated by reference, but ensure data is saved
+            item.setData(Qt.UserRole, data)
+    
+    def _on_delay_changed(self):
+        """Handle delay edit change - updates all selected PatternGroups."""
+        if not self.selected_pattern_groups:
+            return
+        
+        # Get the delay edit widget
+        delay_edit = self.group_properties_table.cellWidget(3, 1)
+        if not delay_edit:
+            return
+        
+        text = delay_edit.text().strip()
+        if not text:
+            return
+        
+        try:
+            new_delay = int(text)
+        except ValueError:
+            return
+        
+        # Ensure non-negative
+        if new_delay < 0:
+            new_delay = 0
+            delay_edit.setText(str(new_delay))
+        
+        # Update all selected PatternGroups
+        for pg in self.selected_pattern_groups:
+            pg.delay = new_delay
+        
+        # Update the stored data in position list
+        item = self.position_list.currentItem()
+        if item:
+            data = item.data(Qt.UserRole)
+            # The patterns are already updated by reference, but ensure data is saved
+            item.setData(Qt.UserRole, data)
 
     # -------------------------------
     # Logic
@@ -1535,7 +1594,7 @@ class MainWindow(QWidget):
         # Get current stage coordinates
         if MODE == "scope":
             # Returns dict with keys: x, y, z, r, t (all in meters/radians)
-            coords = scope.getStagePosition()
+            coords = scope.get_stage_position()
         else:
             # Dummy coordinates for dev mode
             coords = {'x': index * 1.0, 'y': index * 2.0, 'z': index * 3.0, 'r': 0.0, 't': 0.0}
@@ -1581,7 +1640,7 @@ class MainWindow(QWidget):
         # Get current stage coordinates
         if MODE == "scope":
             # Returns dict with keys: x, y, z, r, t (all in meters/radians)
-            coords = scope.getStagePosition()
+            coords = scope.get_stage_position()
         else:
             # Dummy coordinates for dev mode
             coords = {'x': index * 1.0, 'y': index * 2.0, 'z': index * 3.0, 'r': 0.0, 't': 0.0}
@@ -1825,13 +1884,15 @@ class MainWindow(QWidget):
             milling_currents = [pg.milling_current for pg in self.selected_pattern_groups]
             colors = [pg.color for pg in self.selected_pattern_groups]
             sequential_groups = [pg.sequential_group for pg in self.selected_pattern_groups]
+            delays = [pg.delay for pg in self.selected_pattern_groups]
             
             all_same_current = len(set(milling_currents)) == 1
             all_same_color = len(set(colors)) == 1
             all_same_seq_group = len(set(sequential_groups)) == 1
+            all_same_delay = len(set(delays)) == 1
             
-            # 3 rows: Milling Current, Color, Sequential Group
-            self.group_properties_table.setRowCount(3)
+            # 4 rows: Milling Current, Color, Sequential Group, Delay
+            self.group_properties_table.setRowCount(4)
             
             # Row 0: Milling current with dropdown
             self.group_properties_table.setItem(0, 0, QTableWidgetItem("Milling Current"))
@@ -1861,12 +1922,29 @@ class MainWindow(QWidget):
             else:
                 self.group_properties_table.setItem(1, 1, QTableWidgetItem("(mixed)"))
             
-            # Row 2: Sequential Group (display only for now)
+            # Row 2: Sequential Group with editable spinbox
             self.group_properties_table.setItem(2, 0, QTableWidgetItem("Sequential Group"))
+            seq_spinbox = QSpinBox()
+            seq_spinbox.setMinimum(0)
+            seq_spinbox.setMaximum(999)
             if all_same_seq_group:
-                self.group_properties_table.setItem(2, 1, QTableWidgetItem(str(sequential_groups[0])))
+                seq_spinbox.setValue(sequential_groups[0])
             else:
-                self.group_properties_table.setItem(2, 1, QTableWidgetItem("(mixed)"))
+                seq_spinbox.setSpecialValueText("(mixed)")
+                seq_spinbox.setValue(0)
+            seq_spinbox.valueChanged.connect(self._on_sequential_group_changed)
+            self.group_properties_table.setCellWidget(2, 1, seq_spinbox)
+            
+            # Row 3: Delay with editable QLineEdit (no arrows)
+            self.group_properties_table.setItem(3, 0, QTableWidgetItem("Delay (s)"))
+            delay_edit = QLineEdit()
+            delay_edit.setValidator(QIntValidator(0, 999999))
+            if all_same_delay:
+                delay_edit.setText(str(delays[0]))
+            else:
+                delay_edit.setPlaceholderText("(mixed)")
+            delay_edit.editingFinished.connect(self._on_delay_changed)
+            self.group_properties_table.setCellWidget(3, 1, delay_edit)
         
         # =====================
         # Populate Pattern Properties Table
@@ -2013,6 +2091,72 @@ class MainWindow(QWidget):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
             self.close()
+
+    def build_task_list(self):
+        # Find the macimum sequential group number
+        max_sequential_group = 0
+        for i in range(self.position_list.count()):
+            item = self.position_list.item(i)
+            data = item.data(Qt.UserRole)
+            for pg in data.get("patterns", []):
+                if pg.sequential_group > max_sequential_group:
+                    max_sequential_group = pg.sequential_group
+        
+        # Loop through sequential groups and the patterngroups within them
+        task_list = []
+        for sg in range(max_sequential_group + 1):
+            for i in range(self.position_list.count()):
+                item = self.position_list.item(i)
+                data = item.data(Qt.UserRole)
+                image_width = data.get("image_width", None)
+                image_height = data.get("image_height", None)
+                for pg in data.get("patterns", []):
+                    # If this pattern group  is not in the current sequential group, skip and add it later
+                    if pg.sequential_group != sg:
+                        continue
+                    # Otherwise, create a task for this pattern group
+                    task = Task()
+                    task.patterns = pg.patterns
+                    task.milling_current = pg.milling_current
+                    task.delay = pg.delay
+                    task.coords = data.get("coords", {})
+                    task.tracking_area = relative_coords(data.get("tracking_area", None), image_width, image_height)
+                    task.ref_image = data["image_data"]
+                    task_list.append(task)
+
+        return task_list
+
+    def run(self):
+        # Run the milling tasks
+        task_list = self.build_task_list()
+        print(f"Made a task list with {len(task_list)} tasks.")
+
+        for task_idx, task in enumerate(task_list):
+            print(f"Running task {task_idx+1}/{len(task_list)} with {len(task.patterns)} patterns, "
+                  f"current={task.milling_current*1e9:.1f} nA, delay={task.delay} s")
+            if MODE == "dev":
+                print("  (dev mode - not actually milling)")
+                continue
+            elif MODE == "scope":
+                if task.delay > 0:
+                    print(f"  Waiting for {task.delay} seconds before starting...")
+                    if task.delay > MAX_DELAY_NO_HOME:
+                        print(f"The delay is more than {MAX_DELAY_NO_HOME} seconds. Going in sleep mode.")
+                        # GO IN SLEEP MODE
+                        scope.enter_sleep_mode()
+                    time.sleep(task.delay)
+
+                scope.ion_on()
+                scope.move_stage_absolute(task.coords)
+                # TO DO NEXT:
+                # 1. Image alignment at low current
+                # 2. Change current to milling current and align using:
+                    # Define a sub-area using Rectangle(left, top, width, height)
+                    # All values are normalized (0.0 to 1.0, relative to full frame)
+                    # settings = GrabFrameSettings(reduced_area=Rectangle(0.6, 0.6, 0.3, 0.3))
+                    # image = microscope.imaging.grab_frame(settings)
+                # Send patterns to scope and mill
+
 # -------------------------------------------------    
 class Pattern():
     def __init__(self):
@@ -2034,7 +2178,25 @@ class Pattern():
         p.dwell_time = self.dwell_time
         p.enable = self.enable
         return p
+    
+class Task(): 
+    def __init__(self):
+        self.patterns = []
+        self.milling_current = 0.0  # in Amperes
+        self.delay = 0
+        self.coords = None  # position coordinates for this task
+        self.tracking_area = None  # dict with relative coords
+        self.ref_image = None  # Numpy array of reference image
 
+def relative_coords(tracking_area, image_width, image_height):
+    """Convert absolute tracking area coords to relative (0-1) based on image size."""
+    rel_tracking_area = {}
+    rel_tracking_area["width"] = tracking_area["width"] / image_width
+    rel_tracking_area["height"] = tracking_area["height"] / image_height
+    rel_tracking_area["left"] = tracking_area["left"] / image_width
+    rel_tracking_area["top"] = tracking_area["top"] / image_height
+    return rel_tracking_area
+        
 def parse_ptf(filepath):
     tree = ET.parse(filepath)
     root = tree.getroot()

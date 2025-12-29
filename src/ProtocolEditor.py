@@ -2,7 +2,7 @@ import numpy as np
 from PyQt5.QtWidgets import (
     QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
     QCheckBox, QLineEdit, QComboBox, QGroupBox, QScrollArea, QFormLayout, QFrame,
-    QTabWidget
+    QTabWidget, QSpinBox
 )
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
@@ -162,9 +162,16 @@ class ProtocolEditor(QWidget):
         self.coarse_current_combo = QComboBox()
         self.coarse_current_combo.addItems(current_options)
         self._set_combo_to_current(self.coarse_current_combo, self.DEFAULT_COARSE_CURRENT)
+        self.coarse_seq_group = QSpinBox()
+        self.coarse_seq_group.setMinimum(0)
+        self.coarse_seq_group.setMaximum(999)
+        self.coarse_seq_group.setValue(0)
+        self.coarse_seq_group.setFixedWidth(50)
         coarse_row = QHBoxLayout()
         coarse_row.addWidget(self.do_coarse)
         coarse_row.addWidget(self.coarse_current_combo)
+        coarse_row.addWidget(QLabel("Seq:"))
+        coarse_row.addWidget(self.coarse_seq_group)
         coarse_row.addStretch()
         current_layout.addRow("Coarse:", coarse_row)
         
@@ -174,9 +181,16 @@ class ProtocolEditor(QWidget):
         self.medium_current_combo = QComboBox()
         self.medium_current_combo.addItems(current_options)
         self._set_combo_to_current(self.medium_current_combo, self.DEFAULT_MEDIUM_CURRENT)
+        self.medium_seq_group = QSpinBox()
+        self.medium_seq_group.setMinimum(0)
+        self.medium_seq_group.setMaximum(999)
+        self.medium_seq_group.setValue(0)
+        self.medium_seq_group.setFixedWidth(50)
         medium_row = QHBoxLayout()
         medium_row.addWidget(self.do_medium)
         medium_row.addWidget(self.medium_current_combo)
+        medium_row.addWidget(QLabel("Seq:"))
+        medium_row.addWidget(self.medium_seq_group)
         medium_row.addStretch()
         current_layout.addRow("Medium:", medium_row)
         
@@ -186,9 +200,16 @@ class ProtocolEditor(QWidget):
         self.fine_current_combo = QComboBox()
         self.fine_current_combo.addItems(current_options)
         self._set_combo_to_current(self.fine_current_combo, self.DEFAULT_FINE_CURRENT)
+        self.fine_seq_group = QSpinBox()
+        self.fine_seq_group.setMinimum(0)
+        self.fine_seq_group.setMaximum(999)
+        self.fine_seq_group.setValue(1)
+        self.fine_seq_group.setFixedWidth(50)
         fine_row = QHBoxLayout()
         fine_row.addWidget(self.do_fine)
         fine_row.addWidget(self.fine_current_combo)
+        fine_row.addWidget(QLabel("Seq:"))
+        fine_row.addWidget(self.fine_seq_group)
         fine_row.addStretch()
         current_layout.addRow("Fine:", fine_row)
         
@@ -512,15 +533,20 @@ class ProtocolEditor(QWidget):
         # Build pattern dictionaries for each milling current group
         # Map group name to (enabled, current in Amperes)
         current_groups = {}
+        seq_groups = {}
         if do_coarse:
             current_groups['coarse'] = coarse_current
+            seq_groups['coarse'] = self.coarse_seq_group.value()
         if do_medium:
             current_groups['medium'] = medium_current
+            seq_groups['medium'] = self.medium_seq_group.value()
         if do_fine:
             current_groups['fine'] = fine_current
+            seq_groups['fine'] = self.fine_seq_group.value()
         
-        # Store current_groups for use in store_and_display_patterns
+        # Store current_groups and seq_groups for use in store_and_display_patterns
         self.current_groups = current_groups
+        self.seq_groups = seq_groups
         
         # Store generated patterns grouped by current group
         self.generated_patterns = {group: {} for group in current_groups.keys()}
@@ -602,10 +628,12 @@ class ProtocolEditor(QWidget):
                 
                 # Create PatternGroup with color based on index
                 milling_current = self.current_groups.get(group, 0.0)
+                sequential_group = self.seq_groups.get(group, 0)
                 pattern_group = PatternGroup.create_with_index(
                     patterns=converted,
                     milling_current=milling_current,
-                    index=group_index
+                    index=group_index,
+                    sequential_group=sequential_group
                 )
                 patterns_list.append(pattern_group)
                 group_index += 1
