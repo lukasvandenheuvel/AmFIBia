@@ -2061,6 +2061,10 @@ class MainWindow(QWidget):
         data["patterns"] = patterns_list
         item.setData(Qt.UserRole, data)
         self.rebuild_positions()
+        
+        # Refresh the pattern properties table if patterns are selected
+        if self.selected_displayable_patterns:
+            self.on_pattern_selected(self.selected_displayable_patterns)
 
     def rebuild_positions(self):
         self.positions.clear()
