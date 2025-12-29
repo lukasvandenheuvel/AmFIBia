@@ -106,7 +106,7 @@ class fibsem:
         Ouput: None
         Action: Stop operation by setting class variable "continuerun"
         '''
-        self.continuerun=False
+        self.continuerun = False
         return()
     def define_SAVparams_file(self,file):
         '''
