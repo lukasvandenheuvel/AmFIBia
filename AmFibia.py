@@ -28,7 +28,7 @@ if MODE == "scope":
     ### INITIALIZE MICROSCOPE FROM DRIVER
     scope = fibsem()
 elif MODE == "dev":
-    from src.CustomPatterns import parse_pattern_file, load_patterns_for_display, DisplayablePattern, RectanglePattern, PatternGroup
+    from src.CustomPatterns import parse_pattern_file, load_patterns_for_display, DisplayablePattern, RectanglePattern, PatternGroup, AdornedImage
 
 
 # -------------------------------------------------
@@ -611,7 +611,7 @@ class DrawableImage(QLabel):
                     self.update()
                     # Notify callbacks
                     if self.tracking_area_callback:
-                        self.tracking_area_callback(self._get_tracking_area_um())
+                        self.tracking_area_callback(self._get_tracking_area_m())
                     if self.rect_selected_callback:
                         self.rect_selected_callback(self.selected_rect, self._get_rect_dimensions_um(self.selected_rect))
             # If any pattern is selected, move ALL unlocked patterns
@@ -860,7 +860,7 @@ class DrawableImage(QLabel):
             # Handle rectangle resize/drag completion
             if self.is_resizing_rect or self.is_dragging_rect:
                 if self.selected_rect == "tracking_area" and self.tracking_area_callback:
-                    self.tracking_area_callback(self._get_tracking_area_um())
+                    self.tracking_area_callback(self._get_tracking_area_m())
                 # Notify about updated dimensions
                 if self.rect_selected_callback and self.selected_rect:
                     self.rect_selected_callback(self.selected_rect, self._get_rect_dimensions_um(self.selected_rect))
@@ -920,7 +920,7 @@ class DrawableImage(QLabel):
                         self.tracking_area_preview_img = None
                         # Notify callback with coordinates in µm
                         if self.tracking_area_callback:
-                            self.tracking_area_callback(self._get_tracking_area_um())
+                            self.tracking_area_callback(self._get_tracking_area_m())
             self.is_drawing_rect = False
             self.start_point_img = None
 
@@ -1064,8 +1064,8 @@ class DrawableImage(QLabel):
     def get_active_rectangle(self):
         return self.active_rect_img
     
-    def _get_tracking_area_um(self):
-        """Get tracking area coordinates in µm relative to image center."""
+    def _get_tracking_area_m(self):
+        """Get tracking area coordinates in meters relative to image center."""
         if not self.tracking_area_img or self.original_pixmap.isNull():
             return None
         
@@ -1075,27 +1075,28 @@ class DrawableImage(QLabel):
         center_x = img_w / 2
         center_y = img_h / 2
         
-        # Convert pixel coordinates to µm relative to center
+        # Convert pixel coordinates to meters relative to center
         # Note: Y is flipped (image Y increases downward, stage Y increases upward)
-        left_um = (rect.left() - center_x) * self.pixel_to_um
-        right_um = (rect.right() - center_x) * self.pixel_to_um
-        top_um = (center_y - rect.top()) * self.pixel_to_um  # Flip Y
-        bottom_um = (center_y - rect.bottom()) * self.pixel_to_um  # Flip Y
+        pixel_to_m = self.pixel_to_um * 1e-6  # Convert µm/pixel to m/pixel
+        left_m = (rect.left() - center_x) * pixel_to_m
+        right_m = (rect.right() - center_x) * pixel_to_m
+        top_m = (center_y - rect.top()) * pixel_to_m  # Flip Y
+        bottom_m = (center_y - rect.bottom()) * pixel_to_m  # Flip Y
         
         return {
-            "left": left_um,
-            "right": right_um,
-            "top": top_um,
-            "bottom": bottom_um,
-            "width": abs(right_um - left_um),
-            "height": abs(top_um - bottom_um),
-            "center_x": (left_um + right_um) / 2,
-            "center_y": (top_um + bottom_um) / 2
+            "left": left_m,
+            "right": right_m,
+            "top": top_m,
+            "bottom": bottom_m,
+            "width": abs(right_m - left_m),
+            "height": abs(top_m - bottom_m),
+            "center_x": (left_m + right_m) / 2,
+            "center_y": (top_m + bottom_m) / 2
         }
     
-    def load_tracking_area(self, tracking_area_um):
-        """Load tracking area from µm coordinates."""
-        if not tracking_area_um or self.original_pixmap.isNull():
+    def load_tracking_area(self, tracking_area_m):
+        """Load tracking area from meter coordinates."""
+        if not tracking_area_m or self.original_pixmap.isNull():
             self.tracking_area_img = None
             return
         
@@ -1104,11 +1105,12 @@ class DrawableImage(QLabel):
         center_x = img_w / 2
         center_y = img_h / 2
         
-        # Convert µm coordinates back to pixels
-        left_px = tracking_area_um["left"] / self.pixel_to_um + center_x
-        right_px = tracking_area_um["right"] / self.pixel_to_um + center_x
-        top_px = center_y - tracking_area_um["top"] / self.pixel_to_um  # Flip Y
-        bottom_px = center_y - tracking_area_um["bottom"] / self.pixel_to_um  # Flip Y
+        # Convert meter coordinates back to pixels
+        pixel_to_m = self.pixel_to_um * 1e-6  # Convert µm/pixel to m/pixel
+        left_px = tracking_area_m["left"] / pixel_to_m + center_x
+        right_px = tracking_area_m["right"] / pixel_to_m + center_x
+        top_px = center_y - tracking_area_m["top"] / pixel_to_m  # Flip Y
+        bottom_px = center_y - tracking_area_m["bottom"] / pixel_to_m  # Flip Y
         
         self.tracking_area_img = QRect(
             int(min(left_px, right_px)),
@@ -1125,7 +1127,7 @@ class DrawableImage(QLabel):
         self.update()
     
     def _get_rect_dimensions_um(self, rect_type):
-        """Get rectangle dimensions in µm."""
+        """Get rectangle dimensions in µm (for display purposes)."""
         if rect_type == "measure":
             rect = self.active_rect_img
         elif rect_type == "tracking_area":
@@ -1173,7 +1175,7 @@ class DrawableImage(QLabel):
             self.tracking_area_img = new_rect
             # Notify tracking area callback
             if self.tracking_area_callback:
-                self.tracking_area_callback(self._get_tracking_area_um())
+                self.tracking_area_callback(self._get_tracking_area_m())
         
         self.update()
 
@@ -1397,19 +1399,20 @@ class MainWindow(QWidget):
         mode = "measure" if index == 0 else "tracking_area"
         self.image_widget.right_mouse_mode = mode
     
-    def on_tracking_area_changed(self, tracking_area_um):
-        """Handle tracking area change - save to position data."""
+    def on_tracking_area_changed(self, tracking_area_m):
+        """Handle tracking area change - save to position data (in meters)."""
         item = self.position_list.currentItem()
         if not item:
             return
         
         data = item.data(Qt.UserRole)
-        data["tracking_area"] = tracking_area_um
+        data["tracking_area"] = tracking_area_m
         item.setData(Qt.UserRole, data)
         
-        if tracking_area_um:
-            print(f"Tracking area set: center=({tracking_area_um['center_x']:.1f}, {tracking_area_um['center_y']:.1f}) µm, "
-                  f"size={tracking_area_um['width']:.1f}x{tracking_area_um['height']:.1f} µm")
+        if tracking_area_m:
+            # Display in µm for user readability
+            print(f"Tracking area set: center=({tracking_area_m['center_x']*1e6:.1f}, {tracking_area_m['center_y']*1e6:.1f}) µm, "
+                  f"size={tracking_area_m['width']*1e6:.1f}x{tracking_area_m['height']*1e6:.1f} µm")
     
     def on_rect_selected(self, rect_type, dimensions):
         """Handle rectangle selection - display properties in pattern_properties_table.
@@ -1665,8 +1668,21 @@ class MainWindow(QWidget):
             image_filename = os.path.join("images", np.random.choice([f for f in os.listdir("images") if ".png" in f]))
             pixmap = QPixmap(image_filename)
             img = cv2.imread(image_filename, cv2.IMREAD_GRAYSCALE)
-            img_metadata = image_filename
             height, width = img.shape[:2]
+            # Create AdornedImage with properly initialized metadata
+            from src.CustomPatterns import (
+                AdornedImageMetadata, AdornedImageMetadataOptics, 
+                AdornedImageMetadataOpticsScanFieldSize
+            )
+            optics = AdornedImageMetadataOptics(
+                scan_field_of_view=AdornedImageMetadataOpticsScanFieldSize(
+                    width = width * PIXEL_TO_MICRON * 1e-6,
+                    height = height * PIXEL_TO_MICRON * 1e-6
+                )
+            )
+            metadata = AdornedImageMetadata(optics=optics)
+            adorned_img = AdornedImage(data=img, metadata=metadata)
+            img_metadata = adorned_img.metadata
             pixel_to_um = PIXEL_TO_MICRON
 
         # Update data
@@ -2112,8 +2128,8 @@ class MainWindow(QWidget):
             for i in range(self.position_list.count()):
                 item = self.position_list.item(i)
                 data = item.data(Qt.UserRole)
-                image_width = data.get("image_width", None)
-                image_height = data.get("image_height", None)
+                fov_width_m  = data["image_metadata"].optics.scan_field_of_view.width
+                fov_height_m = data["image_metadata"].optics.scan_field_of_view.height
                 for pg in data.get("patterns", []):
                     # If this pattern group  is not in the current sequential group, skip and add it later
                     if pg.sequential_group != sg:
@@ -2124,7 +2140,7 @@ class MainWindow(QWidget):
                     task.milling_current = pg.milling_current
                     task.delay = pg.delay
                     task.coords = data.get("coords", {})
-                    task.tracking_area = relative_coords(data.get("tracking_area", None), image_width, image_height)
+                    task.tracking_area = relative_coords(data.get("tracking_area", None), fov_width_m, fov_height_m)
                     task.ref_image = data["image_data"]
                     task_list.append(task)
 
@@ -2138,14 +2154,22 @@ class MainWindow(QWidget):
         for task_idx, task in enumerate(task_list):
             print(f"Running task {task_idx+1}/{len(task_list)} with {len(task.patterns)} patterns, "
                   f"current={task.milling_current*1e9:.1f} nA, delay={task.delay} s")
+            if task.tracking_area is not None:
+                w = task.tracking_area["width"]
+                h = task.tracking_area["height"]
+                l = task.tracking_area["left"]
+                t = task.tracking_area["top"]
+                print(f"    Tracking area: width={w:.2f}, height={h:.2f}, left={l:.2f}, top={t:.2f} (relative coords)")
+            
             if MODE == "dev":
                 print("  (dev mode - not actually milling)")
                 continue
+
             elif MODE == "scope":
                 if task.delay > 0:
                     print(f"  Waiting for {task.delay} seconds before starting...")
                     if task.delay > MAX_DELAY_NO_HOME:
-                        print(f"The delay is more than {MAX_DELAY_NO_HOME} seconds. Going in sleep mode.")
+                        print(f"    The delay is more than {MAX_DELAY_NO_HOME} seconds. Going in sleep mode.")
                         # GO IN SLEEP MODE
                         scope.enter_sleep_mode()
                     time.sleep(task.delay)
@@ -2192,13 +2216,15 @@ class Task():
         self.tracking_area = None  # dict with relative coords
         self.ref_image = None  # Numpy array of reference image
 
-def relative_coords(tracking_area, image_width, image_height):
+def relative_coords(tracking_area, fov_width, fov_height):
     """Convert absolute tracking area coords to relative (0-1) based on image size."""
+    if tracking_area is None:
+        return None
     rel_tracking_area = {}
-    rel_tracking_area["width"] = tracking_area["width"] / image_width
-    rel_tracking_area["height"] = tracking_area["height"] / image_height
-    rel_tracking_area["left"] = tracking_area["left"] / image_width
-    rel_tracking_area["top"] = tracking_area["top"] / image_height
+    rel_tracking_area["width"]  = tracking_area["width"] / fov_width
+    rel_tracking_area["height"] = tracking_area["height"] / fov_height
+    rel_tracking_area["left"]   = 0.5 + tracking_area["left"] / fov_width
+    rel_tracking_area["top"]    = 0.5 - tracking_area["top"] / fov_height
     return rel_tracking_area
         
 def parse_ptf(filepath):

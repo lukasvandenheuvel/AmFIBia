@@ -9,8 +9,293 @@ import os
 import xml.etree.ElementTree as ET
 import uuid
 from dataclasses import dataclass, field
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Any
+import numpy as np
 
+
+# =============================================================================
+# AdornedImage and Metadata Classes (mirror AutoScript structures)
+# =============================================================================
+
+@dataclass
+class StagePosition:
+    """Defines a stage position."""
+    x: Optional[float] = None  # X coordinate (meters)
+    y: Optional[float] = None  # Y coordinate (meters)
+    z: Optional[float] = None  # Z coordinate (meters)
+    r: Optional[float] = None  # Rotation (radians)
+    t: Optional[float] = None  # Tilt (radians)
+    coordinate_system: Optional[str] = None  # The coordinate system
+
+
+@dataclass
+class AdornedImageMetadataOpticsScanFieldSize:
+    """Section of image metadata related to scan field size."""
+    width: float = 0.0  # Width in meters
+    height: float = 0.0  # Height in meters
+
+
+@dataclass
+class AdornedImageMetadataOpticsAperture:
+    """Aperture metadata."""
+    name: Optional[str] = None
+    diameter: Optional[float] = None
+
+
+@dataclass
+class AdornedImageMetadataOptics:
+    """Section of image metadata explaining the optical parameters of the electron or ion beam column."""
+    acceleration_voltage: Optional[float] = None  # Accelerating voltage for charged particle
+    apertures: List[AdornedImageMetadataOpticsAperture] = field(default_factory=list)
+    beam_convergence: Optional[float] = None  # Convergence semi-angle of the beam
+    beam_current: Optional[float] = None  # Actual current induced into the sample
+    beam_current_selected: Optional[float] = None  # User-selected beam current
+    beam_diameter: Optional[float] = None  # Diameter of the beam at the sample (meters)
+    camera_length: Optional[float] = None  # Length of virtual camera system
+    deceleration_voltage: Optional[float] = None  # Deceleration voltage (V)
+    defocus: Optional[float] = None  # Distance from focus plane (meters)
+    emission_current: Optional[float] = None  # Source emission current
+    eucentric_working_distance: Optional[float] = None  # Working distance to beam intersection
+    extractor_voltage: Optional[float] = None  # Voltage applied to extractor electrode
+    fib_l0_voltage: Optional[float] = None  # Voltage applied to L0
+    fib_l1_voltage: Optional[float] = None  # Voltage applied to L1
+    fib_l2_voltage: Optional[float] = None  # Voltage applied to L2
+    focus: Optional[float] = None  # Distance from focus plane to eucentric focus plane
+    full_scan_field_of_view: Optional[AdornedImageMetadataOpticsScanFieldSize] = None  # Size of full scan (meters)
+    landing_energy: Optional[float] = None  # Beam landing energy
+    last_measured_screen_current: Optional[float] = None  # Last measured flu-screen current
+    sample_pre_tilt_angle: Optional[float] = None  # Inherent sample tilt
+    scan_field_of_view: Optional[AdornedImageMetadataOpticsScanFieldSize] = None  # Size of image scan (meters)
+    screen_current: Optional[float] = None  # Current measured on flu-screen (amperes)
+    spherical_aberration: Optional[float] = None  # Spherical aberration (meters)
+    spot_size: Optional[float] = None  # Spot diameter
+    stem_focus: Optional[float] = None  # STEM focus (meters)
+    wehnelt_bias: Optional[float] = None  # Bias voltage of Wehnelt (volts)
+    working_distance: Optional[float] = None  # Distance from pole tip to focal point
+    cross_over_on: Optional[bool] = None  # True if cross over mode is on
+    diffraction_focus: Optional[float] = None  # Focus value used in diffraction
+    eftem_on: Optional[bool] = None  # True if magnifications adapted to energy filter
+    gun_filament_settings: Optional[float] = None  # Filament heating current setting
+    gun_lens_setting: Optional[float] = None  # User selected value for gun lens voltage
+    high_magnification_mode: Optional[str] = None  # High magnification sub-modes
+    illumination_intensity_normalized: Optional[float] = None  # Illumination intensity (0-100)
+    illumination_mode: Optional[str] = None  # Illumination/Condenser mode
+    illumination_on: Optional[bool] = None  # True if illumination is on
+
+
+@dataclass
+class AdornedImageMetadataStageSettings:
+    """Section of image metadata describing stage settings."""
+    holder_temperature: Optional[float] = None  # Holder temperature (kelvins)
+    holder_type: Optional[str] = None  # Type of specimen holder
+    sample_loader: Optional[str] = None  # Type of sample loader
+    stage_position: Optional[StagePosition] = None  # Stage position (X, Y, Z, R, T)
+
+
+@dataclass
+class AdornedImageMetadataAcquisition:
+    """Section of image metadata related to image acquisition."""
+    acquisition_date_time: Optional[str] = None
+    beam_type: Optional[str] = None
+    modality: Optional[str] = None
+    scan_settings_id: Optional[str] = None
+
+
+@dataclass
+class AdornedImageMetadataBinaryResult:
+    """Section of image metadata that describes the properties of the resulting image."""
+    pixel_size: Optional[float] = None
+    offset_x: Optional[float] = None
+    offset_y: Optional[float] = None
+
+
+@dataclass
+class AdornedImageMetadataCore:
+    """Section of image metadata that describes the software environment on the microscope computer."""
+    software_version: Optional[str] = None
+
+
+@dataclass
+class AdornedImageMetadataDetector:
+    """Section of image metadata related to the detectors used for image acquisition."""
+    name: Optional[str] = None
+    type: Optional[str] = None
+    brightness: Optional[float] = None
+    contrast: Optional[float] = None
+
+
+@dataclass
+class AdornedImageMetadataEnergyFilterSettings:
+    """Section of image metadata describing properties of the electron or ion beam."""
+    pass
+
+
+@dataclass
+class AdornedImageMetadataGasInjectionSystem:
+    """Section of image metadata describing the state of the gas injection system."""
+    name: Optional[str] = None
+    inserted: Optional[bool] = None
+
+
+@dataclass
+class AdornedImageMetadataInstrument:
+    """Section of image metadata describing the properties of the microscope system."""
+    instrument_id: Optional[str] = None
+    instrument_class: Optional[str] = None
+
+
+@dataclass
+class AdornedImageMetadataSample:
+    """Section of image metadata describing the properties of the sample."""
+    description: Optional[str] = None
+
+
+@dataclass
+class AdornedImageMetadataScanSettings:
+    """Section of image metadata describing scan settings."""
+    dwell_time: Optional[float] = None
+    line_integration: Optional[int] = None
+    frame_integration: Optional[int] = None
+    scan_interlacing: Optional[int] = None
+
+
+@dataclass
+class AdornedImageMetadataVacuumProperties:
+    """Section of image metadata describing vacuum properties."""
+    chamber_pressure: Optional[float] = None
+
+
+@dataclass
+class AdornedImageMetadata:
+    """Image metadata that captures the state of the microscope at the time of image acquisition."""
+    acquisition: Optional[AdornedImageMetadataAcquisition] = None
+    binary_result: Optional[AdornedImageMetadataBinaryResult] = None
+    core: Optional[AdornedImageMetadataCore] = None
+    detectors: List[AdornedImageMetadataDetector] = field(default_factory=list)
+    energy_filter_settings: Optional[AdornedImageMetadataEnergyFilterSettings] = None
+    gas_injection_systems: List[AdornedImageMetadataGasInjectionSystem] = field(default_factory=list)
+    instrument: Optional[AdornedImageMetadataInstrument] = None
+    optics: Optional[AdornedImageMetadataOptics] = None
+    sample: Optional[AdornedImageMetadataSample] = None
+    scan_settings: Optional[AdornedImageMetadataScanSettings] = None
+    stage_settings: Optional[AdornedImageMetadataStageSettings] = None
+    vacuum_properties: Optional[AdornedImageMetadataVacuumProperties] = None
+    metadata_as_ini: str = ""  # Metadata encoded as key-value string
+    metadata_as_xml: str = ""  # Metadata encoded as XML string
+
+
+class AdornedImage:
+    """
+    Contains microscope image data along with metadata describing the state 
+    of the microscope under which the image was acquired.
+    
+    Mirrors the AutoScript AdornedImage class structure.
+    """
+    
+    def __init__(self, data: np.ndarray, metadata: Optional[AdornedImageMetadata] = None):
+        """
+        Initialize an AdornedImage.
+        
+        Args:
+            data: Numpy array containing the image data (2D for grayscale, 3D for RGB)
+            metadata: Optional metadata describing microscope state during acquisition
+        """
+        self._data = data
+        self._metadata = metadata if metadata is not None else AdornedImageMetadata()
+        self._thumbnail = None
+    
+    @property
+    def data(self) -> np.ndarray:
+        """Image data arranged in 2D (grayscale) or 3D (RGB) array. [Read only]"""
+        return self._data
+    
+    @property
+    def width(self) -> int:
+        """The width of the image. [Read only]"""
+        if self._data.ndim >= 2:
+            return self._data.shape[1]
+        return 0
+    
+    @property
+    def height(self) -> int:
+        """The height of the image. [Read only]"""
+        if self._data.ndim >= 1:
+            return self._data.shape[0]
+        return 0
+    
+    @property
+    def bit_depth(self) -> int:
+        """The bit depth of the image data. [Read only]"""
+        if self._data.dtype == np.uint8:
+            return 8
+        elif self._data.dtype == np.uint16:
+            return 16
+        elif self._data.dtype == np.uint32:
+            return 32
+        elif self._data.dtype == np.float32:
+            return 32
+        elif self._data.dtype == np.float64:
+            return 64
+        return 8
+    
+    @property
+    def metadata(self) -> AdornedImageMetadata:
+        """Metadata containing information about system state at acquisition time. [Optional]"""
+        return self._metadata
+    
+    @metadata.setter
+    def metadata(self, value: AdornedImageMetadata):
+        """Set the metadata."""
+        self._metadata = value
+    
+    @property
+    def encoding(self) -> int:
+        """Encoding of the image. [Read only]"""
+        # 0 = Unknown, 1 = Grayscale, 2 = RGB
+        if self._data.ndim == 2:
+            return 1  # Grayscale
+        elif self._data.ndim == 3 and self._data.shape[2] == 3:
+            return 2  # RGB
+        return 0  # Unknown
+    
+    @property
+    def checksum(self) -> int:
+        """Checksum of the raw-data. [Read only]"""
+        return hash(self._data.tobytes()) & 0xFFFFFFFF
+    
+    @property
+    def thumbnail(self) -> Optional['AdornedImage']:
+        """Thumbnail of the original image. [Read only]"""
+        return self._thumbnail
+    
+    def save(self, path: str):
+        """Saves the image at the specified path as a TIFF file."""
+        try:
+            import tifffile
+            tifffile.imwrite(path, self._data)
+        except ImportError:
+            # Fallback to PIL if tifffile not available
+            from PIL import Image
+            img = Image.fromarray(self._data)
+            img.save(path)
+    
+    @classmethod
+    def load(cls, path: str) -> 'AdornedImage':
+        """Loads an image from a TIFF file."""
+        try:
+            import tifffile
+            data = tifffile.imread(path)
+        except ImportError:
+            # Fallback to PIL if tifffile not available
+            from PIL import Image
+            img = Image.open(path)
+            data = np.array(img)
+        return cls(data=data)
+
+
+# =============================================================================
+# Pattern Classes
+# =============================================================================
 
 @dataclass
 class BasePattern:
