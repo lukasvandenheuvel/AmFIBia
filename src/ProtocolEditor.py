@@ -1,4 +1,5 @@
 import numpy as np
+import uuid
 from PyQt5.QtWidgets import (
     QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
     QCheckBox, QLineEdit, QComboBox, QGroupBox, QScrollArea, QFormLayout, QFrame,
@@ -577,7 +578,9 @@ class ProtocolEditor(QWidget):
                     # Convert to pixel coordinates for display
                     coords = [(verts[j, 0], verts[j, 1]) for j in range(4)]
                     displayable = DisplayablePattern(pattern=pattern, coords=coords)
-                    self.generated_patterns[group][f"{group}_{i}"] = displayable
+                    # Use UUID-based ID to ensure uniqueness across generations
+                    unique_id = f"{group}_{i}_{uuid.uuid4().hex[:8]}"
+                    self.generated_patterns[group][unique_id] = displayable
                     pattern_id += 1
         
         # Store patterns in position data and display
@@ -595,12 +598,12 @@ class ProtocolEditor(QWidget):
             return
             
         data = item.data(Qt.UserRole)
-        if data.get("image") is None:
+        if data.get("pixmap") is None:
             print("Warning: No image loaded. Patterns generated but not displayed.")
             return
         
-        img_w = data["image_width"]
-        img_h = data["image_height"]
+        img_w = data["image"].width
+        img_h = data["image"].height
         pixel_to_um = data["pixel_to_um"]
         
         # Calculate meters per pixel
@@ -613,7 +616,10 @@ class ProtocolEditor(QWidget):
         # Convert patterns to pixel coords and store as list of PatternGroups
         # Order: coarse, medium, fine (matching predefined colors)
         patterns_list = []
-        group_index = 0
+        # Ensure patterns list exists in data
+        if "patterns" not in data:
+            data["patterns"] = []
+        group_index = len(data["patterns"])
         for group in ['coarse', 'medium', 'fine']:
             if group in self.generated_patterns:
                 converted = {}
@@ -638,12 +644,12 @@ class ProtocolEditor(QWidget):
                 patterns_list.append(pattern_group)
                 group_index += 1
         
-        # Store in position data
-        data["patterns"] = patterns_list
+        # Append to existing patterns list
+        data["patterns"].extend(patterns_list)
         item.setData(Qt.UserRole, data)
         
         # Display via main window's load_shapes (handles list of PatternGroups)
-        self.main_window.image_widget.load_shapes(patterns_list, locked=False)
+        self.main_window.image_widget.load_shapes(data["patterns"], locked=False)
         
         # Store as last loaded patterns for auto-add functionality
         self.main_window.set_last_loaded_patterns(patterns_list)
@@ -770,10 +776,11 @@ class ProtocolEditor(QWidget):
         self.polish_current = polish_current
         
         # Store in generated_patterns structure (use 'polish' as the group)
+        # Use UUID-based IDs to ensure uniqueness across generations
         self.generated_patterns = {
             'polish': {
-                'polish_top': top_displayable,
-                'polish_bottom': bottom_displayable
+                f'polish_top_{uuid.uuid4().hex[:8]}': top_displayable,
+                f'polish_bottom_{uuid.uuid4().hex[:8]}': bottom_displayable
             }
         }
         
@@ -792,12 +799,12 @@ class ProtocolEditor(QWidget):
             return
             
         data = item.data(Qt.UserRole)
-        if data.get("image") is None:
+        if data.get("pixmap") is None:
             print("Warning: No image loaded. Patterns generated but not displayed.")
             return
         
-        img_w = data["image_width"]
-        img_h = data["image_height"]
+        img_w = data["image"].width
+        img_h = data["image"].height
         pixel_to_um = data["pixel_to_um"]
         
         # Calculate meters per pixel
@@ -808,6 +815,9 @@ class ProtocolEditor(QWidget):
         center_px_y = img_h / 2
         
         # Convert polish patterns to pixel coords and create PatternGroup
+        # Ensure patterns list exists in data
+        if "patterns" not in data:
+            data["patterns"] = []
         patterns_list = []
         if 'polish' in self.generated_patterns:
             converted = {}
@@ -820,21 +830,21 @@ class ProtocolEditor(QWidget):
                 new_dp = DisplayablePattern(pattern=dp.pattern, coords=pixel_coords)
                 converted[pid] = new_dp
             
-            # Create PatternGroup with index 0 (first/yellow color)
+            # Create PatternGroup with next available index for color
             milling_current = getattr(self, 'polish_current', 0.0)
             pattern_group = PatternGroup.create_with_index(
                 patterns=converted,
                 milling_current=milling_current,
-                index=0
+                index=len(data["patterns"])  # Next index
             )
             patterns_list.append(pattern_group)
         
-        # Store in position data
-        data["patterns"] = patterns_list
+        # Append to existing patterns list
+        data["patterns"].extend(patterns_list)
         item.setData(Qt.UserRole, data)
         
         # Display via main window's load_shapes (handles list of PatternGroups)
-        self.main_window.image_widget.load_shapes(patterns_list, locked=False)
+        self.main_window.image_widget.load_shapes(data["patterns"], locked=False)
         
         # Store as last loaded patterns for auto-add functionality
         self.main_window.set_last_loaded_patterns(patterns_list)

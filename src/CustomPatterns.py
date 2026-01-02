@@ -727,15 +727,14 @@ def parse_pattern_file(file_path: str) -> dict:
     root = tree.getroot()
     
     patterns = {}
-    pattern_index = 0
     
     for child in root:
         tag = child.tag
         if tag in _PATTERN_PARSERS:
             parser = _PATTERN_PARSERS[tag]
             pattern = parser(child)
-            patterns[pattern_index] = pattern
-            pattern_index += 1
+            pattern_id = f"ptf_{uuid.uuid4().hex[:8]}"
+            patterns[pattern_id] = pattern
     
     return patterns
 
@@ -1051,14 +1050,14 @@ class PatternGroup:
             delay=delay
         )
     
-    def clone(self) -> "PatternGroup":
+    def clone(self,index=0) -> "PatternGroup":
         """Create a deep copy of this pattern group."""
-        return PatternGroup(
+        return self.create_with_index(
             patterns={pid: dp.clone() for pid, dp in self.patterns.items()},
             milling_current=self.milling_current,
-            color=self.color,
             sequential_group=self.sequential_group,
-            delay=self.delay
+            delay=self.delay,
+            index=index
         )
 
 
@@ -1155,7 +1154,8 @@ def convert_xT_patterns_to_displayable(
             field_of_view_width_m,
             field_of_view_height_m
         )
-        patterns_dict[pid] = DisplayablePattern(pattern=xT_pattern, coords=coords)
+        unique_id = f"xT_{uuid.uuid4().hex[:8]}"
+        patterns_dict[unique_id] = DisplayablePattern(pattern=xT_pattern, coords=coords)
     
     return PatternGroup.create_with_index(
         patterns=patterns_dict,

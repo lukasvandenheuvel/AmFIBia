@@ -1,6 +1,7 @@
 import sys
 import os
 import time
+import uuid
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QListWidget,
     QListWidgetItem, QHBoxLayout, QVBoxLayout,
@@ -15,6 +16,7 @@ import numpy as np
 import xml.etree.ElementTree as ET
 import html
 import cv2
+import copy
 
 PIXEL_TO_MICRON = 1/2
 MAX_DELAY_NO_HOME = 300  # seconds
@@ -24,11 +26,12 @@ from src.ProtocolEditor import ProtocolEditor
 
 if MODE == "scope":
     from src.AutoscriptHelpers import fibsem
-    from src.CustomPatterns import DisplayablePattern, convert_xT_patterns_to_displayable, RectanglePattern, PatternGroup
+    from src.CustomPatterns import convert_xT_patterns_to_displayable
+    from autoscript_sdb_microscope_client.structures import AdornedImage
     ### INITIALIZE MICROSCOPE FROM DRIVER
     scope = fibsem()
 elif MODE == "dev":
-    from src.CustomPatterns import parse_pattern_file, load_patterns_for_display, DisplayablePattern, RectanglePattern, PatternGroup, AdornedImage
+    from src.CustomPatterns import load_patterns_for_display, AdornedImage
 
 
 # -------------------------------------------------
@@ -84,11 +87,17 @@ class DrawableImage(QLabel):
         self.is_drawing_rect = False
         self.shapes_dirty = False
         self.shapes_changed_callback = None
+        self.patterns_deleted_callback = None  # Callback when patterns are deleted
         self.pattern_selected_callback = None  # Callback when patterns are clicked
         self.selected_polygon_ids = set()  # Currently selected polygon ids (supports multi-select)
         self.selection_rect_img = None  # White selection rectangle for drag-select
         self.is_drawing_selection = False  # Flag for selection rectangle drawing
         self.selection_start_img = None  # Start point for selection rectangle
+
+        # Undo stack for pattern operations
+        self.undo_stack = []  # List of (polygons_img_copy, selected_ids_copy) tuples
+        self.max_undo_levels = 50
+        self.undo_callback = None  # Callback to notify main app about undo
 
         # Reset zoom button
         self._setup_reset_zoom_button()
@@ -113,6 +122,46 @@ class DrawableImage(QLabel):
         """)
         self.reset_zoom_btn.clicked.connect(self.reset_zoom)
         self.reset_zoom_btn.hide()  # Hidden when zoom is 1.0
+
+    def _save_undo_state(self):
+        """Save current polygon state to undo stack."""
+        # Deep copy polygons_img
+        polygons_copy = []
+        for poly in self.polygons_img:
+            poly_copy = {
+                "id": poly.get("id"),
+                "points": [QPoint(p.x(), p.y()) for p in poly["points"]],
+                "locked": poly.get("locked", False),
+                "color": poly.get("color"),
+                "displayable_pattern": poly.get("displayable_pattern"),
+                "pattern_group": poly.get("pattern_group")
+            }
+            polygons_copy.append(poly_copy)
+        
+        selected_copy = set(self.selected_polygon_ids)
+        self.undo_stack.append((polygons_copy, selected_copy))
+        
+        # Limit stack size
+        if len(self.undo_stack) > self.max_undo_levels:
+            self.undo_stack.pop(0)
+
+    def _undo(self):
+        """Restore previous polygon state from undo stack."""
+        if not self.undo_stack:
+            return False
+        
+        polygons_copy, selected_copy = self.undo_stack.pop()
+        self.polygons_img = polygons_copy
+        self.selected_polygon_ids = selected_copy
+        self.update()
+        
+        # Notify callbacks
+        if self.undo_callback:
+            self.undo_callback()
+        if self.pattern_selected_callback:
+            self.pattern_selected_callback(self._get_selected_displayable_patterns())
+        
+        return True
 
     def reset_zoom(self):
         """Reset zoom to fit image in widget."""
@@ -585,6 +634,9 @@ class DrawableImage(QLabel):
         if event.key() == Qt.Key_Space and not event.isAutoRepeat():
             self.spacebar_held = True
             self.setCursor(Qt.OpenHandCursor)
+        elif event.key() == Qt.Key_Z and event.modifiers() & Qt.ControlModifier:
+            # Ctrl+Z: Undo
+            self._undo()
         elif event.key() in (Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down):
             # Determine movement delta (1 pixel, or 10 with Shift held)
             step = 10 if event.modifiers() & Qt.ShiftModifier else 1
@@ -614,11 +666,15 @@ class DrawableImage(QLabel):
                         self.tracking_area_callback(self._get_tracking_area_m())
                     if self.rect_selected_callback:
                         self.rect_selected_callback(self.selected_rect, self._get_rect_dimensions_um(self.selected_rect))
-            # If any pattern is selected, move ALL unlocked patterns
+            # If any pattern is selected, move only selected unlocked patterns
             elif self.selected_polygon_ids:
+                # Save state before moving
+                self._save_undo_state()
                 moved = False
                 for poly in self.polygons_img:
-                    if not poly.get("locked", False):
+                    poly_id = poly.get("id")
+                    # Only move if selected AND unlocked
+                    if poly_id in self.selected_polygon_ids and not poly.get("locked", False):
                         for p in poly["points"]:
                             p.setX(p.x() + dx)
                             p.setY(p.y() + dy)
@@ -629,6 +685,42 @@ class DrawableImage(QLabel):
                     # Notify callback about shape changes
                     if self.shapes_changed_callback:
                         self.shapes_changed_callback(self.get_shapes())
+        elif event.key() == Qt.Key_Backspace:
+            # Delete selected rectangle (measurement or tracking area)
+            if self.selected_rect:
+                if self.selected_rect == "measure" and self.active_rect_img:
+                    self.active_rect_img = None
+                    self.selected_rect = None
+                    self.update()
+                    # Notify callback about deselection
+                    if self.rect_selected_callback:
+                        self.rect_selected_callback(None, None)
+                elif self.selected_rect == "tracking_area" and self.tracking_area_img:
+                    self.tracking_area_img = None
+                    self.selected_rect = None
+                    self.update()
+                    # Notify callbacks
+                    if self.tracking_area_callback:
+                        self.tracking_area_callback(None)
+                    if self.rect_selected_callback:
+                        self.rect_selected_callback(None, None)
+            # Delete selected patterns
+            elif self.selected_polygon_ids:
+                # Save state before deleting
+                self._save_undo_state()
+                deleted_ids = set(self.selected_polygon_ids)
+                # Remove selected polygons from the list
+                self.polygons_img = [poly for poly in self.polygons_img 
+                                     if poly.get("id") not in deleted_ids]
+                # Clear selection
+                self.selected_polygon_ids.clear()
+                self.update()
+                # Notify callback about deleted patterns
+                if self.patterns_deleted_callback:
+                    self.patterns_deleted_callback(deleted_ids)
+                # Notify pattern selection callback (now empty)
+                if self.pattern_selected_callback:
+                    self.pattern_selected_callback([])
         else:
             super().keyPressEvent(event)
 
@@ -724,8 +816,10 @@ class DrawableImage(QLabel):
                     else:
                         self.selected_polygon_ids.add(poly_id)
                 else:
-                    # Replace selection without Shift
-                    self.selected_polygon_ids = {poly_id}
+                    # Without Shift: only replace selection if clicked polygon is NOT already selected
+                    # This allows dragging multiple selected patterns without losing the selection
+                    if poly_id not in self.selected_polygon_ids:
+                        self.selected_polygon_ids = {poly_id}
                 
                 # Notify callback about pattern selection (pass list of selected patterns)
                 if self.pattern_selected_callback:
@@ -749,6 +843,8 @@ class DrawableImage(QLabel):
             if self.polygons_img and self._point_in_any_unlocked_polygon(img_point):
                 self.drag_start_img = img_point
                 self.is_dragging_shapes = True
+                # Save state before dragging starts
+                self._save_undo_state()
             else:
                 self.is_dragging_shapes = False
 
@@ -822,12 +918,12 @@ class DrawableImage(QLabel):
             dy = current_img.y() - self.drag_start_img.y()
 
             for poly in self.polygons_img:
-                # Only move unlocked shapes
-                if poly.get("locked", False):
-                    continue
-                for p in poly["points"]:
-                    p.setX(p.x() + dx)
-                    p.setY(p.y() + dy)
+                poly_id = poly.get("id")
+                # Only move if selected AND unlocked
+                if poly_id in self.selected_polygon_ids and not poly.get("locked", False):
+                    for p in poly["points"]:
+                        p.setX(p.x() + dx)
+                        p.setY(p.y() + dy)
 
             self.drag_start_img = current_img
             self.shapes_dirty = True
@@ -1279,6 +1375,10 @@ class MainWindow(QWidget):
         attach_pattern_layout.addWidget(attach_pattern_btn, stretch=1)
         attach_pattern_layout.addWidget(self.auto_attach_pattern_checkbox, stretch=0)
 
+        # Send patterns to xT button
+        send_pattern_btn = QPushButton("Send patterns to xT")
+        send_pattern_btn.clicked.connect(self.send_patterns_to_xT)
+
         # Right mouse mode dropdown
         right_mouse_layout = QHBoxLayout()
         right_mouse_layout.setSpacing(5)
@@ -1292,6 +1392,12 @@ class MainWindow(QWidget):
         # PatternGroup properties table (milling current, color, sequential group)
         self.group_properties_label = QLabel("Group Properties")
         self.group_properties_label.setFont(QFont("Arial", 12, QFont.Bold))
+        
+        # Select All button for selecting all patterns in current group
+        self.select_all_group_btn = QPushButton("Select All in Group")
+        self.select_all_group_btn.clicked.connect(self._select_all_in_group)
+        self.select_all_group_btn.setEnabled(False)  # Disabled until a pattern is selected
+        
         self.group_properties_table = QTableWidget()
         self.group_properties_table.setColumnCount(2)
         self.group_properties_table.setHorizontalHeaderLabels(["Property", "Value"])
@@ -1319,8 +1425,10 @@ class MainWindow(QWidget):
         left_layout.addWidget(add_position_btn)
         left_layout.addLayout(take_ib_layout)
         left_layout.addLayout(attach_pattern_layout)
+        left_layout.addWidget(send_pattern_btn)
         left_layout.addLayout(right_mouse_layout)
         left_layout.addWidget(self.group_properties_label)
+        left_layout.addWidget(self.select_all_group_btn)
         left_layout.addWidget(self.group_properties_table)
         left_layout.addWidget(self.pattern_properties_label)
         left_layout.addWidget(self.pattern_properties_table, stretch=1)  # Remaining space for pattern properties
@@ -1336,6 +1444,8 @@ class MainWindow(QWidget):
         self.image_widget.pattern_selected_callback = self.on_pattern_selected
         self.image_widget.tracking_area_callback = self.on_tracking_area_changed
         self.image_widget.rect_selected_callback = self.on_rect_selected
+        self.image_widget.patterns_deleted_callback = self.on_patterns_deleted
+        self.image_widget.undo_callback = self.on_undo
         
         # Track currently selected rectangle type
         self.selected_rect_type = None
@@ -1606,11 +1716,8 @@ class MainWindow(QWidget):
         data = {
             "coords": coords,
             "rect": None,
-            "image": None,
-            "image_data": None,
-            "image_metadata": None,
-            "image_width": None,
-            "image_height": None,
+            "pixmap": None, # Pixmap of the ion beam image for display
+            "image": None, # AdornedImage object 
             "pixel_to_um": None,
             "patterns": [],  # List of pattern dicts
             "tracking_area": None  # Tracking area in µm coordinates
@@ -1682,16 +1789,12 @@ class MainWindow(QWidget):
             )
             metadata = AdornedImageMetadata(optics=optics)
             adorned_img = AdornedImage(data=img, metadata=metadata)
-            img_metadata = adorned_img.metadata
             pixel_to_um = PIXEL_TO_MICRON
 
         # Update data
         data["coords"] = coords # Update coordinates in case they changed since the position was added
-        data["image"] = pixmap
-        data["image_data"] = img
-        data["image_metadata"] = img_metadata
-        data["image_width"] = width
-        data["image_height"] = height
+        data["pixmap"] = pixmap
+        data["image"] = adorned_img
         data["pixel_to_um"] = pixel_to_um
 
         item.setData(Qt.UserRole, data)
@@ -1725,7 +1828,7 @@ class MainWindow(QWidget):
         elif MODE == "scope":
             data = item.data(Qt.UserRole)
             # Check if we have an image loaded
-            pixmap = data.get("image")
+            pixmap = data.get("pixmap")
             if pixmap is None or pixmap.isNull():
                 print("Warning: No image loaded for this position. Please update position first.")
                 return
@@ -1734,8 +1837,8 @@ class MainWindow(QWidget):
             all_patterns = scope.retreive_xT_patterns()
             
             # Get image dimensions and FOV for coordinate conversion
-            img_w = data["image_width"]
-            img_h = data["image_height"]
+            img_w = data["image"].width
+            img_h = data["image"].height
             pixel_to_um = data["pixel_to_um"]
             
             # Calculate field of view in meters
@@ -1743,17 +1846,40 @@ class MainWindow(QWidget):
             fov_height_m = img_h * pixel_to_um * 1e-6
             
             # Convert xT patterns to PatternGroup
+            existing_patterns = data.get("patterns", [])
             pattern_group = convert_xT_patterns_to_displayable(
                 all_patterns,
                 img_w, img_h,
-                fov_width_m, fov_height_m
+                fov_width_m, fov_height_m,
+                group_index=len(existing_patterns)
             )
             
-            data["patterns"] = [pattern_group]  # Store as list with one PatternGroup
+            # Append to existing patterns list
+            existing_patterns.append(pattern_group)
+            data["patterns"] = existing_patterns
             item.setData(Qt.UserRole, data)
             self.rebuild_positions()
             self.image_widget.load_shapes(data["patterns"], locked=False)
             self.image_widget.shapes_changed_callback = self.on_shapes_changed
+
+    def send_patterns_to_xT(self):
+        """Send patterns to xT microscope software."""
+        item = self.position_list.currentItem()
+        if not item:
+            print("Warning: No position selected.")
+            return
+        data = item.data(Qt.UserRole)
+        existing_patterns = data.get("patterns", [])
+        if MODE != "scope":
+            print("Warning: Sending patterns to xT is only available in scope mode.")
+            return
+        # Create each pattern on the microscope
+        for pattern_group in existing_patterns:
+            pattern_dict = pattern_group.patterns
+            for pattern_id, displayable_pattern in pattern_dict.items():
+                pattern = displayable_pattern.pattern
+                xT_pattern = self._create_xT_pattern(pattern,mode=MODE)
+        return
 
     def add_protocol(self):
 
@@ -1779,13 +1905,13 @@ class MainWindow(QWidget):
         data = item.data(Qt.UserRole)
         
         # Check if we have an image loaded
-        pixmap = data.get("image")
+        pixmap = data.get("pixmap")
         if pixmap is None or pixmap.isNull():
             print("Warning: No image loaded for this position. Please update position first.")
             return
         
-        img_w = data["image_width"]
-        img_h = data["image_height"]
+        img_w = data["image"].width
+        img_h = data["image"].height
         pixel_to_um = data["pixel_to_um"]
         
         # Calculate field of view in meters
@@ -1797,13 +1923,17 @@ class MainWindow(QWidget):
         print(f"FOV: {fov_width_m*1e6:.1f} x {fov_height_m*1e6:.1f} µm")
         
         # Load patterns and convert to PatternGroup
+        existing_patterns = data.get("patterns", [])
         pattern_group = load_patterns_for_display(
             file_path,
             img_w, img_h,
-            fov_width_m, fov_height_m
+            fov_width_m, fov_height_m,
+            group_index=len(existing_patterns)
         )
         
-        data["patterns"] = [pattern_group]  # Store as list with one PatternGroup
+        # Append to existing patterns list
+        existing_patterns.append(pattern_group)
+        data["patterns"] = existing_patterns
         item.setData(Qt.UserRole, data)
         self.rebuild_positions()
         self.image_widget.load_shapes(data["patterns"], locked=False)
@@ -1832,15 +1962,18 @@ class MainWindow(QWidget):
         data = item.data(Qt.UserRole)
         
         # Clone the stored PatternGroups for this position
-        patterns_list = [pg.clone() for pg in self.last_loaded_patterns]
+        existing_patterns = data.get("patterns", [])
+        n = len(existing_patterns)
+        patterns_list = [pg.clone(index=n+ii) for ii, pg in enumerate(self.last_loaded_patterns)]
         
-        # Store patterns in position data (even without image)
-        data["patterns"] = patterns_list
+        # Append to existing patterns list
+        existing_patterns.extend(patterns_list)
+        data["patterns"] = existing_patterns
         item.setData(Qt.UserRole, data)
         self.rebuild_positions()
         
         # Only display if we have an image loaded
-        pixmap = data.get("image")
+        pixmap = data.get("pixmap")
         if pixmap is not None and not pixmap.isNull():
             self.image_widget.load_shapes(data["patterns"], locked=False)
             self.image_widget.shapes_changed_callback = self.on_shapes_changed
@@ -1848,8 +1981,8 @@ class MainWindow(QWidget):
     def on_item_clicked(self, item):
         data = item.data(Qt.UserRole)
 
-        if data["image"] is not None:
-            self.image_widget.load_image(data["image"], pixel_to_um=data.get("pixel_to_um"))
+        if data["pixmap"] is not None:
+            self.image_widget.load_image(data["pixmap"], pixel_to_um=data.get("pixel_to_um"))
             self.image_widget.load_rectangle(data["rect"])
             self.image_widget.load_shapes(data.get("patterns", []), locked=False)
             # Load tracking area if it exists
@@ -1877,6 +2010,9 @@ class MainWindow(QWidget):
         
         # Get the PatternGroups for the selected patterns
         self.selected_pattern_groups = self.image_widget._get_selected_pattern_groups()
+        
+        # Enable/disable select all button based on whether pattern groups are selected
+        self.select_all_group_btn.setEnabled(bool(self.selected_pattern_groups))
         
         if not displayable_patterns:
             return
@@ -2001,6 +2137,162 @@ class MainWindow(QWidget):
             self.pattern_properties_table.setItem(row, 0, QTableWidgetItem(prop_name))
             self.pattern_properties_table.setItem(row, 1, QTableWidgetItem(prop_value))
 
+    def _select_all_in_group(self):
+        """Select all patterns belonging to the currently selected pattern groups."""
+        if not hasattr(self, 'selected_pattern_groups') or not self.selected_pattern_groups:
+            return
+        
+        # Find all polygon IDs that belong to the selected pattern groups
+        selected_group_ids = {id(pg) for pg in self.selected_pattern_groups}
+        new_selection = set()
+        
+        for poly in self.image_widget.polygons_img:
+            pg = poly.get("pattern_group")
+            if pg and id(pg) in selected_group_ids:
+                poly_id = poly.get("id")
+                if poly_id is not None:
+                    new_selection.add(poly_id)
+        
+        # Update the selection in the image widget
+        self.image_widget.selected_polygon_ids = new_selection
+        self.image_widget.update()
+        
+        # Notify callback about pattern selection
+        if self.image_widget.pattern_selected_callback:
+            selected_patterns = self.image_widget._get_selected_displayable_patterns()
+            self.image_widget.pattern_selected_callback(selected_patterns)
+
+    def on_patterns_deleted(self, deleted_ids):
+        """Handle pattern deletion - removes patterns from position data and cleans up empty groups."""
+        item = self.position_list.currentItem()
+        if not item:
+            return
+
+        data = item.data(Qt.UserRole)
+        patterns_list = data.get("patterns", [])
+        
+        # Remove deleted patterns from their PatternGroups
+        for pattern_group in patterns_list:
+            if hasattr(pattern_group, 'patterns'):
+                pattern_dict = pattern_group.patterns
+                for pid in deleted_ids:
+                    if pid in pattern_dict:
+                        del pattern_dict[pid]
+        
+        # Remove empty PatternGroups
+        data["patterns"] = [pg for pg in patterns_list 
+                          if hasattr(pg, 'patterns') and len(pg.patterns) > 0]
+        
+        # Update the item data
+        item.setData(Qt.UserRole, data)
+
+    def on_undo(self):
+        """Handle undo - sync position data with restored polygon state."""
+        item = self.position_list.currentItem()
+        if not item:
+            return
+
+        data = item.data(Qt.UserRole)
+        
+        # Rebuild the patterns in PatternGroups from the restored polygons_img
+        # First, collect all pattern IDs and their data from restored state
+        restored_patterns = {}
+        for poly in self.image_widget.polygons_img:
+            pid = poly.get("id")
+            dp = poly.get("displayable_pattern")
+            pg = poly.get("pattern_group")
+            if pid and dp and pg:
+                if id(pg) not in restored_patterns:
+                    restored_patterns[id(pg)] = {"group": pg, "patterns": {}}
+                restored_patterns[id(pg)]["patterns"][pid] = dp
+                
+                # Update coords in displayable pattern
+                coords = [(p.x(), p.y()) for p in poly["points"]]
+                self._update_displayable_pattern_coords(dp, coords, data)
+        
+        # Update each PatternGroup with restored patterns
+        for pg_id, pg_data in restored_patterns.items():
+            pg = pg_data["group"]
+            pg.patterns = pg_data["patterns"]
+        
+        # Rebuild patterns_list keeping only non-empty groups
+        seen_groups = set()
+        new_patterns_list = []
+        for poly in self.image_widget.polygons_img:
+            pg = poly.get("pattern_group")
+            if pg and id(pg) not in seen_groups:
+                seen_groups.add(id(pg))
+                new_patterns_list.append(pg)
+        
+        data["patterns"] = new_patterns_list
+        item.setData(Qt.UserRole, data)
+
+    def _update_displayable_pattern_coords(self, dp, coords, data):
+        """Update a DisplayablePattern's pixel and meter coordinates.
+        
+        Args:
+            dp: DisplayablePattern to update
+            coords: List of (x, y) pixel coordinates
+            data: Position data dict containing image info for conversion
+        """
+        # Update pixel coords
+        dp.coords = coords
+        
+        # Get image dimensions and pixel_to_um for coordinate conversion
+        image = data.get("image")
+        img_w = image.width if image else None
+        img_h = image.height if image else None
+        pixel_to_um = data.get("pixel_to_um")
+        
+        # Calculate meters per pixel and image center
+        if pixel_to_um is None or img_w is None or img_h is None:
+            return
+        
+        if len(coords) == 0:
+            return
+            
+        m_per_px = pixel_to_um * 1e-6
+        center_px_x = img_w / 2
+        center_px_y = img_h / 2
+        
+        # Convert pixel coords to meters
+        meter_coords = []
+        for x_px, y_px in coords:
+            x_m = (x_px - center_px_x) * m_per_px
+            y_m = (center_px_y - y_px) * m_per_px  # Flip Y
+            meter_coords.append((x_m, y_m))
+        
+        pattern = dp.pattern
+        if not pattern:
+            return
+            
+        # Update pattern center (average of all vertices)
+        avg_x = sum(c[0] for c in meter_coords) / len(meter_coords)
+        avg_y = sum(c[1] for c in meter_coords) / len(meter_coords)
+        
+        if hasattr(pattern, 'center_x'):
+            pattern.center_x = avg_x
+        if hasattr(pattern, 'center_y'):
+            pattern.center_y = avg_y
+        
+        # Handle different pattern types
+        # PolygonPattern: update vertices
+        if hasattr(pattern, 'vertices'):
+            pattern.vertices = meter_coords
+        
+        # LinePattern: update start/end points and length
+        if hasattr(pattern, 'start_x') and hasattr(pattern, 'end_x') and len(meter_coords) >= 2:
+            import math
+            pattern.start_x = meter_coords[0][0]
+            pattern.start_y = meter_coords[0][1]
+            pattern.end_x = meter_coords[1][0]
+            pattern.end_y = meter_coords[1][1]
+            # Recalculate length
+            pattern.length = math.sqrt(
+                (pattern.end_x - pattern.start_x)**2 + 
+                (pattern.end_y - pattern.start_y)**2
+            )
+
     def on_shapes_changed(self, updated_shapes):
         """Handle shape changes - updates patterns in position data."""
         item = self.position_list.currentItem()
@@ -2009,19 +2301,6 @@ class MainWindow(QWidget):
 
         data = item.data(Qt.UserRole)
         patterns_list = data.get("patterns", [])
-        
-        # Get image dimensions and pixel_to_um for coordinate conversion
-        img_w = data.get("image_width")
-        img_h = data.get("image_height")
-        pixel_to_um = data.get("pixel_to_um")
-        
-        # Calculate meters per pixel and image center
-        if pixel_to_um is not None and img_w is not None and img_h is not None:
-            m_per_px = pixel_to_um * 1e-6
-            center_px_x = img_w / 2
-            center_px_y = img_h / 2
-        else:
-            m_per_px = None
 
         # Update coords in all PatternGroups in the list
         for item_pg in patterns_list:
@@ -2034,45 +2313,7 @@ class MainWindow(QWidget):
             for pid, coords in updated_shapes.items():
                 if pid in pattern_dict:
                     dp = pattern_dict[pid]
-                    # Update pixel coords
-                    dp.coords = coords
-                    
-                    # Also update the pattern's meter coordinates if we have the conversion factor
-                    if m_per_px is not None and len(coords) > 0:
-                        # Convert pixel coords to meters
-                        meter_coords = []
-                        for x_px, y_px in coords:
-                            x_m = (x_px - center_px_x) * m_per_px
-                            y_m = (center_px_y - y_px) * m_per_px  # Flip Y
-                            meter_coords.append((x_m, y_m))
-                        
-                        pattern = dp.pattern
-                        # Update pattern center (average of all vertices)
-                        avg_x = sum(c[0] for c in meter_coords) / len(meter_coords)
-                        avg_y = sum(c[1] for c in meter_coords) / len(meter_coords)
-                        
-                        if hasattr(pattern, 'center_x'):
-                            pattern.center_x = avg_x
-                        if hasattr(pattern, 'center_y'):
-                            pattern.center_y = avg_y
-                        
-                        # Handle different pattern types
-                        # PolygonPattern: update vertices
-                        if hasattr(pattern, 'vertices'):
-                            pattern.vertices = meter_coords
-                        
-                        # LinePattern: update start/end points and length
-                        if hasattr(pattern, 'start_x') and hasattr(pattern, 'end_x') and len(meter_coords) >= 2:
-                            pattern.start_x = meter_coords[0][0]
-                            pattern.start_y = meter_coords[0][1]
-                            pattern.end_x = meter_coords[1][0]
-                            pattern.end_y = meter_coords[1][1]
-                            # Recalculate length
-                            import math
-                            pattern.length = math.sqrt(
-                                (pattern.end_x - pattern.start_x)**2 + 
-                                (pattern.end_y - pattern.start_y)**2
-                            )
+                    self._update_displayable_pattern_coords(dp, coords, data)
 
         data["patterns"] = patterns_list
         item.setData(Qt.UserRole, data)
@@ -2128,8 +2369,8 @@ class MainWindow(QWidget):
             for i in range(self.position_list.count()):
                 item = self.position_list.item(i)
                 data = item.data(Qt.UserRole)
-                fov_width_m  = data["image_metadata"].optics.scan_field_of_view.width
-                fov_height_m = data["image_metadata"].optics.scan_field_of_view.height
+                fov_width_m  = data["image"].metadata.optics.scan_field_of_view.width
+                fov_height_m = data["image"].metadata.optics.scan_field_of_view.height
                 for pg in data.get("patterns", []):
                     # If this pattern group  is not in the current sequential group, skip and add it later
                     if pg.sequential_group != sg:
@@ -2141,10 +2382,37 @@ class MainWindow(QWidget):
                     task.delay = pg.delay
                     task.coords = data.get("coords", {})
                     task.tracking_area = relative_coords(data.get("tracking_area", None), fov_width_m, fov_height_m)
-                    task.ref_image = data["image_data"]
+                    task.image = data["image"]
+                    task.ref_image = self.reference_image_subarea(data["image"], task.tracking_area)
+                    task.position_index = i
                     task_list.append(task)
 
         return task_list
+    
+    def reference_image_subarea(self, image, tracking_area):
+        """Extract sub-area from image based on tracking area (relative coords)."""
+        if tracking_area is None:
+            return image
+        
+        img_h, img_w = image.data.shape[:2]
+        
+        left_px = int((tracking_area["left"]) * img_w)
+        top_px = int((tracking_area["top"]) * img_h)
+        width_px = int(tracking_area["width"] * img_w)
+        height_px = int(tracking_area["height"] * img_h)
+        
+        # Ensure within bounds
+        left_px = max(0, left_px)
+        top_px = max(0, top_px)
+        right_px = min(img_w, left_px + width_px)
+        bottom_px = min(img_h, top_px + height_px)
+        
+        sub_image = image.data[top_px:bottom_px, left_px:right_px]
+        
+        # Create new AdornedImage for sub-area
+        sub_image = AdornedImage(data=sub_image, metadata=image.metadata)
+        
+        return sub_image
 
     def run(self):
         # Run the milling tasks
@@ -2153,7 +2421,7 @@ class MainWindow(QWidget):
 
         for task_idx, task in enumerate(task_list):
             print(f"Running task {task_idx+1}/{len(task_list)} with {len(task.patterns)} patterns, "
-                  f"current={task.milling_current*1e9:.1f} nA, delay={task.delay} s")
+                  f"position={task.position_index}, current={task.milling_current*1e9:.1f} nA, delay={task.delay} s")
             if task.tracking_area is not None:
                 w = task.tracking_area["width"]
                 h = task.tracking_area["height"]
@@ -2174,8 +2442,7 @@ class MainWindow(QWidget):
                         scope.enter_sleep_mode()
                     time.sleep(task.delay)
 
-                scope.ion_on()
-                scope.move_stage_absolute(task.coords)
+
                 # TO DO NEXT:
                 # 1. Image alignment at low current
                 # 2. Change current to milling current and align using:
@@ -2184,6 +2451,40 @@ class MainWindow(QWidget):
                     # settings = GrabFrameSettings(reduced_area=Rectangle(0.6, 0.6, 0.3, 0.3))
                     # image = microscope.imaging.grab_frame(settings)
                 # Send patterns to scope and mill
+
+                scope.ion_on()
+                # If this is the first task of if the position has changed, move stage and align at low current
+                move_and_align = False
+                if task_idx == 0:
+                    move_and_align = True
+                elif task_idx > 0:
+                    if (task_list[task_idx-1].coords != task.coords) or not(task_list[task_idx-1].move_successful):
+                        move_and_align = True
+                if move_and_align:
+                    print("  Moving to new position...")
+                    stage_moved = scope.move_stage_absolute(task.coords)
+                    if not stage_moved:
+                        print("  Moving the stage failed. Skipping this task.")
+                        continue
+                    task.move_successful = True
+                    aligned_low_current = scope.align(task.image, current=1.0e-11, reset_beam_shift=True) # low current alignment on full image 
+                    if not aligned_low_current:
+                        print("  Low-current Alignment failed. Skipping this task.")
+                        continue
+                else:
+                    task.move_successful = True
+                    print("  Position unchanged. Skipping move and low-current alignment.")
+                # Now align at milling current using reduced area
+                aligned_milling_current = scope.align(task.ref_image, current=task.milling_current, reduced_area=task.tracking_area, reset_beam_shift=False)
+                if not aligned_milling_current:
+                    print("  Milling-current Alignment failed. Skipping this task.")
+                    continue
+                # Start milling
+                print("  Starting milling...")
+                milled = scope.do_milling(task.patterns)
+                if not milled:
+                    print("  Milling failed. Skipping this task.")
+                    continue
 
 # -------------------------------------------------    
 class Pattern():
@@ -2209,12 +2510,15 @@ class Pattern():
     
 class Task(): 
     def __init__(self):
-        self.patterns = []
+        self.patterns = [] 
         self.milling_current = 0.0  # in Amperes
         self.delay = 0
         self.coords = None  # position coordinates for this task
         self.tracking_area = None  # dict with relative coords
-        self.ref_image = None  # Numpy array of reference image
+        self.image = None # AdornedImage of ion beam image for this task
+        self.ref_image = None  # AdornedImage of reference image (reduced area if applicable)
+        self.move_successful = False  # Whether the move to this task's position was successful
+        self.position_index = None  # Index of the position in the list
 
 def relative_coords(tracking_area, fov_width, fov_height):
     """Convert absolute tracking area coords to relative (0-1) based on image size."""
@@ -2232,10 +2536,9 @@ def parse_ptf(filepath):
     root = tree.getroot()
     valid_tags = ['PatternRectangle','PatternPolygon']
     pattern_dict = {}
-    pattern_id = -1
     for element in root:
         if element.tag in valid_tags:
-            pattern_id += 1
+            pattern_id = f"ptf_{uuid.uuid4().hex[:8]}"
             p = Pattern()
             p.type = 'Rectangle'
             p.depth = float(element.find('Depth').text)
