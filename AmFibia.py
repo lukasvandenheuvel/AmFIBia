@@ -22,7 +22,8 @@ PIXEL_TO_MICRON = 1/2
 MAX_DELAY_NO_HOME = 300  # seconds
 MODE = "dev" # "scope" or "dev"
 
-from src.ProtocolEditor import ProtocolEditor
+from src.PatternMaker import PatternMaker
+from src.SettingsPanel import SettingsPanel
 
 if MODE == "scope":
     from src.AutoscriptHelpers import fibsem
@@ -76,7 +77,7 @@ class DrawableImage(QLabel):
         self.rect_resize_handle = None  # Which handle is being dragged (0-7 for corners/edges)
         self.is_dragging_rect = False
         self.is_resizing_rect = False
-        self.HANDLE_SIZE = 8  # Size of resize handles in pixels (widget coords)
+        self.HANDLE_SIZE = 6  # Size of resize handles in pixels (widget coords)
         self.rect_selected_callback = None  # Callback when rectangle is selected/deselected
 
         # polygon editor
@@ -1346,9 +1347,41 @@ class MainWindow(QWidget):
         left_layout = QVBoxLayout(left_widget)
         left_layout.setContentsMargins(10, 10, 10, 10)
 
-        # Protocol Editor toggle button at top
-        self.protocol_editor_btn = QPushButton("Protocol Editor ▶")
-        self.protocol_editor_btn.clicked.connect(self.toggle_protocol_editor)
+        # Pattern Maker toggle button at top
+        self.pattern_maker_btn = QPushButton("Pattern Maker ▶")
+        self.pattern_maker_btn.clicked.connect(self.toggle_pattern_maker)
+        
+        # Settings toggle button
+        self.settings_btn = QPushButton("Settings ▼")
+        self.settings_btn.clicked.connect(self.toggle_settings)
+        
+        # Tab-like styling for toggle buttons
+        tab_style = """
+            QPushButton {
+                background-color: #e0e0e0;
+                border: 1px solid #999;
+                border-bottom: none;
+                border-radius: 4px 4px 0 0;
+                padding: 6px 12px;
+                text-align: left;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #d0d0d0;
+            }
+            QPushButton:pressed {
+                background-color: #c0c0c0;
+            }
+        """
+        self.pattern_maker_btn.setStyleSheet(tab_style)
+        self.settings_btn.setStyleSheet(tab_style)
+        
+        # Layout for tab buttons
+        tab_buttons_layout = QHBoxLayout()
+        tab_buttons_layout.setSpacing(2)
+        tab_buttons_layout.addWidget(self.pattern_maker_btn)
+        tab_buttons_layout.addWidget(self.settings_btn)
+        tab_buttons_layout.addStretch()
 
         self.position_list = PositionList()
         self.position_list.model().rowsMoved.connect(self.rebuild_positions)
@@ -1420,7 +1453,13 @@ class MainWindow(QWidget):
         self.pattern_properties_table.setSelectionMode(QAbstractItemView.NoSelection)
         self.pattern_properties_table.verticalHeader().setVisible(False)
 
-        left_layout.addWidget(self.protocol_editor_btn)
+        left_layout.addLayout(tab_buttons_layout)
+        
+        # Settings panel (initially hidden, collapsible)
+        self.settings_panel = SettingsPanel(self, mode=MODE, scope=scope_ref if MODE == "scope" else None)
+        self.settings_panel.setVisible(False)
+        left_layout.addWidget(self.settings_panel)
+        
         left_layout.addWidget(self.position_list, stretch=1)  # 50% for position list
         left_layout.addWidget(add_position_btn)
         left_layout.addLayout(take_ib_layout)
@@ -1433,10 +1472,15 @@ class MainWindow(QWidget):
         left_layout.addWidget(self.pattern_properties_label)
         left_layout.addWidget(self.pattern_properties_table, stretch=1)  # Remaining space for pattern properties
 
-        # Run button
-        run_btn = QPushButton("Run")
-        run_btn.clicked.connect(self.run)
-        left_layout.addWidget(run_btn)
+        # Run button (disabled until working directory is set)
+        self.run_btn = QPushButton("Run")
+        self.run_btn.clicked.connect(self.run)
+        self.run_btn.setEnabled(False)
+        self.run_btn.setToolTip("Set a working directory in Settings first")
+        left_layout.addWidget(self.run_btn)
+        
+        # Connect settings panel signal to update run button state
+        self.settings_panel.working_dir_changed.connect(self._on_working_dir_changed)
 
         # Image panel
         pixmap = QPixmap("logo.png")
@@ -1450,12 +1494,12 @@ class MainWindow(QWidget):
         # Track currently selected rectangle type
         self.selected_rect_type = None
 
-        # Protocol Editor panel (initially hidden)
+        # Pattern Maker panel (initially hidden)
         # Pass mode and scope for current dropdown population
         scope_ref = scope if MODE == "scope" else None
-        self.protocol_editor = ProtocolEditor(self, mode=MODE, scope=scope_ref)
-        self.protocol_editor.setVisible(False)
-        self.protocol_editor.setFixedWidth(350)
+        self.pattern_maker = PatternMaker(self, mode=MODE, scope=scope_ref)
+        self.pattern_maker.setVisible(False)
+        self.pattern_maker.setFixedWidth(350)
 
         # Separators
         separator1 = QFrame()
@@ -1470,7 +1514,7 @@ class MainWindow(QWidget):
         # Assemble
         main_layout.addWidget(left_widget, 1)
         main_layout.addWidget(separator1)
-        main_layout.addWidget(self.protocol_editor, 0)
+        main_layout.addWidget(self.pattern_maker, 0)
         main_layout.addWidget(self.separator2)
         main_layout.addWidget(self.image_widget, 4)
 
@@ -1691,15 +1735,33 @@ class MainWindow(QWidget):
     # Logic
     # -------------------------------
 
-    def toggle_protocol_editor(self):
-        """Toggle visibility of the Protocol Editor panel."""
-        is_visible = self.protocol_editor.isVisible()
-        self.protocol_editor.setVisible(not is_visible)
+    def toggle_pattern_maker(self):
+        """Toggle visibility of the Pattern Maker panel."""
+        is_visible = self.pattern_maker.isVisible()
+        self.pattern_maker.setVisible(not is_visible)
         self.separator2.setVisible(not is_visible)
         if is_visible:
-            self.protocol_editor_btn.setText("Protocol Editor ▶")
+            self.pattern_maker_btn.setText("Pattern Maker ▶")
         else:
-            self.protocol_editor_btn.setText("Protocol Editor ◀")
+            self.pattern_maker_btn.setText("Pattern Maker ◀")
+
+    def toggle_settings(self):
+        """Toggle visibility of the Settings panel (fold-out below button)."""
+        is_visible = self.settings_panel.isVisible()
+        self.settings_panel.setVisible(not is_visible)
+        if is_visible:
+            self.settings_btn.setText("Settings ▼")
+        else:
+            self.settings_btn.setText("Settings ▲")
+
+    def _on_working_dir_changed(self, directory):
+        """Handle working directory change from settings panel."""
+        if directory:
+            self.run_btn.setEnabled(True)
+            self.run_btn.setToolTip("")
+        else:
+            self.run_btn.setEnabled(False)
+            self.run_btn.setToolTip("Set a working directory in Settings first")
 
     def add_position(self):
         index = self.position_list.count()
@@ -2417,6 +2479,8 @@ class MainWindow(QWidget):
     def run(self):
         # Run the milling tasks
         task_list = self.build_task_list()
+        if MODE=='scope':
+            print(f"Scope output directory: {scope.working_dir}")
         print(f"Made a task list with {len(task_list)} tasks.")
 
         for task_idx, task in enumerate(task_list):

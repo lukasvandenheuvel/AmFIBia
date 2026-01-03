@@ -1,572 +1,850 @@
-import tkinter as tk
-from tkinter import ttk
-from tkinter import scrolledtext
-import traceback
 import numpy as np
-import os
+import uuid
+from PyQt5.QtWidgets import (
+    QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
+    QCheckBox, QLineEdit, QComboBox, QGroupBox, QScrollArea, QFormLayout, QFrame,
+    QTabWidget, QSpinBox
+)
+from PyQt5.QtGui import QFont
+from PyQt5.QtCore import Qt
 
-class Application:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("PatternMaker")
-        self.root.geometry("480x930")
-        
-        # Notebook (tabs)
-        notebook = ttk.Notebook(root)
-        notebook.pack(expand=True, fill="both")
+from src.CustomPatterns import RectanglePattern, PolygonPattern, DisplayablePattern, PatternGroup
 
-        # TAB 1 – blockprep frame
-        blockprep_frame = tk.Frame(notebook, padx=20, pady=20)
-        notebook.add(blockprep_frame, text="BlockPrep")   
 
-        # TAB 2 – Lamella frame
-        lamella_frame = tk.Frame(notebook, padx=20, pady=20)
-        notebook.add(lamella_frame, text="Polishing")
-
-        # Liftout title
-        label2 = tk.Label(blockprep_frame, text="Block Preparation", font=("Arial", 24))
-        label2.pack(pady=10)
-
-        # Lamella title
-        label = tk.Label(lamella_frame, text="Polishing Pattern", font=("Arial", 24))
-        label.pack(pady=10)
-
-        # ========= BLOCKPREP FRAME =========
-
-        # ========= GROUP 1 =========
-        block_label = tk.Label(blockprep_frame, text="Block parameters", 
-                                font=("Arial", 14, "bold"))
-        block_label.pack(pady=(10, 5))
-
-        block_frame = tk.Frame(blockprep_frame)
-        block_frame.pack(pady=5, fill="x")
-
-        self.block_width_um = self.create_param_entry(block_frame, "Block width (μm):", default_value="40")
-        self.block_height_um = self.create_param_entry(block_frame, "Block height (μm):", default_value="35")
-        self.block_depth_um = self.create_param_entry(block_frame, "Block depth (μm):", default_value="30")
-
-        # Dropdown label
-        dropdown_label = tk.Label(block_frame, text="Liftout mode:", font=("Arial", 12), width=15, anchor="w")
-        dropdown_label.pack(side="left")
-
-        # Dropdown (Combobox) with 2 choices
-        self.mode = tk.StringVar()
-        self.dropdown_box = ttk.Combobox(
-            block_frame,
-            textvariable=self.mode,
-            font=("Arial", 12),
-            state="readonly",
-            values=["TopDown", "Planar"]
-        )
-        self.dropdown_box.current(0)  # default = first item
-        self.dropdown_box.pack(side="left", fill="x", expand=True)
-        
-
-        # ========= GROUP 2 =========
-        innerouter_label = tk.Label(blockprep_frame, text="Outer & Inner pattern:", 
-                                font=("Arial", 14, "bold"))
-        innerouter_label.pack(pady=(10, 5))
-
-        innerouter_frame = tk.Frame(blockprep_frame)
-        innerouter_frame.pack(pady=5, fill="x")
-
-        self.outer_pattern_size_um = self.create_param_entry(innerouter_frame, "Outer pattern size (μm):", default_value="10")
-        self.outer_margin_um = self.create_param_entry(innerouter_frame, "Outer margin (μm):", default_value="5")
-        self.inner_pattern_size_um = self.create_param_entry(innerouter_frame, "Inner pattern size (μm):", default_value="8")
-        self.inner_margin_um = self.create_param_entry(innerouter_frame, "Inner margin (μm):", default_value="0.5")
-
-        # ========= GROUP 3 =========
-        current_label = tk.Label(blockprep_frame, text="Which milling currents?", 
-                                font=("Arial", 14, "bold"))
-        current_label.pack(pady=(10, 5))
-
-        current_frame = tk.Frame(blockprep_frame)
-        current_frame.pack(pady=5, fill="x")
-
-        # 3 checkboxes in a single row
-        self.do_65nA = tk.BooleanVar(value=True)
-        self.do_50nA = tk.BooleanVar(value=True)
-        self.do_15nA = tk.BooleanVar(value=True)
-
-        chk1 = tk.Checkbutton(current_frame, text="65nA", variable=self.do_65nA, font=("Arial", 12))
-        chk2 = tk.Checkbutton(current_frame, text="50nA", variable=self.do_50nA, font=("Arial", 12))
-        chk3 = tk.Checkbutton(current_frame, text="15nA", variable=self.do_15nA, font=("Arial", 12))
-
-        chk1.pack(side="left", padx=10)
-        chk2.pack(side="left", padx=10)
-        chk3.pack(side="left", padx=10)
-
-        # ========= GROUP 4 =========
-        extra_label = tk.Label(blockprep_frame, text="Extra parameters", 
-                                font=("Arial", 14, "bold"))
-        extra_label.pack(pady=(10, 5))
-
-        extra_frame = tk.Frame(blockprep_frame)
-        extra_frame.pack(pady=5, fill="x")
-
-        self.milling_angle = self.create_param_entry(extra_frame, "Milling angle", default_value="10")
-        self.pattern_overlap_X = self.create_param_entry(extra_frame, "Pattern overlap X (%):", default_value="100")
-        self.pattern_overlap_Y = self.create_param_entry(extra_frame, "Pattern overlap Y (%):", default_value="100")
-        self.bridge_width_um = self.create_param_entry(extra_frame, "Bridge thickness (μm)", default_value="15")
-        self.needle_gap_width_um = self.create_param_entry(extra_frame, "Needle gap width (μm):", default_value="25")
-        self.needle_gap_height_um = self.create_param_entry(extra_frame, "Needle gap height (μm):", default_value="65")
-        self.prefix_blockprep = self.create_param_entry(extra_frame, "Output prefix:", default_value="pattern-blockprep")
-
-        # Button to trigger file reading
-        button = tk.Button(blockprep_frame, text="Create pattern file", command=self.create_blockprep_file, 
-                           font=("Arial", 12), padx=20, pady=10)
-        button.pack(pady=20)
-
-        # Status label
-        self.status_label = tk.Label(blockprep_frame, text="", font=("Arial", 10))
-        self.status_label.pack(pady=10)
-
-        # ------ END blockprep frame -----
-
-        # ========= LAMELLA FRAME =========
-
-        # ========= GROUP 1 =========
-        group1_label = tk.Label(lamella_frame, text="Lamella parameters", 
-                                font=("Arial", 14, "bold"))
-        group1_label.pack(pady=(10, 5))
-
-        group1_frame = tk.Frame(lamella_frame)
-        group1_frame.pack(pady=5, fill="x")
-
-        self.lamella_thickness_nm = self.create_param_entry(group1_frame, "Lamella thickness (nm):", default_value="200")
-        self.pattern_width_um = self.create_param_entry(group1_frame, "Pattern width (μm):", default_value="20")
-        self.pattern_height_nm = self.create_param_entry(group1_frame, "Pattern height (nm):", default_value="300")
-        self.depth_um = self.create_param_entry(group1_frame, "Pattern depth / Z (μm):", default_value="3")
-
-        # ========= GROUP 2 =========
-        group2_label = tk.Label(lamella_frame, text="Advanced parameters", 
-                                font=("Arial", 14, "bold"))
-        group2_label.pack(pady=(20, 5))
-
-        group2_frame = tk.Frame(lamella_frame)
-        group2_frame.pack(pady=5, fill="x")
-
-        self.radius = self.create_param_entry(group2_frame, "Radius [>=1, 1 = perfect circle]:", default_value="1.2")
-        self.num_points = self.create_param_entry(group2_frame, "Number of points in arc:", default_value="10")
-        self.prefix_lamella = self.create_param_entry(group2_frame, "Output prefix:", default_value="pattern-polish")
-
-        # Button to trigger file reading
-        button = tk.Button(lamella_frame, text="Create pattern file", command=self.create_pattern_file, 
-                           font=("Arial", 12), padx=20, pady=10)
-        button.pack(pady=20)
-
-        # Status label
-        self.status_label = tk.Label(lamella_frame, text="", font=("Arial", 10))
-        self.status_label.pack(pady=10)
-
-        # ----- END lamella frame -------
-
-    def create_param_entry(self, parent, label_text, default_value=""):
-        """Create a labeled entry field inside a given parent."""
-        frame = tk.Frame(parent)
-        frame.pack(pady=3, fill="x")
-
-        label = tk.Label(frame, text=label_text, font=("Arial", 12), width=25, anchor="w")
-        label.pack(side="left")
-
-        entry = tk.Entry(frame, font=("Arial", 12))
-        entry.pack(side="left", fill="x", expand=True)
-
-        entry.insert(0, default_value) 
-        return entry
+class PatternMaker(QWidget):
+    """Widget for creating block preparation and polishing patterns."""
     
-    def get_blockprep_parameters(self):
-        """Return all blockprep parameters."""
-        param_dict = {
-            'block_width':          float(self.block_width_um.get())*1e-6,
-            'block_height':         float(self.block_height_um.get())*1e-6,
-            'block_depth':          float(self.block_depth_um.get())*1e-6,
-            'inner_pattern_size':   float(self.inner_pattern_size_um.get())*1e-6,
-            'inner_margin':         float(self.inner_margin_um.get())*1e-6,
-            'outer_pattern_size':   float(self.outer_pattern_size_um.get())*1e-6,
-            'outer_margin':         float(self.outer_margin_um.get())*1e-6,
-            'do_65nA':              bool(self.do_65nA.get()),
-            'do_50nA':              bool(self.do_50nA.get()),
-            'do_15nA':              bool(self.do_15nA.get()),
-            'milling_angle':        float(self.milling_angle.get()),
-            'pattern_overlap_X':    float(self.pattern_overlap_X.get())/100,
-            'pattern_overlap_Y':    float(self.pattern_overlap_Y.get())/100,
-            'bridge_width':         float(self.bridge_width_um.get())*1e-6,
-            'needle_gap_width':     float(self.needle_gap_width_um.get())*1e-6,
-            'needle_gap_height':    float(self.needle_gap_height_um.get())*1e-6,
-            'needle_gap_overlap':   2*1e-6,  # Hard-coded parameter
-            'trench_safety_margin': 25*1e-6, # Hard-coded parameter
-            'mode':                 self.mode.get(),
-            'prefix':               self.prefix_blockprep.get(),
-        }
-        return param_dict
-
-    def get_lamella_parameters(self):
-        """Return all lamella parameters."""
-        param_dict = {
-            'lamella_thickness':    float(self.lamella_thickness_nm.get())*1e-9,
-            'pattern_width':        float(self.pattern_width_um.get())*1e-6,
-            'pattern_height':       float(self.pattern_height_nm.get())*1e-9,
-            'depth':                float(self.depth_um.get())*1e-6,
-            'radius':               float(self.radius.get()),
-            'num_points':           int(self.num_points.get()),
-            'prefix':               self.prefix_lamella.get(),
-        }
-        return param_dict
+    # Which pattern indices belong to which current group (for block prep)
+    ENABLE_PATTERNS = {
+        'coarse': [0, 8],
+        'medium': [0, 4, 5, 7, 9, 14, 11, 12, 13],
+        'fine': [0, 1, 2, 3, 6, 10]
+    }
     
-    def read_reference_file(self,reference_path):
-        try:
-            with open(reference_path, 'r') as f:
-                file = f.read()
-        except FileNotFoundError as e:
-            self.show_error_log(f"FileNotFoundError: {str(e)}")
-        except Exception as e:
-            self.show_error_log(f"Error: {str(e)}\n\n{traceback.format_exc()}")
-        return file
-
-    def create_blockprep_file(self):
-        """Create blockprep file"""
-        params = self.get_blockprep_parameters()
+    # Default currents in Amperes for dev mode
+    DEV_MODE_CURRENTS = [0.1e-9, 15e-9, 50e-9, 65e-9]  # 0.1nA, 15nA, 50nA, 65nA
     
-        print("Parameters entered:", params)
+    # Default current selections (in Amperes)
+    DEFAULT_COARSE_CURRENT = 65e-9   # 65 nA
+    DEFAULT_MEDIUM_CURRENT = 50e-9   # 50 nA
+    DEFAULT_FINE_CURRENT = 15e-9     # 15 nA
+    DEFAULT_POLISH_CURRENT = 0.1e-9  # 0.1 nA for polishing
+    
+    # Hard-coded pattern properties from reference PTF file
+    # Pattern index -> (scan_direction, enabled)
+    # All patterns share: dwell_time=1e-6, scan_type="Serpentine", application_file="Si"
+    PATTERN_PROPERTIES = {
+        0:  {'scan_direction': 'DynamicAllDirections', 'enabled': False},  # Block (reference, disabled)
+        1:  {'scan_direction': 'BottomToTop', 'enabled': True},            # inner bottom
+        2:  {'scan_direction': 'LeftToRight', 'enabled': True},            # inner left top
+        3:  {'scan_direction': 'RightToLeft', 'enabled': True},            # inner right
+        4:  {'scan_direction': 'RightToLeft', 'enabled': True},            # outer right
+        5:  {'scan_direction': 'BottomToTop', 'enabled': True},            # outer bottom
+        6:  {'scan_direction': 'TopToBottom', 'enabled': True},            # inner top
+        7:  {'scan_direction': 'LeftToRight', 'enabled': True},            # outer left top
+        8:  {'scan_direction': 'TopToBottom', 'enabled': True},            # trench top
+        9:  {'scan_direction': 'LeftToRight', 'enabled': True},            # outer left bottom
+        10: {'scan_direction': 'LeftToRight', 'enabled': True},            # inner left bottom
+        11: {'scan_direction': 'LeftToRight', 'enabled': True},            # needle gap right top
+        12: {'scan_direction': 'RightToLeft', 'enabled': True},            # outer left trench
+        13: {'scan_direction': 'LeftToRight', 'enabled': True},            # needle gap
+        14: {'scan_direction': 'TopToBottom', 'enabled': True},            # outer top
+    }
+    
+    def __init__(self, parent=None, mode="dev", scope=None):
+        super().__init__(parent)
+        self.main_window = parent
+        self.mode = mode
+        self.scope = scope
+        self.available_currents = self._get_available_currents()
+        self.setup_ui_with_tabs()
+    
+    def _get_available_currents(self):
+        """Get available milling currents based on mode."""
+        if self.mode == "scope" and self.scope is not None:
+            try:
+                # Get from microscope - values are in Amperes
+                values = self.scope.beams.ion_beam.beam_current.available_values
+                return sorted(values)
+            except Exception as e:
+                print(f"Warning: Could not get beam currents from scope: {e}")
+                return self.DEV_MODE_CURRENTS
+        else:
+            return self.DEV_MODE_CURRENTS
+    
+    def _current_to_nA_str(self, current_A):
+        """Convert current in Amperes to nA string for display."""
+        nA = current_A * 1e9
+        if nA < 1:
+            return f"{nA:.1f} nA"
+        else:
+            return f"{nA:.0f} nA"
+    
+    def _nA_str_to_current(self, nA_str):
+        """Convert nA string back to Amperes."""
+        # Parse "X nA" or "X.X nA" format
+        value = float(nA_str.replace(" nA", "").strip())
+        return value * 1e-9
+    
+    def setup_ui_with_tabs(self):
+        """Setup UI with tabs for Block Preparation and Polishing."""
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 10, 10, 10)
         
-        # Read reference file and obtain properties of pre-defined patterns
-        file = self.read_reference_file('reference-pattern-blockprep_DO_NOT_REMOVE.ptf')
-        vertices_dict = {}
-        properties_dict = {}
-        rectangles = file.split('<PatternRectangle>')[1:]
-        for i,rect in enumerate(rectangles): # split the file in rectangles
-            centerX = float(rect.split('CenterX ')[1].split('</CenterX')[0].split('"r8">')[1])
-            centerY = float(rect.split('CenterY ')[1].split('</CenterY')[0].split('"r8">')[1])
-            w = float(rect.split('Width ')[1].split('</Width')[0].split('"r8">')[1])
-            l = float(rect.split('Length ')[1].split('</Length')[0].split('"r8">')[1])
-            vertices_dict[i] = rectangle_vertices(centerX,centerY,w,l)
-            properties_dict[i] = (centerX,centerY,w,l)
-
-        enable_patterns = {
-            '65nA': [0,8],
-            '50nA': [0,4,5,7,9,14,11,12,13],
-            '15nA': [0,1,2,3,6,10]
+        # Title
+        title = QLabel("Protocol Editor")
+        title.setFont(QFont("Arial", 16, QFont.Bold))
+        title.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title)
+        
+        # Tab widget
+        self.tab_widget = QTabWidget()
+        layout.addWidget(self.tab_widget, stretch=1)
+        
+        # Add Block Preparation tab
+        block_prep_tab = self._create_block_prep_tab()
+        self.tab_widget.addTab(block_prep_tab, "Block Preparation")
+        
+        # Add Polishing tab
+        polishing_tab = self._create_polishing_tab()
+        self.tab_widget.addTab(polishing_tab, "Polishing")
+    
+    def _create_block_prep_tab(self):
+        """Create the Block Preparation tab content."""
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        
+        # Scroll area for parameters
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll_content = QWidget()
+        scroll_layout = QVBoxLayout(scroll_content)
+        
+        # GROUP 1: Block parameters
+        block_group = QGroupBox("Block parameters")
+        block_layout = QFormLayout(block_group)
+        self.block_width_um = QLineEdit("40")
+        self.block_height_um = QLineEdit("35")
+        self.block_depth_um = QLineEdit("30")
+        block_layout.addRow("Block width (μm):", self.block_width_um)
+        block_layout.addRow("Block height (μm):", self.block_height_um)
+        block_layout.addRow("Block depth (μm):", self.block_depth_um)
+        
+        # Liftout mode dropdown
+        self.mode_combo = QComboBox()
+        self.mode_combo.addItems(["TopDown", "Planar"])
+        block_layout.addRow("Liftout mode:", self.mode_combo)
+        scroll_layout.addWidget(block_group)
+        
+        # GROUP 2: Outer & Inner pattern
+        pattern_group = QGroupBox("Outer & Inner pattern")
+        pattern_layout = QFormLayout(pattern_group)
+        self.outer_pattern_size_um = QLineEdit("10")
+        self.outer_margin_um = QLineEdit("5")
+        self.inner_pattern_size_um = QLineEdit("8")
+        self.inner_margin_um = QLineEdit("0.5")
+        pattern_layout.addRow("Outer pattern size (μm):", self.outer_pattern_size_um)
+        pattern_layout.addRow("Outer margin (μm):", self.outer_margin_um)
+        pattern_layout.addRow("Inner pattern size (μm):", self.inner_pattern_size_um)
+        pattern_layout.addRow("Inner margin (μm):", self.inner_margin_um)
+        scroll_layout.addWidget(pattern_group)
+        
+        # GROUP 3: Milling currents
+        current_group = QGroupBox("Milling currents")
+        current_layout = QFormLayout(current_group)
+        
+        # Build current options list
+        current_options = [self._current_to_nA_str(c) for c in self.available_currents]
+        
+        # Coarse current (65nA default)
+        self.do_coarse = QCheckBox()
+        self.do_coarse.setChecked(True)
+        self.coarse_current_combo = QComboBox()
+        self.coarse_current_combo.addItems(current_options)
+        self._set_combo_to_current(self.coarse_current_combo, self.DEFAULT_COARSE_CURRENT)
+        self.coarse_seq_group = QSpinBox()
+        self.coarse_seq_group.setMinimum(0)
+        self.coarse_seq_group.setMaximum(999)
+        self.coarse_seq_group.setValue(0)
+        self.coarse_seq_group.setFixedWidth(50)
+        coarse_row = QHBoxLayout()
+        coarse_row.addWidget(self.do_coarse)
+        coarse_row.addWidget(self.coarse_current_combo)
+        coarse_row.addWidget(QLabel("Seq:"))
+        coarse_row.addWidget(self.coarse_seq_group)
+        coarse_row.addStretch()
+        current_layout.addRow("Coarse:", coarse_row)
+        
+        # Medium current (50nA default)
+        self.do_medium = QCheckBox()
+        self.do_medium.setChecked(True)
+        self.medium_current_combo = QComboBox()
+        self.medium_current_combo.addItems(current_options)
+        self._set_combo_to_current(self.medium_current_combo, self.DEFAULT_MEDIUM_CURRENT)
+        self.medium_seq_group = QSpinBox()
+        self.medium_seq_group.setMinimum(0)
+        self.medium_seq_group.setMaximum(999)
+        self.medium_seq_group.setValue(0)
+        self.medium_seq_group.setFixedWidth(50)
+        medium_row = QHBoxLayout()
+        medium_row.addWidget(self.do_medium)
+        medium_row.addWidget(self.medium_current_combo)
+        medium_row.addWidget(QLabel("Seq:"))
+        medium_row.addWidget(self.medium_seq_group)
+        medium_row.addStretch()
+        current_layout.addRow("Medium:", medium_row)
+        
+        # Fine current (15nA default)
+        self.do_fine = QCheckBox()
+        self.do_fine.setChecked(True)
+        self.fine_current_combo = QComboBox()
+        self.fine_current_combo.addItems(current_options)
+        self._set_combo_to_current(self.fine_current_combo, self.DEFAULT_FINE_CURRENT)
+        self.fine_seq_group = QSpinBox()
+        self.fine_seq_group.setMinimum(0)
+        self.fine_seq_group.setMaximum(999)
+        self.fine_seq_group.setValue(1)
+        self.fine_seq_group.setFixedWidth(50)
+        fine_row = QHBoxLayout()
+        fine_row.addWidget(self.do_fine)
+        fine_row.addWidget(self.fine_current_combo)
+        fine_row.addWidget(QLabel("Seq:"))
+        fine_row.addWidget(self.fine_seq_group)
+        fine_row.addStretch()
+        current_layout.addRow("Fine:", fine_row)
+        
+        scroll_layout.addWidget(current_group)
+        
+        # GROUP 4: Extra parameters
+        extra_group = QGroupBox("Extra parameters")
+        extra_layout = QFormLayout(extra_group)
+        self.milling_angle = QLineEdit("10")
+        self.pattern_overlap_X = QLineEdit("100")
+        self.pattern_overlap_Y = QLineEdit("100")
+        self.bridge_width_um = QLineEdit("15")
+        self.needle_gap_width_um = QLineEdit("25")
+        self.needle_gap_height_um = QLineEdit("65")
+        extra_layout.addRow("Milling angle:", self.milling_angle)
+        extra_layout.addRow("Pattern overlap X (%):", self.pattern_overlap_X)
+        extra_layout.addRow("Pattern overlap Y (%):", self.pattern_overlap_Y)
+        extra_layout.addRow("Bridge thickness (μm):", self.bridge_width_um)
+        extra_layout.addRow("Needle gap width (μm):", self.needle_gap_width_um)
+        extra_layout.addRow("Needle gap height (μm):", self.needle_gap_height_um)
+        scroll_layout.addWidget(extra_group)
+        
+        # Create pattern button (inside scroll area, right after parameters)
+        create_btn = QPushButton("Create pattern")
+        create_btn.clicked.connect(self.create_block_prep_patterns)
+        scroll_layout.addWidget(create_btn)
+        
+        scroll_layout.addStretch()
+        scroll.setWidget(scroll_content)
+        layout.addWidget(scroll, stretch=1)
+        
+        return tab
+    
+    def _create_polishing_tab(self):
+        """Create the Polishing tab content."""
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        
+        # Scroll area for parameters
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll_content = QWidget()
+        scroll_layout = QVBoxLayout(scroll_content)
+        
+        # GROUP 1: Lamella parameters
+        lamella_group = QGroupBox("Lamella parameters")
+        lamella_layout = QFormLayout(lamella_group)
+        self.lamella_thickness_nm = QLineEdit("200")
+        self.pattern_width_um = QLineEdit("20")
+        self.pattern_height_nm = QLineEdit("300")
+        self.depth_um = QLineEdit("3")
+        lamella_layout.addRow("Lamella thickness (nm):", self.lamella_thickness_nm)
+        lamella_layout.addRow("Pattern width (μm):", self.pattern_width_um)
+        lamella_layout.addRow("Pattern height (nm):", self.pattern_height_nm)
+        lamella_layout.addRow("Depth (μm):", self.depth_um)
+        scroll_layout.addWidget(lamella_group)
+        
+        # GROUP 2: Arc parameters
+        arc_group = QGroupBox("Arc parameters")
+        arc_layout = QFormLayout(arc_group)
+        self.radius = QLineEdit("1.2")
+        self.num_points = QLineEdit("10")
+        arc_layout.addRow("Radius (≥1, 1=circle):", self.radius)
+        arc_layout.addRow("Number of points:", self.num_points)
+        scroll_layout.addWidget(arc_group)
+        
+        # GROUP 3: Milling current
+        current_group = QGroupBox("Milling current")
+        current_layout = QFormLayout(current_group)
+        current_options = [self._current_to_nA_str(c) for c in self.available_currents]
+        self.polish_current_combo = QComboBox()
+        self.polish_current_combo.addItems(current_options)
+        self._set_combo_to_current(self.polish_current_combo, self.DEFAULT_POLISH_CURRENT)
+        current_layout.addRow("Current:", self.polish_current_combo)
+        scroll_layout.addWidget(current_group)
+        
+        # Create pattern button
+        create_btn = QPushButton("Create pattern")
+        create_btn.clicked.connect(self.create_polishing_patterns)
+        scroll_layout.addWidget(create_btn)
+        
+        scroll_layout.addStretch()
+        scroll.setWidget(scroll_content)
+        layout.addWidget(scroll, stretch=1)
+        
+        return tab
+        
+    def setup_ui(self):
+        """Legacy setup_ui method - redirects to tabbed version."""
+        self.setup_ui_with_tabs()
+    
+    def _set_combo_to_current(self, combo, target_current_A):
+        """Set combo box to the closest available current value."""
+        # Find closest available current
+        closest_idx = 0
+        min_diff = float('inf')
+        for i, curr in enumerate(self.available_currents):
+            diff = abs(curr - target_current_A)
+            if diff < min_diff:
+                min_diff = diff
+                closest_idx = i
+        combo.setCurrentIndex(closest_idx)
+        
+    def get_parameters(self):
+        """Return all block preparation parameters."""
+        return {
+            'block_width': float(self.block_width_um.text()) * 1e-6,
+            'block_height': float(self.block_height_um.text()) * 1e-6,
+            'block_depth': float(self.block_depth_um.text()) * 1e-6,
+            'inner_pattern_size': float(self.inner_pattern_size_um.text()) * 1e-6,
+            'inner_margin': float(self.inner_margin_um.text()) * 1e-6,
+            'outer_pattern_size': float(self.outer_pattern_size_um.text()) * 1e-6,
+            'outer_margin': float(self.outer_margin_um.text()) * 1e-6,
+            'do_coarse': self.do_coarse.isChecked(),
+            'do_medium': self.do_medium.isChecked(),
+            'do_fine': self.do_fine.isChecked(),
+            'coarse_current': self._nA_str_to_current(self.coarse_current_combo.currentText()),
+            'medium_current': self._nA_str_to_current(self.medium_current_combo.currentText()),
+            'fine_current': self._nA_str_to_current(self.fine_current_combo.currentText()),
+            'milling_angle': float(self.milling_angle.text()),
+            'pattern_overlap_X': float(self.pattern_overlap_X.text()) / 100,
+            'pattern_overlap_Y': float(self.pattern_overlap_Y.text()) / 100,
+            'bridge_width': float(self.bridge_width_um.text()) * 1e-6,
+            'needle_gap_width': float(self.needle_gap_width_um.text()) * 1e-6,
+            'needle_gap_height': float(self.needle_gap_height_um.text()) * 1e-6,
+            'needle_gap_overlap': 2 * 1e-6,
+            'trench_safety_margin': 25 * 1e-6,
+            'mode': self.mode_combo.currentText(),
         }
-
-        # Obtain parameters
-        block_width             = params['block_width']
-        block_height            = params['block_height']
-        block_depth             = params['block_depth']
-        inner_margin            = params['inner_margin']
-        outer_margin            = params['outer_margin']
-        inner_pattern_size      = params['inner_pattern_size']
-        outer_pattern_size      = params['outer_pattern_size']
-        milling_angle           = params['milling_angle']
-        pattern_overlap_X       = params['pattern_overlap_X']
-        pattern_overlap_Y       = params['pattern_overlap_Y']
-        bridge_width            = params['bridge_width']
-        needle_gap_width        = params['needle_gap_width']
-        needle_gap_height       = params['needle_gap_height']
-        needle_gap_overlap      = params['needle_gap_overlap']
-        trench_safety_margin    = params['trench_safety_margin']
-        mode                    = params['mode']
-        do_65nA                 = params['do_65nA']
-        do_50nA                 = params['do_50nA']
-        do_15nA                 = params['do_15nA']
-        prefix                  = params['prefix']
-
-        # Define trench height using THALES theorem (Jean's method)
+    
+    def get_polishing_parameters(self):
+        """Return all polishing parameters."""
+        return {
+            'lamella_thickness': float(self.lamella_thickness_nm.text()) * 1e-9,
+            'pattern_width': float(self.pattern_width_um.text()) * 1e-6,
+            'pattern_height': float(self.pattern_height_nm.text()) * 1e-9,
+            'depth': float(self.depth_um.text()) * 1e-6,
+            'radius': float(self.radius.text()),
+            'num_points': int(self.num_points.text()),
+            'polish_current': self._nA_str_to_current(self.polish_current_combo.currentText()),
+        }
+    
+    def rectangle_vertices(self, centerX, centerY, w, l):
+        """Returns an 4x2 array with X,Y coordinates of rectangle vertices (anticlockwise)."""
+        return np.array([
+            [centerX - w/2, centerY + l/2],
+            [centerX - w/2, centerY - l/2],
+            [centerX + w/2, centerY - l/2],
+            [centerX + w/2, centerY + l/2]
+        ])
+    
+    def rectangle_properties(self, vertices):
+        """Returns (X, Y, w, l) of rectangle from 4 vertices."""
+        w = vertices[3, 0] - vertices[0, 0]
+        l = vertices[0, 1] - vertices[1, 1]
+        centerX = vertices[1, 0] + w / 2
+        centerY = vertices[1, 1] + l / 2
+        return (centerX, centerY, w, l)
+    
+    def create_block_prep_patterns(self):
+        """Generate block preparation patterns and display them."""
+        params = self.get_parameters()
+        
+        # Get parameters
+        block_width = params['block_width']
+        block_height = params['block_height']
+        block_depth = params['block_depth']
+        inner_margin = params['inner_margin']
+        outer_margin = params['outer_margin']
+        inner_pattern_size = params['inner_pattern_size']
+        outer_pattern_size = params['outer_pattern_size']
+        milling_angle = params['milling_angle']
+        pattern_overlap_X = params['pattern_overlap_X']
+        pattern_overlap_Y = params['pattern_overlap_Y']
+        bridge_width = params['bridge_width']
+        needle_gap_width = params['needle_gap_width']
+        needle_gap_height = params['needle_gap_height']
+        needle_gap_overlap = params['needle_gap_overlap']
+        trench_safety_margin = params['trench_safety_margin']
+        mode = params['mode']
+        do_coarse = params['do_coarse']
+        do_medium = params['do_medium']
+        do_fine = params['do_fine']
+        coarse_current = params['coarse_current']
+        medium_current = params['medium_current']
+        fine_current = params['fine_current']
+        
+        # Define trench height using THALES theorem
         trench_height = block_depth / np.tan(np.deg2rad(milling_angle)) + trench_safety_margin
-
+        
+        # Build all pattern vertices
         new_verts = {}
-        new_verts[0] = rectangle_vertices(properties_dict[0][0],properties_dict[0][1],block_width,block_height)
-
+        # Pattern 0 is the block itself (reference)
+        new_verts[0] = self.rectangle_vertices(0, 0, block_width, block_height)
+        
+        # Pattern 1: inner bottom
         new_verts[1] = np.array([
             [new_verts[0][1,0] - inner_margin - pattern_overlap_X*inner_pattern_size, new_verts[0][1,1] - inner_margin],
             [new_verts[0][1,0] - inner_margin - pattern_overlap_X*inner_pattern_size, new_verts[0][1,1] - inner_margin - inner_pattern_size],
             [new_verts[0][2,0] + inner_margin + pattern_overlap_X*inner_pattern_size, new_verts[0][2,1] - inner_margin - inner_pattern_size],
             [new_verts[0][2,0] + inner_margin + pattern_overlap_X*inner_pattern_size, new_verts[0][2,1] - inner_margin]
         ])
+        
+        # Pattern 2: inner left top
         new_verts[2] = np.array([
             [new_verts[0][0,0] - inner_margin - inner_pattern_size, new_verts[0][0,1] + inner_margin + pattern_overlap_Y*inner_pattern_size],
-            [new_verts[0][0,0] - inner_margin - inner_pattern_size, properties_dict[0][1] + bridge_width/2],
-            [new_verts[0][0,0] - inner_margin, properties_dict[0][1] + bridge_width/2],
+            [new_verts[0][0,0] - inner_margin - inner_pattern_size, bridge_width/2],
+            [new_verts[0][0,0] - inner_margin, bridge_width/2],
             [new_verts[0][0,0] - inner_margin, new_verts[0][0,1] + inner_margin + pattern_overlap_Y*inner_pattern_size]
         ])
+        
+        # Pattern 3: inner right
         new_verts[3] = np.array([
             [new_verts[0][3,0] + inner_margin, new_verts[0][3,1] + inner_margin + pattern_overlap_Y*inner_pattern_size],
             [new_verts[0][3,0] + inner_margin, new_verts[0][2,1] - inner_margin - pattern_overlap_Y*inner_pattern_size],
             [new_verts[0][3,0] + inner_margin + inner_pattern_size, new_verts[0][2,1] - inner_margin - pattern_overlap_Y*inner_pattern_size],
             [new_verts[0][3,0] + inner_margin + inner_pattern_size, new_verts[0][3,1] + inner_margin + pattern_overlap_Y*inner_pattern_size]
         ])
+        
+        # Pattern 4: outer right
         new_verts[4] = np.array([
             [new_verts[0][3,0] + outer_margin, new_verts[0][3,1] + outer_margin + pattern_overlap_Y*outer_pattern_size],
             [new_verts[0][3,0] + outer_margin, new_verts[0][2,1] - outer_margin - pattern_overlap_Y*outer_pattern_size],
             [new_verts[0][3,0] + outer_margin + outer_pattern_size, new_verts[0][2,1] - outer_margin - pattern_overlap_Y*outer_pattern_size],
             [new_verts[0][3,0] + outer_margin + outer_pattern_size, new_verts[0][3,1] + outer_margin + pattern_overlap_Y*outer_pattern_size]
         ])
+        
+        # Pattern 5: outer bottom
         new_verts[5] = np.array([
             [new_verts[0][1,0] - outer_margin - pattern_overlap_X*outer_pattern_size, new_verts[0][1,1] - outer_margin],
             [new_verts[0][1,0] - outer_margin - pattern_overlap_X*outer_pattern_size, new_verts[0][1,1] - outer_margin - outer_pattern_size],
             [new_verts[0][2,0] + outer_margin + pattern_overlap_X*outer_pattern_size, new_verts[0][1,1] - outer_margin - outer_pattern_size],
             [new_verts[0][2,0] + outer_margin + pattern_overlap_X*outer_pattern_size, new_verts[0][1,1] - outer_margin]
         ])
+        
+        # Pattern 6: inner top
         new_verts[6] = np.array([
             [new_verts[0][0,0] - inner_margin - pattern_overlap_X*inner_pattern_size, new_verts[0][0,1] + inner_margin + inner_pattern_size],
             [new_verts[0][0,0] - inner_margin - pattern_overlap_X*inner_pattern_size, new_verts[0][0,1] + inner_margin],
             [new_verts[0][3,0] + inner_margin + pattern_overlap_X*inner_pattern_size, new_verts[0][3,1] + inner_margin],
             [new_verts[0][3,0] + inner_margin + pattern_overlap_X*inner_pattern_size, new_verts[0][3,1] + inner_margin + inner_pattern_size]
         ])
+        
+        # Pattern 7: outer left top
         new_verts[7] = np.array([
             [new_verts[0][0,0] - outer_margin - outer_pattern_size, new_verts[0][0,1] + outer_margin + pattern_overlap_Y*outer_pattern_size],
-            [new_verts[0][0,0] - outer_margin - outer_pattern_size, properties_dict[0][1] + bridge_width/2],
-            [new_verts[0][0,0] - outer_margin, properties_dict[0][1] + bridge_width/2],
+            [new_verts[0][0,0] - outer_margin - outer_pattern_size, bridge_width/2],
+            [new_verts[0][0,0] - outer_margin, bridge_width/2],
             [new_verts[0][0,0] - outer_margin, new_verts[0][0,1] + outer_margin + pattern_overlap_Y*outer_pattern_size]
         ])
+        
+        # Pattern 8: trench top
         new_verts[8] = np.array([
             [new_verts[0][0,0] - outer_margin - outer_pattern_size, new_verts[0][0,1] + outer_margin + 0.5*outer_pattern_size + trench_height],
             [new_verts[0][0,0] - outer_margin - outer_pattern_size, new_verts[0][0,1] + outer_margin + 0.5*outer_pattern_size],
             [new_verts[0][3,0] + outer_margin + outer_pattern_size, new_verts[0][3,1] + outer_margin + 0.5*outer_pattern_size],
             [new_verts[0][3,0] + outer_margin + outer_pattern_size, new_verts[0][3,1] + outer_margin + 0.5*outer_pattern_size + trench_height]
         ])
+        
+        # Pattern 9: outer left bottom
         new_verts[9] = np.array([
-            [new_verts[0][0,0] - outer_margin - outer_pattern_size, properties_dict[0][1] - bridge_width/2],
+            [new_verts[0][0,0] - outer_margin - outer_pattern_size, -bridge_width/2],
             [new_verts[0][0,0] - outer_margin - outer_pattern_size, new_verts[0][1,1] - outer_margin - pattern_overlap_Y*outer_pattern_size],
             [new_verts[0][0,0] - outer_margin, new_verts[0][1,1] - outer_margin - pattern_overlap_Y*outer_pattern_size],
-            [new_verts[0][0,0] - outer_margin, properties_dict[0][1] - bridge_width/2]
+            [new_verts[0][0,0] - outer_margin, -bridge_width/2]
         ])
+        
+        # Pattern 10: inner left bottom
         new_verts[10] = np.array([
-            [new_verts[0][0,0] - inner_margin - inner_pattern_size, properties_dict[0][1] - bridge_width/2],
+            [new_verts[0][0,0] - inner_margin - inner_pattern_size, -bridge_width/2],
             [new_verts[0][0,0] - inner_margin - inner_pattern_size, new_verts[0][1,1] - inner_margin - pattern_overlap_Y*inner_pattern_size],
             [new_verts[0][0,0] - inner_margin, new_verts[0][1,1] - inner_margin - pattern_overlap_Y*inner_pattern_size],
-            [new_verts[0][0,0] - inner_margin, properties_dict[0][1] - bridge_width/2]
+            [new_verts[0][0,0] - inner_margin, -bridge_width/2]
         ])
+        
+        # Pattern 11: needle gap right top
         new_verts[11] = np.array([
             [new_verts[0][3,0] + outer_margin, new_verts[0][0,1] + outer_margin + 0.5*outer_pattern_size + trench_height],
             [new_verts[0][3,0] + outer_margin, new_verts[0][0,1] + outer_margin + 0.5*outer_pattern_size + needle_gap_height - needle_gap_overlap],
             [new_verts[0][3,0] + outer_margin + outer_pattern_size, new_verts[0][0,1] + outer_margin + 0.5*outer_pattern_size + needle_gap_height - needle_gap_overlap],
             [new_verts[0][3,0] + outer_margin + outer_pattern_size, new_verts[0][0,1] + outer_margin + 0.5*outer_pattern_size + trench_height]
         ])
+        
+        # Pattern 12: outer left trench
         new_verts[12] = np.array([
             [new_verts[0][0,0] - outer_margin - outer_pattern_size, new_verts[0][0,1] + outer_margin + 0.5*outer_pattern_size + trench_height],
             [new_verts[0][0,0] - outer_margin - outer_pattern_size, new_verts[0][0,1] + outer_margin + 0.5*outer_pattern_size],
             [new_verts[0][0,0] - outer_margin, new_verts[0][0,1] + outer_margin + 0.5*outer_pattern_size],
             [new_verts[0][0,0] - outer_margin, new_verts[0][0,1] + outer_margin + 0.5*outer_pattern_size + trench_height]
         ])
+        
+        # Pattern 13: needle gap
         new_verts[13] = np.array([
             [new_verts[0][3,0] + outer_margin, new_verts[0][3,1] + outer_margin + 0.5*outer_pattern_size + needle_gap_height],
             [new_verts[0][3,0] + outer_margin, new_verts[0][3,1] + outer_margin + 0.5*outer_pattern_size],
             [new_verts[0][3,0] + outer_margin + needle_gap_width, new_verts[0][3,1] + outer_margin + 0.5*outer_pattern_size],
             [new_verts[0][3,0] + outer_margin + needle_gap_width, new_verts[0][3,1] + outer_margin + 0.5*outer_pattern_size + needle_gap_height]
         ])
+        
+        # Pattern 14: outer top
         new_verts[14] = np.array([
             [new_verts[0][1,0] - outer_margin - pattern_overlap_X*outer_pattern_size, new_verts[0][0,1] + outer_margin + outer_pattern_size],
             [new_verts[0][1,0] - outer_margin - pattern_overlap_X*outer_pattern_size, new_verts[0][0,1] + outer_margin],
             [new_verts[0][2,0] + outer_margin + pattern_overlap_X*outer_pattern_size, new_verts[0][3,1] + outer_margin],
             [new_verts[0][2,0] + outer_margin + pattern_overlap_X*outer_pattern_size, new_verts[0][3,1] + outer_margin + outer_pattern_size]
         ])
-
-        if mode=='Planar':
-            # Flip the X coordinates of the vertical patterns
-            new_verts[2][:,0]  = new_verts[2][:,0] + 2*inner_margin + block_width + inner_pattern_size
-            new_verts[10][:,0] = new_verts[10][:,0] + 2*inner_margin + block_width + inner_pattern_size
-            new_verts[7][:,0]  = new_verts[7][:,0] + 2*outer_margin + block_width + outer_pattern_size
-            new_verts[9][:,0]  = new_verts[9][:,0] + 2*outer_margin + block_width + outer_pattern_size
-            new_verts[3][:,0]  = new_verts[3][:,0] - 2*inner_margin - block_width - inner_pattern_size
-            new_verts[4][:,0]  = new_verts[4][:,0] - 2*outer_margin - block_width - outer_pattern_size
-            # Pattern 11 is the same as pattern 12, flipped along X
-            new_verts[11][:,1:3] = new_verts[12][:,1:3]
-
-        # Define which patterns to write in output file, this depends on milling current
-        milling_currents = []
-        do_65nA and milling_currents.append('65nA')
-        do_50nA and milling_currents.append('50nA')
-        do_15nA and milling_currents.append('15nA')
-
-        # Strings for output file
-        width_str = self.block_width_um.get()
-        height_str = self.block_height_um.get()
-        depth_str = self.block_depth_um.get()
-
-        # Write output file
-        self.output_path = ""
-
-        for current in milling_currents:
-            out_string = file.split('  <PatternRectangle>')[0]
-            for i,verts in new_verts.items():
-                enable = 'True'
-                if i==0: # The first pattern is the BLOCK: it should not be enabled!
-                    enable = 'False'
-                if i in enable_patterns[current]:
-                    (centerX,centerY,w,l) = rectangle_properties(verts)
-                    new_rect_string = rectangles[i].split('</PatternRectangle>')[0]
-                    new_rect_string = change_pattern_value('CenterX',centerX,new_rect_string,type='r8')
-                    new_rect_string = change_pattern_value('CenterY',centerY,new_rect_string,type='r8')
-                    new_rect_string = change_pattern_value('Width',w,new_rect_string,type='r8')
-                    new_rect_string = change_pattern_value('Length',l,new_rect_string,type='r8')
-                    new_rect_string = change_pattern_value('Enable',enable,new_rect_string,type='string')
-                    out_string = out_string + '  <PatternRectangle>' + new_rect_string + '</PatternRectangle>\n'
-
-            out_string = out_string + '</Content>'
-            output_name = f'{prefix}-{mode}-{current}-w{width_str}um-h{height_str}um-d{depth_str}um.ptf'
-            with open(output_name,'w') as f:
-                f.write(out_string)
-            self.output_path = self.output_path + os.path.abspath(output_name) + "\n"
-
-        self.show_success_window()
         
-    def create_pattern_file(self):
-        """Create pattern file"""
-        params = self.get_lamella_parameters()
+        # Handle Planar mode (flip X coordinates)
+        if mode == 'Planar':
+            new_verts[2][:, 0] = new_verts[2][:, 0] + 2*inner_margin + block_width + inner_pattern_size
+            new_verts[10][:, 0] = new_verts[10][:, 0] + 2*inner_margin + block_width + inner_pattern_size
+            new_verts[7][:, 0] = new_verts[7][:, 0] + 2*outer_margin + block_width + outer_pattern_size
+            new_verts[9][:, 0] = new_verts[9][:, 0] + 2*outer_margin + block_width + outer_pattern_size
+            new_verts[3][:, 0] = new_verts[3][:, 0] - 2*inner_margin - block_width - inner_pattern_size
+            new_verts[4][:, 0] = new_verts[4][:, 0] - 2*outer_margin - block_width - outer_pattern_size
+            new_verts[11][:, 1:3] = new_verts[12][:, 1:3]
+            # Remove needle gap pattern in Planar mode
+            del new_verts[13]
+        
+        # Build pattern dictionaries for each milling current group
+        # Map group name to (enabled, current in Amperes)
+        current_groups = {}
+        seq_groups = {}
+        if do_coarse:
+            current_groups['coarse'] = coarse_current
+            seq_groups['coarse'] = self.coarse_seq_group.value()
+        if do_medium:
+            current_groups['medium'] = medium_current
+            seq_groups['medium'] = self.medium_seq_group.value()
+        if do_fine:
+            current_groups['fine'] = fine_current
+            seq_groups['fine'] = self.fine_seq_group.value()
+        
+        # Store current_groups and seq_groups for use in store_and_display_patterns
+        self.current_groups = current_groups
+        self.seq_groups = seq_groups
+        
+        # Store generated patterns grouped by current group
+        self.generated_patterns = {group: {} for group in current_groups.keys()}
+        
+        pattern_id = 0
+        for group, current_A in current_groups.items():
+            for i, verts in new_verts.items():
+                if i == 0:  # Skip the block pattern (index 0)
+                    continue
+                if i in self.ENABLE_PATTERNS[group]:
+                    # Get hard-coded properties for this pattern index
+                    props = self.PATTERN_PROPERTIES.get(i, {})
+                    scan_dir = props.get('scan_direction', 'TopToBottom')
+                    
+                    # Create RectanglePattern with all properties
+                    centerX, centerY, w, l = self.rectangle_properties(verts)
+                    pattern = RectanglePattern(
+                        center_x=centerX,
+                        center_y=centerY,
+                        width=w,
+                        height=l,
+                        dwell_time=1e-6,
+                        scan_direction=scan_dir,
+                        scan_type='Serpentine',
+                        application_file='Si',
+                        enabled=True
+                    )
+                    # Convert to pixel coordinates for display
+                    coords = [(verts[j, 0], verts[j, 1]) for j in range(4)]
+                    displayable = DisplayablePattern(pattern=pattern, coords=coords)
+                    # Use UUID-based ID to ensure uniqueness across generations
+                    unique_id = f"{group}_{i}_{uuid.uuid4().hex[:8]}"
+                    self.generated_patterns[group][unique_id] = displayable
+                    pattern_id += 1
+        
+        # Store patterns in position data and display
+        self.store_and_display_patterns()
+        
+    def store_and_display_patterns(self):
+        """Convert patterns to pixels, store in position data, and display via load_shapes."""
+        if not hasattr(self, 'generated_patterns') or self.main_window is None:
+            return
+            
+        # Get current position data to get image dimensions and FOV
+        item = self.main_window.position_list.currentItem()
+        if not item:
+            print("Warning: No position selected. Patterns generated but not displayed.")
+            return
+            
+        data = item.data(Qt.UserRole)
+        if data.get("pixmap") is None:
+            print("Warning: No image loaded. Patterns generated but not displayed.")
+            return
+        
+        img_w = data["image"].width
+        img_h = data["image"].height
+        pixel_to_um = data["pixel_to_um"]
+        
+        # Calculate meters per pixel
+        m_per_px = pixel_to_um * 1e-6
+        
+        # Image center in pixels
+        center_px_x = img_w / 2
+        center_px_y = img_h / 2
+        
+        # Convert patterns to pixel coords and store as list of PatternGroups
+        # Order: coarse, medium, fine (matching predefined colors)
+        patterns_list = []
+        # Ensure patterns list exists in data
+        if "patterns" not in data:
+            data["patterns"] = []
+        group_index = len(data["patterns"])
+        for group in ['coarse', 'medium', 'fine']:
+            if group in self.generated_patterns:
+                converted = {}
+                for pid, dp in self.generated_patterns[group].items():
+                    pixel_coords = []
+                    for x_m, y_m in dp.coords:
+                        x_px = int(center_px_x + x_m / m_per_px)
+                        y_px = int(center_px_y - y_m / m_per_px)  # Flip Y
+                        pixel_coords.append((x_px, y_px))
+                    new_dp = DisplayablePattern(pattern=dp.pattern, coords=pixel_coords)
+                    converted[pid] = new_dp
+                
+                # Create PatternGroup with color based on index
+                milling_current = self.current_groups.get(group, 0.0)
+                sequential_group = self.seq_groups.get(group, 0)
+                pattern_group = PatternGroup.create_with_index(
+                    patterns=converted,
+                    milling_current=milling_current,
+                    index=group_index,
+                    sequential_group=sequential_group
+                )
+                patterns_list.append(pattern_group)
+                group_index += 1
+        
+        # Append to existing patterns list
+        data["patterns"].extend(patterns_list)
+        item.setData(Qt.UserRole, data)
+        
+        # Display via main window's load_shapes (handles list of PatternGroups)
+        self.main_window.image_widget.load_shapes(data["patterns"], locked=False)
+        
+        # Store as last loaded patterns for auto-add functionality
+        self.main_window.set_last_loaded_patterns(patterns_list)
     
-        print("Parameters entered:", params)
-        file = self.read_reference_file('reference-pattern-polish_DO_NOT_REMOVE.ptf')
-
-        # Define parameters
+    def _define_arc(self, pattern_height, radius=1.2, num_points=10):
+        """
+        Create two arrays of point coordinates (x_coords and y_coords) which define an arc.
+        This is used for the curved top/bottom edges of polishing patterns.
+        
+        Args:
+            pattern_height: Height of the pattern (defines arc size)
+            radius: Ratio of circle radius to height (>=1, 1=semicircle)
+            num_points: Number of points along the arc
+            
+        Returns:
+            x_coords, y_coords: Arrays of coordinates defining the arc
+        """
+        h = pattern_height
+        circle_radius = h * radius
+        xT = np.sqrt(circle_radius**2 - (circle_radius - h)**2)
+        theta0 = -np.pi / 2
+        theta1 = np.arctan2(h - circle_radius, xT)
+        x_coords, y_coords = self._define_points_on_circle(0, circle_radius, circle_radius, theta0, theta1, num_points)
+        return x_coords, y_coords
+    
+    def _define_points_on_circle(self, xM, yM, R, theta0, theta1, num_points=10):
+        """
+        Create two arrays of point coordinates which define a part of a circle between theta0 and theta1.
+        
+        Args:
+            xM, yM: Center of circle
+            R: Radius of circle
+            theta0, theta1: Start and end angles (radians)
+            num_points: Number of points
+            
+        Returns:
+            x_coords, y_coords: Arrays of coordinates
+        """
+        theta_min = np.min([theta0, theta1])
+        theta_max = np.max([theta0, theta1])
+        theta_array = np.linspace(theta_min, theta_max, num_points)
+        x_coords = R * np.cos(theta_array) + xM
+        y_coords = R * np.sin(theta_array) + yM
+        return x_coords, y_coords
+    
+    def create_polishing_patterns(self):
+        """Generate polishing patterns and display them."""
+        params = self.get_polishing_parameters()
+        
+        # Get parameters
         pattern_height = params['pattern_height']
         pattern_width = params['pattern_width']
         lamella_thickness = params['lamella_thickness']
         num_points = params['num_points']
         radius = params['radius']
         depth = params['depth']
-        prefix = params['prefix']
+        polish_current = params['polish_current']
         
-        # define top pattern
-        x_coords,y_coords = define_arc(pattern_height,radius=radius,num_points=num_points)
+        # Define arc for curved pattern edges
+        x_coords, y_coords = self._define_arc(pattern_height, radius=radius, num_points=num_points)
         w = pattern_width / 2
-        # right-hand side
+        
+        # Build top pattern coordinates
+        # Right-hand side
         x_rhs = x_coords + w
         y_rhs = y_coords + lamella_thickness / 2
-        # left-hand side
+        # Left-hand side (mirrored)
         x_lhs = -x_coords - w
         y_lhs = y_coords + lamella_thickness / 2
-        x1 = np.concatenate([x_rhs,np.flipud(x_lhs)])
-        y1 = np.concatenate([y_rhs,np.flipud(y_lhs)])
-
-        # define bottom pattern
-        x2 = x1
-        y2 = -y1
-
-        out_string = file.split('<PatternPolygon>')[0]
-        # first polygon
-        points_string_1 = define_points_string(x1,y1)
-        polygon_string_1 = file.split('<PatternPolygon>')[1].split('&lt;Point&gt;')[0]
-        out_string = out_string + '<PatternPolygon>' + change_pattern_depth(polygon_string_1,depth) + points_string_1 + '</Points>' + file.split('<PatternPolygon>')[1].split('&lt;Point&gt;')[-1].split('</Points>')[1]
-        # second polygon
-        points_string_2 = define_points_string(x2,y2)
-        polygon_string_2 = file.split('<PatternPolygon>')[2].split('&lt;Point&gt;')[0]
-        out_string = out_string + '<PatternPolygon>' + change_pattern_depth(polygon_string_2,depth) + points_string_2 + '</Points>' + file.split('<PatternPolygon>')[2].split('&lt;Point&gt;')[-1].split('</Points>')[1]
-
-        thickness_str = self.lamella_thickness_nm.get()
-        width_str = self.pattern_width_um.get()
-        depth_str = self.depth_um.get()
-        output_name = f'{prefix}-{thickness_str}nm-{width_str}um-{depth_str}um.ptf'
-        with open(output_name,'w') as f:
-            f.write(out_string)
-        self.output_path = os.path.abspath(output_name)
-        self.show_success_window()
-
-    def show_success_window(self):
-        success_window = tk.Toplevel(self.root)
-        success_window.title("Success")
-        success_window.geometry("300x150")
-
-        msg = tk.Label(success_window, text=f"Succesfully created\n{self.output_path}",
-                    font=("Arial", 12))
-        msg.pack(pady=20)
-
-        success_window.update_idletasks()
-        width = msg.winfo_reqwidth() + 40
-        height = msg.winfo_reqheight() + 80
-        success_window.geometry(f"{width}x{height}")
-        # ----------------------------------------------
-
-        ok_button = tk.Button(success_window, text="OK",
-                            font=("Arial", 12),
-                            command=success_window.destroy)
-        ok_button.pack(pady=10)
-
-    def show_error_log(self, error_message):
-        """Open a new window with error log"""
-        log_window = tk.Toplevel(self.root)
-        log_window.title("Error Log")
-        log_window.geometry("600x400")
-
-        error_label = tk.Label(log_window, text="An Error Occurred:",
-                               font=("Arial", 14, "bold"), fg="red")
-        error_label.pack(pady=10)
-
-        log_text = scrolledtext.ScrolledText(log_window, width=70, height=20,
-                                             font=("Courier", 10))
-        log_text.pack(padx=10, pady=10, expand=True, fill='both')
-        log_text.insert('1.0', error_message)
-        log_text.config(state='disabled')
-
-        close_button = tk.Button(log_window, text="Close",
-                                 command=log_window.destroy,
-                                 font=("Arial", 10))
-        close_button.pack(pady=10)
-
-def rectangle_vertices(centerX,centerY,w,l):
-    # Returns an 4x2 array with the X,Y coordinates of the vertices that define a rectangle.
-    # The points are anticlockwise. 
-    rect_verts = np.zeros((4,2))
-    rect_verts[0,:] = np.array([centerX - w/2, centerY + l/2])
-    rect_verts[1,:] = np.array([centerX - w/2, centerY - l/2])
-    rect_verts[2,:] = np.array([centerX + w/2, centerY - l/2])
-    rect_verts[3,:] = np.array([centerX + w/2, centerY + l/2])
-    return rect_verts
-
-def rectangle_properties(vertices):
-    # Returns (X,Y,w,l) of the rectangle defined by 4 vertices.
-    w = (vertices[3,0] - vertices[0,0])
-    l = (vertices[0,1] - vertices[1,1])
-    centerX = vertices[1,0] + w/2
-    centerY = vertices[1,1] + l/2
-    assert w>0, "ERROR: width needs to be positive! Is your rectangle defined in the right order of vertices?"
-    assert l>0, "ERROR: Length needs to be positive! Is your rectangle defined in the right order of vertices?"
-    return (centerX,centerY,w,l)
-
-def define_arc(pattern_height,radius=1.2,num_points=10):
-    # Create two arrays of point coordinates (x_coords and y_coords) which define the sides of the lamella.
-    h = pattern_height
-    circle_radius = h * radius
-    xT = np.sqrt(circle_radius**2 - (circle_radius-h)**2)
-    theta0 = - np.pi / 2
-    theta1 = np.arctan2( h-circle_radius, xT ) # arctan: y,x
-    x_coords,y_coords = define_points_on_circle(0,circle_radius,circle_radius,theta0,theta1,num_points=num_points)
-    return x_coords,y_coords
-
-def define_points_on_circle(xM,yM,R,theta0,theta1,num_points=10):
-    # Create two arrays of point coordinates (x_coords and y_coords) which define a part of a circle between theta0 and theta1.
-    theta_min = np.min([theta0,theta1])
-    theta_max = np.max([theta0,theta1])
-    theta_array = np.linspace(theta_min,theta_max,num_points)
-    x_coords = R * np.cos(theta_array) + xM
-    y_coords = R * np.sin(theta_array) + yM
-    return x_coords,y_coords
-
-def define_points_string(x_array,y_array):
-    points_string = ''
-    for x,y in zip(x_array,y_array):
-        points_string = points_string + '&lt;Point&gt;\n'
-        points_string = points_string + '&lt;PositionX xmlns:dt="urn:schemas-microsoft-com:datatypes" dt:dt="r8"&gt;{:.14E}&lt;/PositionX&gt;\n\n'.format(x)
-        points_string = points_string + '&lt;PositionY xmlns:dt="urn:schemas-microsoft-com:datatypes" dt:dt="r8"&gt;{:.14E}&lt;/PositionY&gt;\n'.format(y)
-        points_string = points_string + '&lt;/Point&gt;\n\n'
-    points_string = points_string + '&lt;/Points&gt;\n'
-    return points_string
-
-def change_pattern_depth(polygon_string,depth):
-    depth_string = '<Depth xmlns:dt="urn:schemas-microsoft-com:datatypes" dt:dt="r8">{:.14E}</Depth>'.format(depth)
-    return polygon_string.split('<Depth xmlns:')[0] + depth_string + polygon_string.split('</Depth>')[1]
-
-def change_pattern_value(property,value,pattern_string,type='r8'):
-    if type=='r8': # string
-        string = '<PROP xmlns:dt="urn:schemas-microsoft-com:datatypes" dt:dt="{}">{:.14E}</PROP>'.format(type,value).replace('PROP',property)
-    else:
-        string = '<PROP xmlns:dt="urn:schemas-microsoft-com:datatypes" dt:dt="{}">{}</PROP>'.format(type,value).replace('PROP',property)
-    return pattern_string.split('<'+property+' xmlns:')[0] + string + pattern_string.split('</'+property+'>')[1]
-
-def main():
-    root = tk.Tk()
-    app = Application(root)
-    root.mainloop()
-
-if __name__ == "__main__":
-    main()
+        # Combine to form closed polygon (right side, then flipped left side)
+        x1 = np.concatenate([x_rhs, np.flipud(x_lhs)])
+        y1 = np.concatenate([y_rhs, np.flipud(y_lhs)])
+        
+        # Build bottom pattern coordinates (mirror of top)
+        x2 = x1.copy()
+        y2 = -y1.copy()
+        
+        # Convert to coordinate tuples for display
+        top_coords = [(x1[i], y1[i]) for i in range(len(x1))]
+        bottom_coords = [(x2[i], y2[i]) for i in range(len(x2))]
+        
+        # Create PolygonPattern objects for the patterns
+        # Calculate center for the patterns
+        top_center_x = np.mean(x1)
+        top_center_y = np.mean(y1)
+        bottom_center_x = np.mean(x2)
+        bottom_center_y = np.mean(y2)
+        
+        # Top pattern - uses BottomToTop scan direction (matches reference PTF)
+        top_pattern = PolygonPattern(
+            center_x=top_center_x,
+            center_y=top_center_y,
+            vertices=top_coords,
+            depth=depth,
+            dwell_time=1e-6,
+            scan_direction='BottomToTop',
+            scan_type='Serpentine',
+            application_file='Si',
+            enabled=True,
+            overlap_x=0.5,
+            overlap_y=0.5
+        )
+        
+        # Bottom pattern - uses BottomToTop scan direction (matches reference PTF)
+        bottom_pattern = PolygonPattern(
+            center_x=bottom_center_x,
+            center_y=bottom_center_y,
+            vertices=bottom_coords,
+            depth=depth,
+            dwell_time=1e-6,
+            scan_direction='BottomToTop',
+            scan_type='Serpentine',
+            application_file='Si',
+            enabled=True,
+            overlap_x=0.5,
+            overlap_y=0.5
+        )
+        
+        # Create displayable patterns
+        top_displayable = DisplayablePattern(pattern=top_pattern, coords=top_coords)
+        bottom_displayable = DisplayablePattern(pattern=bottom_pattern, coords=bottom_coords)
+        
+        # Store polish current for use in store_and_display_polishing_patterns
+        self.polish_current = polish_current
+        
+        # Store in generated_patterns structure (use 'polish' as the group)
+        # Use UUID-based IDs to ensure uniqueness across generations
+        self.generated_patterns = {
+            'polish': {
+                f'polish_top_{uuid.uuid4().hex[:8]}': top_displayable,
+                f'polish_bottom_{uuid.uuid4().hex[:8]}': bottom_displayable
+            }
+        }
+        
+        # Store and display
+        self.store_and_display_polishing_patterns()
+    
+    def store_and_display_polishing_patterns(self):
+        """Convert polishing patterns to pixels, store in position data, and display via load_shapes."""
+        if not hasattr(self, 'generated_patterns') or self.main_window is None:
+            return
+            
+        # Get current position data to get image dimensions and FOV
+        item = self.main_window.position_list.currentItem()
+        if not item:
+            print("Warning: No position selected. Patterns generated but not displayed.")
+            return
+            
+        data = item.data(Qt.UserRole)
+        if data.get("pixmap") is None:
+            print("Warning: No image loaded. Patterns generated but not displayed.")
+            return
+        
+        img_w = data["image"].width
+        img_h = data["image"].height
+        pixel_to_um = data["pixel_to_um"]
+        
+        # Calculate meters per pixel
+        m_per_px = pixel_to_um * 1e-6
+        
+        # Image center in pixels
+        center_px_x = img_w / 2
+        center_px_y = img_h / 2
+        
+        # Convert polish patterns to pixel coords and create PatternGroup
+        # Ensure patterns list exists in data
+        if "patterns" not in data:
+            data["patterns"] = []
+        patterns_list = []
+        if 'polish' in self.generated_patterns:
+            converted = {}
+            for pid, dp in self.generated_patterns['polish'].items():
+                pixel_coords = []
+                for x_m, y_m in dp.coords:
+                    x_px = int(center_px_x + x_m / m_per_px)
+                    y_px = int(center_px_y - y_m / m_per_px)  # Flip Y
+                    pixel_coords.append((x_px, y_px))
+                new_dp = DisplayablePattern(pattern=dp.pattern, coords=pixel_coords)
+                converted[pid] = new_dp
+            
+            # Create PatternGroup with next available index for color
+            milling_current = getattr(self, 'polish_current', 0.0)
+            pattern_group = PatternGroup.create_with_index(
+                patterns=converted,
+                milling_current=milling_current,
+                index=len(data["patterns"])  # Next index
+            )
+            patterns_list.append(pattern_group)
+        
+        # Append to existing patterns list
+        data["patterns"].extend(patterns_list)
+        item.setData(Qt.UserRole, data)
+        
+        # Display via main window's load_shapes (handles list of PatternGroups)
+        self.main_window.image_widget.load_shapes(data["patterns"], locked=False)
+        
+        # Store as last loaded patterns for auto-add functionality
+        self.main_window.set_last_loaded_patterns(patterns_list)

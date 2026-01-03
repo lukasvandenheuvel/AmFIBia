@@ -40,7 +40,7 @@ class fibsem:
         self.history=[]
 
         # Output
-        self.output_dir=''
+        self.working_dir=None
         self.log_output = ''
         self.lamella_name=''
 
@@ -237,13 +237,16 @@ class fibsem:
             return False
         return True
     
-    def align(self,image,current=1.0e-11,reduced_area=None, reset_beam_shift=True):
+    def align(self,image,position_index=0,seq_group_index=0,current=1.0e-11,reduced_area=None, reset_beam_shift=True):
         '''
         Input: Alignment image, Beam ("ION" or "ELECTRON"), optionally current but replaced by the GUI option
         Output: None
         Action: Align the stage and beam shift to the reference image at the current stage position
         '''
         # current=self.alignment_current
+        output_dir = os.path.join(self.working_dir, f"Position{position_index:02d}")
+        if not(os.path.exists(output_dir)):
+            os.mkdir(output_dir)
 
         try:
             print('Running alignment')
@@ -287,8 +290,8 @@ class fibsem:
             move_count = 0
 
             now = datetime.datetime.now()
-            current_img.save(self.output_dir + self.lamella_name+'_out/'+now.strftime("%Y-%m-%d_%H_%M_%S_")+self.lamella_name +'_'+ beam_current_string + '_first_move_'+str(move_count)+'.tif')
-            self.log_output=self.log_output+"Saved Image as : "+self.output_dir + self.lamella_name+'_out/'+now.strftime("%Y-%m-%d_%H_%M_%S_")+self.lamella_name +'_'+ beam_current_string + '_first_move_'+str(move_count)+'.tif'+'\n'
+            current_img.save(os.path.join(output_dir, now.strftime("%Y-%m-%d_%H_%M_%S_") + f'_seq{seq_group_index}_'+ beam_current_string + '_move_' + str(move_count)+'.tif'))
+            self.log_output=self.log_output+"Saved Image as : "+self.working_dir + self.lamella_name+'_out/'+now.strftime("%Y-%m-%d_%H_%M_%S_")+self.lamella_name +'_'+ beam_current_string + '_first_move_'+str(move_count)+'.tif'+'\n'
 
             # If cross correlation metric too low, continue movements for maximum 3 steps
             while l.confidence < 0.98 and move_count < 3:
@@ -334,9 +337,9 @@ class fibsem:
 
                 current_img = self.take_image_IB(reduced_area=reduced_area)
                 now = datetime.datetime.now()
-                current_img.save(self.output_dir+ self.lamella_name + '_out/' +now.strftime("%Y-%m-%d_%H_%M_%S_") + self.lamella_name +'_'+ beam_current_string + '_first_move_' + str(move_count)+'.tif')
+                current_img.save(os.path.join(output_dir, now.strftime("%Y-%m-%d_%H_%M_%S_") + f'_seq{seq_group_index}_'+ beam_current_string + '_move_' + str(move_count)+'.tif'))
 
-                self.log_output = self.log_output + "Saved Image as : " +self.output_dir+ self.lamella_name + '_out/' +now.strftime("%Y-%m-%d_%H_%M_%S_") + self.lamella_name +'_'+ beam_current_string + '_first_move_' + str(move_count)+'.tif'+'\n'
+                self.log_output = self.log_output + "Saved Image as : " +self.working_dir+ self.lamella_name + '_out/' +now.strftime("%Y-%m-%d_%H_%M_%S_") + self.lamella_name +'_'+ beam_current_string + '_first_move_' + str(move_count)+'.tif'+'\n'
                 l = vision_toolkit.locate_feature(current_img, image, favourite_matcher)
                 print("Current confidence: " + str(l.confidence))
                 self.log_output = self.log_output + "Current confidence: " + str(l.confidence) + '\n'
