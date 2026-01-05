@@ -8,15 +8,14 @@ from PyQt5.QtWidgets import (
     QSizePolicy, QFrame, QFileDialog, QCheckBox,
     QLineEdit, QComboBox, QGroupBox, QScrollArea, QFormLayout,
     QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView,
-    QSpinBox
+    QSpinBox, QDialog, QDialogButtonBox, QMenu, QMessageBox
 )
-from PyQt5.QtGui import QPixmap, QPainter, QPen, QFont, QColor, QBrush, QImage, QDoubleValidator, QIntValidator
+from PyQt5.QtGui import QPixmap, QPainter, QPen, QFont, QColor, QBrush, QImage, QDoubleValidator, QIntValidator, QIcon
 from PyQt5.QtCore import Qt, QRect, QPoint
 import numpy as np
 import xml.etree.ElementTree as ET
 import html
 import cv2
-import copy
 
 PIXEL_TO_MICRON = 1/2
 MAX_DELAY_NO_HOME = 300  # seconds
@@ -1316,7 +1315,113 @@ class PositionList(QListWidget):
         self.setDragDropMode(QListWidget.InternalMove)
         self.setDefaultDropAction(Qt.MoveAction)
         self.setSelectionMode(QListWidget.SingleSelection)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._show_context_menu)
+        self._main_window = None  # Will be set by MainWindow
+    
+    def _show_context_menu(self, pos):
+        """Show context menu on right-click."""
+        item = self.itemAt(pos)
+        if not item:
+            return
+        
+        menu = QMenu(self)
+        
+        mark_done_action = menu.addAction("Mark as finished")
+        mark_pending_action = menu.addAction("Mark as pending")
+        menu.addSeparator()
+        delete_action = menu.addAction("Delete")
+        
+        action = menu.exec_(self.mapToGlobal(pos))
+        
+        if action == mark_done_action:
+            if self._main_window:
+                self._main_window._mark_position_status(item, "done")
+        elif action == mark_pending_action:
+            if self._main_window:
+                self._main_window._mark_position_status(item, "pending")
+        elif action == delete_action:
+            if self._main_window:
+                self._main_window._delete_position(item)
+    
+    @staticmethod
+    def create_colored_dot_icon(color, size=12):
+        """Create a small colored circle icon."""
+        pixmap = QPixmap(size, size)
+        pixmap.fill(Qt.transparent)
+        painter = QPainter(pixmap)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setBrush(QBrush(color))
+        painter.setPen(Qt.NoPen)
+        painter.drawEllipse(1, 1, size - 2, size - 2)
+        painter.end()
+        return QIcon(pixmap)
 
+
+# -------------------------------------------------
+# Milling Confirmation Dialog
+# -------------------------------------------------
+
+class MillingConfirmDialog(QDialog):
+    """Dialog to confirm milling tasks before starting."""
+    
+    def __init__(self, task_list, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Confirm Milling Tasks")
+        self.setMinimumWidth(600)
+        self.setMinimumHeight(300)
+        
+        layout = QVBoxLayout(self)
+        
+        # Title label
+        title_label = QLabel(f"<b>{len(task_list)} tasks ready for milling:</b>")
+        layout.addWidget(title_label)
+        
+        # Task table
+        self.task_table = QTableWidget()
+        self.task_table.setColumnCount(6)
+        self.task_table.setHorizontalHeaderLabels(["Task #", "Position", "Patterns", "Current", "Seq. Group", "Delay (s)"])
+        self.task_table.setRowCount(len(task_list))
+        self.task_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.task_table.setSelectionMode(QAbstractItemView.NoSelection)
+        self.task_table.horizontalHeader().setStretchLastSection(True)
+        self.task_table.verticalHeader().setVisible(False)
+        
+        for row, task in enumerate(task_list):
+            self.task_table.setItem(row, 0, QTableWidgetItem(str(row + 1)))
+            self.task_table.setItem(row, 1, QTableWidgetItem(str(task.position_index)))
+            self.task_table.setItem(row, 2, QTableWidgetItem(str(len(task.pattern_group.patterns))))
+            # Format milling current
+            current_A = task.pattern_group.milling_current
+            if current_A == 0:
+                current_str = "Not set"
+            else:
+                nA = current_A * 1e9
+                current_str = f"{nA:.1f} nA" if nA < 1 else f"{nA:.0f} nA"
+            self.task_table.setItem(row, 3, QTableWidgetItem(current_str))
+            self.task_table.setItem(row, 4, QTableWidgetItem(str(task.sequential_group)))
+            self.task_table.setItem(row, 5, QTableWidgetItem(str(task.pattern_group.delay)))
+        
+        # Resize columns to content
+        self.task_table.resizeColumnsToContents()
+        
+        layout.addWidget(self.task_table)
+        
+        # Buttons
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        
+        self.cancel_btn = QPushButton("Cancel")
+        self.cancel_btn.clicked.connect(self.reject)
+        
+        self.start_btn = QPushButton("Start Milling")
+        self.start_btn.setDefault(True)
+        self.start_btn.clicked.connect(self.accept)
+        
+        button_layout.addWidget(self.cancel_btn)
+        button_layout.addWidget(self.start_btn)
+        
+        layout.addLayout(button_layout)
 
 
 # -------------------------------------------------
@@ -1336,6 +1441,8 @@ class MainWindow(QWidget):
         self.selected_displayable_patterns = []  # Track currently selected patterns (list)
         self.selected_pattern_groups = []  # Track PatternGroups for selected patterns
         self.available_currents = self._get_available_currents()
+        self.scanning_resolution = "1536x1024"  # Default scanning resolution
+        self.dwell_time = 3e-6  # Default dwell time in seconds (3 µs)
 
         # Layout
         main_layout = QHBoxLayout(self)
@@ -1352,7 +1459,7 @@ class MainWindow(QWidget):
         self.pattern_maker_btn.clicked.connect(self.toggle_pattern_maker)
         
         # Settings toggle button
-        self.settings_btn = QPushButton("Settings ▼")
+        self.settings_btn = QPushButton("Settings ◀")
         self.settings_btn.clicked.connect(self.toggle_settings)
         
         # Tab-like styling for toggle buttons
@@ -1376,41 +1483,54 @@ class MainWindow(QWidget):
         self.pattern_maker_btn.setStyleSheet(tab_style)
         self.settings_btn.setStyleSheet(tab_style)
         
+        # Save State button
+        self.save_state_btn = QPushButton("Save State")
+        self.save_state_btn.clicked.connect(self.save_state)
+        self.save_state_btn.setStyleSheet(tab_style)
+        
         # Layout for tab buttons
         tab_buttons_layout = QHBoxLayout()
         tab_buttons_layout.setSpacing(2)
         tab_buttons_layout.addWidget(self.pattern_maker_btn)
         tab_buttons_layout.addWidget(self.settings_btn)
+        tab_buttons_layout.addWidget(self.save_state_btn)
         tab_buttons_layout.addStretch()
 
         self.position_list = PositionList()
+        self.position_list._main_window = self  # Connect for context menu callbacks
         self.position_list.model().rowsMoved.connect(self.rebuild_positions)
         self.position_list.itemClicked.connect(self.on_item_clicked)
 
-        add_position_btn = QPushButton("Add Position")
-        add_position_btn.clicked.connect(self.add_position)
+        self.add_position_btn = QPushButton("Add Position")
+        self.add_position_btn.clicked.connect(self.add_position)
+        self.add_position_btn.setEnabled(False)
+        self.add_position_btn.setToolTip("Set a working directory in Settings first")
 
         # Take IB image button with auto checkbox
         take_ib_layout = QHBoxLayout()
         take_ib_layout.setSpacing(5)
-        take_ion_beam_image_btn = QPushButton("Take IB image")
-        take_ion_beam_image_btn.clicked.connect(self.take_ion_beam_image)
+        self.take_ion_beam_image_btn = QPushButton("Take IB image")
+        self.take_ion_beam_image_btn.clicked.connect(self.take_ion_beam_image)
+        self.take_ion_beam_image_btn.setEnabled(False)
+        self.take_ion_beam_image_btn.setToolTip("Set a working directory in Settings first")
         self.auto_take_image_checkbox = QCheckBox("auto")
-        take_ib_layout.addWidget(take_ion_beam_image_btn, stretch=1)
+        take_ib_layout.addWidget(self.take_ion_beam_image_btn, stretch=1)
         take_ib_layout.addWidget(self.auto_take_image_checkbox, stretch=0)
 
         # Attach pattern button with auto checkbox
         attach_pattern_layout = QHBoxLayout()
         attach_pattern_layout.setSpacing(5)
-        attach_pattern_btn = QPushButton("Attach pattern from xT")
-        attach_pattern_btn.clicked.connect(self.attach_xT_pattern)
+        self.attach_pattern_btn = QPushButton("Attach pattern from xT")
+        self.attach_pattern_btn.clicked.connect(self.attach_xT_pattern)
+        self.attach_pattern_btn.setEnabled(False)
+        self.attach_pattern_btn.setToolTip("Set a working directory in Settings first")
         self.auto_attach_pattern_checkbox = QCheckBox("auto")
-        attach_pattern_layout.addWidget(attach_pattern_btn, stretch=1)
+        attach_pattern_layout.addWidget(self.attach_pattern_btn, stretch=1)
         attach_pattern_layout.addWidget(self.auto_attach_pattern_checkbox, stretch=0)
 
         # Send patterns to xT button
-        send_pattern_btn = QPushButton("Send patterns to xT")
-        send_pattern_btn.clicked.connect(self.send_patterns_to_xT)
+        self.send_pattern_btn = QPushButton("Send patterns to xT")
+        self.send_pattern_btn.clicked.connect(self.send_patterns_to_xT)
 
         # Right mouse mode dropdown
         right_mouse_layout = QHBoxLayout()
@@ -1439,7 +1559,7 @@ class MainWindow(QWidget):
         self.group_properties_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.group_properties_table.setSelectionMode(QAbstractItemView.NoSelection)
         self.group_properties_table.verticalHeader().setVisible(False)
-        self.group_properties_table.setMaximumHeight(145)  # Keep it compact
+        self.group_properties_table.setMaximumHeight(175)  # Larger to show all 5 rows
 
         # Pattern properties table
         self.pattern_properties_label = QLabel("Pattern Properties")
@@ -1455,16 +1575,11 @@ class MainWindow(QWidget):
 
         left_layout.addLayout(tab_buttons_layout)
         
-        # Settings panel (initially hidden, collapsible)
-        self.settings_panel = SettingsPanel(self, mode=MODE, scope=scope_ref if MODE == "scope" else None)
-        self.settings_panel.setVisible(False)
-        left_layout.addWidget(self.settings_panel)
-        
         left_layout.addWidget(self.position_list, stretch=1)  # 50% for position list
-        left_layout.addWidget(add_position_btn)
+        left_layout.addWidget(self.add_position_btn)
         left_layout.addLayout(take_ib_layout)
         left_layout.addLayout(attach_pattern_layout)
-        left_layout.addWidget(send_pattern_btn)
+        left_layout.addWidget(self.send_pattern_btn)
         left_layout.addLayout(right_mouse_layout)
         left_layout.addWidget(self.group_properties_label)
         left_layout.addWidget(self.select_all_group_btn)
@@ -1478,9 +1593,23 @@ class MainWindow(QWidget):
         self.run_btn.setEnabled(False)
         self.run_btn.setToolTip("Set a working directory in Settings first")
         left_layout.addWidget(self.run_btn)
+
+        # Pass mode and scope for current dropdown population
+        scope_ref = scope if MODE == "scope" else None
         
+        # Settings panel (initially visible, folds out like pattern_maker)
+        self.settings_panel = SettingsPanel(self, mode=MODE, scope=scope_ref)
+        self.settings_panel.setVisible(True)  # Visible by default
+        self.settings_panel.setFixedWidth(300)
+
         # Connect settings panel signal to update run button state
         self.settings_panel.working_dir_changed.connect(self._on_working_dir_changed)
+        self.settings_panel.resolution_changed.connect(self._on_resolution_changed)
+        self.settings_panel.dwell_time_changed.connect(self._on_dwell_time_changed)
+        
+        # In dev mode, set a default working directory
+        if MODE == "dev":
+            self.settings_panel.set_working_directory("/Users/lukasvandenheuvel/Documents/PhD/Scripts/AmFIBia/test_out_dir")
 
         # Image panel
         pixmap = QPixmap("logo.png")
@@ -1495,8 +1624,6 @@ class MainWindow(QWidget):
         self.selected_rect_type = None
 
         # Pattern Maker panel (initially hidden)
-        # Pass mode and scope for current dropdown population
-        scope_ref = scope if MODE == "scope" else None
         self.pattern_maker = PatternMaker(self, mode=MODE, scope=scope_ref)
         self.pattern_maker.setVisible(False)
         self.pattern_maker.setFixedWidth(350)
@@ -1510,10 +1637,17 @@ class MainWindow(QWidget):
         self.separator2.setFrameShape(QFrame.VLine)
         self.separator2.setFrameShadow(QFrame.Sunken)
         self.separator2.setVisible(False)
+        
+        self.separator3 = QFrame()
+        self.separator3.setFrameShape(QFrame.VLine)
+        self.separator3.setFrameShadow(QFrame.Sunken)
+        self.separator3.setVisible(True)  # Settings panel visible by default
 
         # Assemble
         main_layout.addWidget(left_widget, 1)
         main_layout.addWidget(separator1)
+        main_layout.addWidget(self.settings_panel, 0)
+        main_layout.addWidget(self.separator3)
         main_layout.addWidget(self.pattern_maker, 0)
         main_layout.addWidget(self.separator2)
         main_layout.addWidget(self.image_widget, 4)
@@ -1702,7 +1836,7 @@ class MainWindow(QWidget):
             return
         
         # Get the delay edit widget
-        delay_edit = self.group_properties_table.cellWidget(3, 1)
+        delay_edit = self.group_properties_table.cellWidget(4, 1)
         if not delay_edit:
             return
         
@@ -1731,6 +1865,79 @@ class MainWindow(QWidget):
             # The patterns are already updated by reference, but ensure data is saved
             item.setData(Qt.UserRole, data)
 
+    def _on_status_changed(self):
+        """Handle status dropdown change - updates all selected PatternGroups."""
+        if not self.selected_pattern_groups:
+            return
+        
+        # Get the status combo widget
+        status_combo = self.group_properties_table.cellWidget(2, 1)
+        if not status_combo:
+            return
+        
+        new_status = status_combo.currentText()
+        if new_status == "(mixed)":
+            return  # Don't change if mixed is selected
+        
+        # Update all selected PatternGroups
+        for pg in self.selected_pattern_groups:
+            pg.milled_status = new_status
+        
+        # Update the stored data in position list and rebuild dots
+        item = self.position_list.currentItem()
+        if item:
+            data = item.data(Qt.UserRole)
+            item.setData(Qt.UserRole, data)
+        
+        # Rebuild positions to update dot colors
+        self.rebuild_positions()
+
+    def _mark_position_status(self, item, status):
+        """Mark all pattern groups in a position with the given status."""
+        if not item:
+            return
+        
+        data = item.data(Qt.UserRole)
+        if not data:
+            return
+        
+        pattern_groups = data.get('patterns', [])
+        for pg in pattern_groups:
+            pg.milled_status = status
+        
+        item.setData(Qt.UserRole, data)
+        self.rebuild_positions()
+        self.update_display()
+    
+    def _delete_position(self, item):
+        """Delete a position from the list after confirmation."""
+        if not item:
+            return
+        
+        # Confirmation dialog
+        reply = QMessageBox.question(
+            self, 
+            "Confirm Delete",
+            f"Are you sure you want to delete position '{item.text()}' and all its data?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+        
+        if reply == QMessageBox.Yes:
+            row = self.position_list.row(item)
+            self.position_list.takeItem(row)
+            self.rebuild_positions()
+            # View the first position if any remain
+            if self.position_list.count() > 0:
+                first_item = self.position_list.item(0)
+                self.position_list.setCurrentItem(first_item)
+                self.on_item_clicked(first_item)
+            else:
+                self.image_widget.clear()
+                pixmap = QPixmap("logo.png")
+                self.image_widget.load_image(pixmap)
+            self.update_display()
+
     # -------------------------------
     # Logic
     # -------------------------------
@@ -1746,22 +1953,49 @@ class MainWindow(QWidget):
             self.pattern_maker_btn.setText("Pattern Maker ◀")
 
     def toggle_settings(self):
-        """Toggle visibility of the Settings panel (fold-out below button)."""
+        """Toggle visibility of the Settings panel (fold-out to the right)."""
         is_visible = self.settings_panel.isVisible()
         self.settings_panel.setVisible(not is_visible)
+        self.separator3.setVisible(not is_visible)
         if is_visible:
-            self.settings_btn.setText("Settings ▼")
+            self.settings_btn.setText("Settings ▶")
         else:
-            self.settings_btn.setText("Settings ▲")
+            self.settings_btn.setText("Settings ◀")
+
+    def save_state(self):
+        """Save the current application state."""
+        pass
 
     def _on_working_dir_changed(self, directory):
         """Handle working directory change from settings panel."""
         if directory:
             self.run_btn.setEnabled(True)
             self.run_btn.setToolTip("")
+            self.add_position_btn.setEnabled(True)
+            self.add_position_btn.setToolTip("")
+            self.take_ion_beam_image_btn.setEnabled(True)
+            self.take_ion_beam_image_btn.setToolTip("")
+            self.attach_pattern_btn.setEnabled(True)
+            self.attach_pattern_btn.setToolTip("")
         else:
             self.run_btn.setEnabled(False)
             self.run_btn.setToolTip("Set a working directory in Settings first")
+            self.add_position_btn.setEnabled(False)
+            self.add_position_btn.setToolTip("Set a working directory in Settings first")
+            self.take_ion_beam_image_btn.setEnabled(False)
+            self.take_ion_beam_image_btn.setToolTip("Set a working directory in Settings first")
+            self.attach_pattern_btn.setEnabled(False)
+            self.attach_pattern_btn.setToolTip("Set a working directory in Settings first")
+
+    def _on_resolution_changed(self, resolution_text):
+        """Handle scanning resolution change from settings panel."""
+        self.scanning_resolution = resolution_text
+        print(f"MainWindow: Scanning resolution set to {resolution_text}")
+
+    def _on_dwell_time_changed(self, dwell_time_us):
+        """Handle dwell time change from settings panel."""
+        self.dwell_time = dwell_time_us * 1e-6  # Convert µs to seconds
+        print(f"MainWindow: Dwell time set to {dwell_time_us} µs ({self.dwell_time} s)")
 
     def add_position(self):
         index = self.position_list.count()
@@ -1786,6 +2020,9 @@ class MainWindow(QWidget):
         }
 
         item.setData(Qt.UserRole, data)
+        # Set blue dot icon for new position (all patterns pending)
+        blue_icon = PositionList.create_colored_dot_icon(QColor(100, 150, 255))
+        item.setIcon(blue_icon)
         self.position_list.addItem(item)
         self.position_list.setCurrentItem(item)
         self.rebuild_positions()
@@ -1819,9 +2056,8 @@ class MainWindow(QWidget):
 
         # Take image
         if MODE == "scope":
-            adorned_img = scope.take_image_IB()
+            adorned_img = scope.take_image_IB(resolution=self.scanning_resolution)
             img = adorned_img.data
-            img_metadata = adorned_img.metadata
             width = adorned_img.width
             height = adorned_img.height
             pixel_to_um = 1e6 * adorned_img.metadata.optics.scan_field_of_view.width / width
@@ -1940,7 +2176,7 @@ class MainWindow(QWidget):
             pattern_dict = pattern_group.patterns
             for pattern_id, displayable_pattern in pattern_dict.items():
                 pattern = displayable_pattern.pattern
-                xT_pattern = self._create_xT_pattern(pattern,mode=MODE)
+                xT_pattern = scope._create_xT_pattern(pattern,mode=MODE)
         return
 
     def add_protocol(self):
@@ -2099,14 +2335,16 @@ class MainWindow(QWidget):
             colors = [pg.color for pg in self.selected_pattern_groups]
             sequential_groups = [pg.sequential_group for pg in self.selected_pattern_groups]
             delays = [pg.delay for pg in self.selected_pattern_groups]
+            statuses = [pg.milled_status for pg in self.selected_pattern_groups]
             
             all_same_current = len(set(milling_currents)) == 1
             all_same_color = len(set(colors)) == 1
             all_same_seq_group = len(set(sequential_groups)) == 1
             all_same_delay = len(set(delays)) == 1
+            all_same_status = len(set(statuses)) == 1
             
-            # 4 rows: Milling Current, Color, Sequential Group, Delay
-            self.group_properties_table.setRowCount(4)
+            # 5 rows: Milling Current, Color, Sequential Group, Delay, Status
+            self.group_properties_table.setRowCount(5)
             
             # Row 0: Milling current with dropdown
             self.group_properties_table.setItem(0, 0, QTableWidgetItem("Milling Current"))
@@ -2136,8 +2374,28 @@ class MainWindow(QWidget):
             else:
                 self.group_properties_table.setItem(1, 1, QTableWidgetItem("(mixed)"))
             
-            # Row 2: Sequential Group with editable spinbox
-            self.group_properties_table.setItem(2, 0, QTableWidgetItem("Sequential Group"))
+            # Row 2: Status with dropdown (pending, done, failed - not busy)
+            self.group_properties_table.setItem(2, 0, QTableWidgetItem("Status"))
+            status_combo = QComboBox()
+            status_options = ["pending", "done", "failed"]  # "busy" not user-selectable
+            status_combo.addItems(status_options)
+            
+            if all_same_status:
+                # Find the status in options (busy not in list, so default to pending if busy)
+                current_status = statuses[0]
+                if current_status in status_options:
+                    status_combo.setCurrentText(current_status)
+                else:
+                    status_combo.setCurrentText("pending")  # Default for "busy"
+            else:
+                status_combo.insertItem(0, "(mixed)")
+                status_combo.setCurrentIndex(0)
+            
+            status_combo.currentIndexChanged.connect(self._on_status_changed)
+            self.group_properties_table.setCellWidget(2, 1, status_combo)
+            
+            # Row 3: Sequential Group with editable spinbox
+            self.group_properties_table.setItem(3, 0, QTableWidgetItem("Sequential Group"))
             seq_spinbox = QSpinBox()
             seq_spinbox.setMinimum(0)
             seq_spinbox.setMaximum(999)
@@ -2147,10 +2405,10 @@ class MainWindow(QWidget):
                 seq_spinbox.setSpecialValueText("(mixed)")
                 seq_spinbox.setValue(0)
             seq_spinbox.valueChanged.connect(self._on_sequential_group_changed)
-            self.group_properties_table.setCellWidget(2, 1, seq_spinbox)
+            self.group_properties_table.setCellWidget(3, 1, seq_spinbox)
             
-            # Row 3: Delay with editable QLineEdit (no arrows)
-            self.group_properties_table.setItem(3, 0, QTableWidgetItem("Delay (s)"))
+            # Row 4: Delay with editable QLineEdit (no arrows)
+            self.group_properties_table.setItem(4, 0, QTableWidgetItem("Delay (s)"))
             delay_edit = QLineEdit()
             delay_edit.setValidator(QIntValidator(0, 999999))
             if all_same_delay:
@@ -2158,7 +2416,7 @@ class MainWindow(QWidget):
             else:
                 delay_edit.setPlaceholderText("(mixed)")
             delay_edit.editingFinished.connect(self._on_delay_changed)
-            self.group_properties_table.setCellWidget(3, 1, delay_edit)
+            self.group_properties_table.setCellWidget(4, 1, delay_edit)
         
         # =====================
         # Populate Pattern Properties Table
@@ -2405,11 +2663,32 @@ class MainWindow(QWidget):
                 text += f" | Rect: {data['rect']}"
 
             item.setText(text)
+            
+            # Determine icon color based on PatternGroup milled_status values
+            pattern_groups = data.get("patterns", [])
+            statuses = [pg.milled_status for pg in pattern_groups] if pattern_groups else []
+            
+            if not statuses or all(s == "pending" for s in statuses):
+                # All pending (or no patterns) → blue
+                icon = PositionList.create_colored_dot_icon(QColor(100, 150, 255))
+            elif "busy" in statuses:
+                # At least one busy → yellow
+                icon = PositionList.create_colored_dot_icon(QColor(255, 200, 0))
+            elif "failed" in statuses:
+                # At least one failed (none busy) → red
+                icon = PositionList.create_colored_dot_icon(QColor(255, 50, 50))
+            elif all(s == "done" for s in statuses):
+                # All done → green
+                icon = PositionList.create_colored_dot_icon(QColor(0, 200, 0))
+            else:
+                # Some done, some pending (none failed/busy) → orange
+                icon = PositionList.create_colored_dot_icon(QColor(255, 165, 0))
+            item.setIcon(icon)
 
         # Debug
-        print("\nUpdated positions dictionary:")
-        for k, v in self.positions.items():
-            print(k, v)
+        # print("\nUpdated positions dictionary:")
+        # for k, v in self.positions.items():
+        #     print(k, v)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
@@ -2437,15 +2716,20 @@ class MainWindow(QWidget):
                     # If this pattern group  is not in the current sequential group, skip and add it later
                     if pg.sequential_group != sg:
                         continue
+                    # If this pattern group has no patterns, skip it
+                    if not hasattr(pg, 'patterns') or len(pg.patterns) == 0:
+                        continue
+                    # If this pattern group is not marked as pending, skip it
+                    if pg.milled_status != "pending":
+                        continue
                     # Otherwise, create a task for this pattern group
                     task = Task()
-                    task.patterns = pg.patterns
-                    task.milling_current = pg.milling_current
-                    task.delay = pg.delay
+                    task.pattern_group = pg
                     task.coords = data.get("coords", {})
                     task.tracking_area = relative_coords(data.get("tracking_area", None), fov_width_m, fov_height_m)
                     task.image = data["image"]
                     task.ref_image = self.reference_image_subarea(data["image"], task.tracking_area)
+                    task.sequential_group = sg
                     task.position_index = i
                     task_list.append(task)
 
@@ -2475,80 +2759,206 @@ class MainWindow(QWidget):
         sub_image = AdornedImage(data=sub_image, metadata=image.metadata)
         
         return sub_image
+    
+    def update_display(self):
+        self.rebuild_positions()
+        self.repaint()
+        QApplication.processEvents()
+
+    def _set_milling_controls_enabled(self, enabled):
+        """Enable or disable controls that should be inactive during milling."""
+        self.add_position_btn.setEnabled(enabled)
+        self.take_ion_beam_image_btn.setEnabled(enabled)
+        self.attach_pattern_btn.setEnabled(enabled)
+        self.send_pattern_btn.setEnabled(enabled)
+        
+        # Swap Run/Stop button
+        if enabled:
+            self.run_btn.setText("Run")
+            self.run_btn.clicked.disconnect()
+            self.run_btn.clicked.connect(self.run)
+            self.run_btn.setEnabled(True)
+        else:
+            self.run_btn.setText("Stop")
+            self.run_btn.clicked.disconnect()
+            self.run_btn.clicked.connect(self.stop_milling)
+            self.run_btn.setEnabled(True)  # Stop button should be enabled
+
+    def stop_milling(self):
+        """Stop the milling process and abort the run loop."""
+        print("Stop milling requested")
+        self._milling_stopped = True
+        if MODE == "scope":
+            scope.stop_patterning()
+            scope.stop()
+        return
+
+    def _lock_all_patterns(self, locked):
+        """Lock or unlock all patterns in the image widget."""
+        # Reload shapes with locked state for all positions
+        item = self.position_list.currentItem()
+        if item:
+            data = item.data(Qt.UserRole)
+            patterns = data.get("patterns", [])
+            self.image_widget.load_shapes(patterns, locked=locked)
 
     def run(self):
-        # Run the milling tasks
+        # Build task list first
         task_list = self.build_task_list()
+        
+        if len(task_list) == 0:
+            print("No tasks to run.")
+            return
+        
+        # Show confirmation dialog
+        dialog = MillingConfirmDialog(task_list, self)
+        if dialog.exec_() != QDialog.Accepted:
+            print("Milling cancelled by user.")
+            return
+        
+        # User confirmed - lock patterns and disable controls
+        self._lock_all_patterns(locked=True)
+        self._set_milling_controls_enabled(False)
+        self._milling_stopped = False  # Reset stop flag
+        QApplication.processEvents()
+        
         if MODE=='scope':
             print(f"Scope output directory: {scope.working_dir}")
-        print(f"Made a task list with {len(task_list)} tasks.")
+        print(f"Starting milling with {len(task_list)} tasks.")
 
-        for task_idx, task in enumerate(task_list):
-            print(f"Running task {task_idx+1}/{len(task_list)} with {len(task.patterns)} patterns, "
-                  f"position={task.position_index}, current={task.milling_current*1e9:.1f} nA, delay={task.delay} s")
-            if task.tracking_area is not None:
-                w = task.tracking_area["width"]
-                h = task.tracking_area["height"]
-                l = task.tracking_area["left"]
-                t = task.tracking_area["top"]
-                print(f"    Tracking area: width={w:.2f}, height={h:.2f}, left={l:.2f}, top={t:.2f} (relative coords)")
-            
-            if MODE == "dev":
-                print("  (dev mode - not actually milling)")
-                continue
+        try:
+            for task_idx, task in enumerate(task_list):
+                # Check if stop was requested
+                if self._milling_stopped:
+                    print("Milling stopped by user.")
+                    task.pattern_group.milled_status = "failed"
+                    break
+                
+                print(f"Running task {task_idx+1}/{len(task_list)} with {len(task.pattern_group.patterns)} patterns, "
+                      f"position={task.position_index}, current={task.pattern_group.milling_current*1e9:.1f} nA, delay={task.pattern_group.delay} s")
+                
+                # Select the position item and update display (like clicking on it)
+                position_item = self.position_list.item(task.position_index)
+                if position_item:
+                    self.position_list.setCurrentItem(position_item)
+                    self.on_item_clicked(position_item)
+                    # Re-lock patterns after loading (on_item_clicked loads with locked=False)
+                    self._lock_all_patterns(locked=True)
+                
+                # Mark PatternGroup as busy and update UI
+                task.pattern_group.milled_status = "busy"
+                self.update_display()
+                
+                if task.tracking_area is not None:
+                    w = task.tracking_area["width"]
+                    h = task.tracking_area["height"]
+                    l = task.tracking_area["left"]
+                    t = task.tracking_area["top"]
+                    print(f"    Tracking area: width={w:.2f}, height={h:.2f}, left={l:.2f}, top={t:.2f} (relative coords)")
+                
+                if MODE == "dev":
+                    print("  (dev mode - not actually milling)")
+                    time.sleep(2)  # Simulate some delay
+                    if self._milling_stopped:
+                        task.pattern_group.milled_status = "failed"
+                        break
+                    task.pattern_group.milled_status = "done"  # Mark PatternGroup as done
+                    self.update_display()
+                    continue
 
-            elif MODE == "scope":
-                if task.delay > 0:
-                    print(f"  Waiting for {task.delay} seconds before starting...")
-                    if task.delay > MAX_DELAY_NO_HOME:
-                        print(f"    The delay is more than {MAX_DELAY_NO_HOME} seconds. Going in sleep mode.")
-                        # GO IN SLEEP MODE
-                        scope.enter_sleep_mode()
-                    time.sleep(task.delay)
+                elif MODE == "scope":
+                    if task.pattern_group.delay > 0:
+                        print(f"  Waiting for {task.pattern_group.delay} seconds before starting...")
+                        if task.pattern_group.delay > MAX_DELAY_NO_HOME:
+                            print(f"    The delay is more than {MAX_DELAY_NO_HOME} seconds. Going in sleep mode.")
+                            # GO IN SLEEP MODE
+                            scope.enter_sleep_mode()
+                        time.sleep(task.pattern_group.delay)
+                        if self._milling_stopped:
+                            task.pattern_group.milled_status = "failed"
+                            break
 
+                    # TO DO NEXT:
+                    # 1. Image alignment at low current
+                    # 2. Change current to milling current and align using:
+                        # Define a sub-area using Rectangle(left, top, width, height)
+                        # All values are normalized (0.0 to 1.0, relative to full frame)
+                        # settings = GrabFrameSettings(reduced_area=Rectangle(0.6, 0.6, 0.3, 0.3))
+                        # image = microscope.imaging.grab_frame(settings)
+                    # Send patterns to scope and mill
 
-                # TO DO NEXT:
-                # 1. Image alignment at low current
-                # 2. Change current to milling current and align using:
-                    # Define a sub-area using Rectangle(left, top, width, height)
-                    # All values are normalized (0.0 to 1.0, relative to full frame)
-                    # settings = GrabFrameSettings(reduced_area=Rectangle(0.6, 0.6, 0.3, 0.3))
-                    # image = microscope.imaging.grab_frame(settings)
-                # Send patterns to scope and mill
-
-                scope.ion_on()
-                # If this is the first task of if the position has changed, move stage and align at low current
-                move_and_align = False
-                if task_idx == 0:
-                    move_and_align = True
-                elif task_idx > 0:
-                    if (task_list[task_idx-1].coords != task.coords) or not(task_list[task_idx-1].move_successful):
+                    scope.ion_on()
+                    # If this is the first task of if the position has changed, move stage and align at low current
+                    move_and_align = False
+                    if task_idx == 0:
                         move_and_align = True
-                if move_and_align:
-                    print("  Moving to new position...")
-                    stage_moved = scope.move_stage_absolute(task.coords)
-                    if not stage_moved:
-                        print("  Moving the stage failed. Skipping this task.")
+                    elif task_idx > 0:
+                        if (task_list[task_idx-1].coords != task.coords) or not(task_list[task_idx-1].move_successful):
+                            move_and_align = True
+                    if move_and_align:
+                        print("  Moving to new position...")
+                        stage_moved = scope.move_stage_absolute(task.coords)
+                        if not stage_moved:
+                            print("  Moving the stage failed. Skipping this task.")
+                            task.pattern_group.milled_status = "failed"
+                            self.update_display()
+                            continue
+                        task.move_successful = True
+                        aligned_low_current = scope.align(task.image,
+                                                          position_index=task.position_index,
+                                                          seq_group_index=task.sequential_group, 
+                                                          current=1.0e-11, 
+                                                          reset_beam_shift=True) # low current alignment on full image
+                        if self._milling_stopped:
+                            task.pattern_group.milled_status = "failed"
+                            break
+                        if not aligned_low_current:
+                            print("  Low-current Alignment failed. Skipping this task.")
+                            task.pattern_group.milled_status = "failed"
+                            self.update_display()
+                            continue
+                    else:
+                        task.move_successful = True
+                        print("  Position unchanged. Skipping move and low-current alignment.")
+                    # Now align at milling current using reduced area
+                    aligned_milling_current = scope.align(task.ref_image,
+                                                          position_index=task.position_index,
+                                                          seq_group_index=task.sequential_group, 
+                                                          current=task.pattern_group.milling_current, 
+                                                          reduced_area=task.tracking_area, 
+                                                          reset_beam_shift=False)
+                    if self._milling_stopped:
+                        task.pattern_group.milled_status = "failed"
+                        break
+                    if not aligned_milling_current:
+                        print("  Milling-current Alignment failed. Skipping this task.")
+                        task.pattern_group.milled_status = "failed"
+                        self.update_display()
                         continue
-                    task.move_successful = True
-                    aligned_low_current = scope.align(task.image, current=1.0e-11, reset_beam_shift=True) # low current alignment on full image 
-                    if not aligned_low_current:
-                        print("  Low-current Alignment failed. Skipping this task.")
+                    # Start milling
+                    print("  Starting milling...")
+                    milled = scope.do_milling(task.pattern_group.patterns)
+                    if not milled:
+                        print("  Milling failed. Skipping this task.")
+                        task.pattern_group.milled_status = "failed"
+                        self.update_display()
                         continue
-                else:
-                    task.move_successful = True
-                    print("  Position unchanged. Skipping move and low-current alignment.")
-                # Now align at milling current using reduced area
-                aligned_milling_current = scope.align(task.ref_image, current=task.milling_current, reduced_area=task.tracking_area, reset_beam_shift=False)
-                if not aligned_milling_current:
-                    print("  Milling-current Alignment failed. Skipping this task.")
-                    continue
-                # Start milling
-                print("  Starting milling...")
-                milled = scope.do_milling(task.patterns)
-                if not milled:
-                    print("  Milling failed. Skipping this task.")
-                    continue
+                    if self._milling_stopped:
+                        task.pattern_group.milled_status = "failed"
+                        break
+                    
+                    # Mark this PatternGroup as successfully milled
+                    task.pattern_group.milled_status = "done"
+                    self.update_display()
+        
+        finally:
+            # Always unlock patterns and re-enable controls when done (even if error)
+            self._lock_all_patterns(locked=False)
+            self._set_milling_controls_enabled(True)
+            # Final status update
+            self.update_display()
+        
+        print("Milling complete.")
 
 # -------------------------------------------------    
 class Pattern():
@@ -2582,6 +2992,7 @@ class Task():
         self.image = None # AdornedImage of ion beam image for this task
         self.ref_image = None  # AdornedImage of reference image (reduced area if applicable)
         self.move_successful = False  # Whether the move to this task's position was successful
+        self.sequential_group = None  # Sequential group index
         self.position_index = None  # Index of the position in the list
 
 def relative_coords(tracking_area, fov_width, fov_height):

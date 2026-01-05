@@ -92,7 +92,7 @@ class fibsem:
         microscope.beams.ion_beam.turn_off()
         return()
     
-    def take_image_IB(self, reduced_area=None):
+    def take_image_IB(self, reduced_area=None, resolution="1536x1024", dwell_time=3.0e-6):
         '''
         Input: None
         Output: AdornedImage
@@ -113,9 +113,9 @@ class fibsem:
             print("Acquiring IB snapshot")
             if reduced_area is not None:
                 reduced_area_rect = Rectangle(reduced_area['left'], reduced_area['top'], reduced_area['width'], reduced_area['height']) # 
-                framesettings = GrabFrameSettings(bit_depth=8, reduced_area=reduced_area_rect)
+                framesettings = GrabFrameSettings(resolution=resolution, bit_depth=8, reduced_area=reduced_area_rect, dwell_time=dwell_time)
             else:
-                framesettings = GrabFrameSettings(bit_depth=8)
+                framesettings = GrabFrameSettings(resolution=resolution, bit_depth=8, dwell_time=dwell_time)
             img = microscope.imaging.grab_frame(framesettings)
             return(img)
         
@@ -290,8 +290,9 @@ class fibsem:
             move_count = 0
 
             now = datetime.datetime.now()
-            current_img.save(os.path.join(output_dir, now.strftime("%Y-%m-%d_%H_%M_%S_") + f'_seq{seq_group_index}_'+ beam_current_string + '_move_' + str(move_count)+'.tif'))
-            self.log_output=self.log_output+"Saved Image as : "+self.working_dir + self.lamella_name+'_out/'+now.strftime("%Y-%m-%d_%H_%M_%S_")+self.lamella_name +'_'+ beam_current_string + '_first_move_'+str(move_count)+'.tif'+'\n'
+            output_name = os.path.join(output_dir, now.strftime("%Y-%m-%d_%H_%M_%S_") + f'_seq{seq_group_index}_'+ beam_current_string + '_move_' + str(move_count)+'.tif')
+            current_img.save(output_name)
+            self.log_output=self.log_output+"Saved Image as : "+output_name+'\n'
 
             # If cross correlation metric too low, continue movements for maximum 3 steps
             while l.confidence < 0.98 and move_count < 3:
@@ -337,9 +338,9 @@ class fibsem:
 
                 current_img = self.take_image_IB(reduced_area=reduced_area)
                 now = datetime.datetime.now()
-                current_img.save(os.path.join(output_dir, now.strftime("%Y-%m-%d_%H_%M_%S_") + f'_seq{seq_group_index}_'+ beam_current_string + '_move_' + str(move_count)+'.tif'))
-
-                self.log_output = self.log_output + "Saved Image as : " +self.working_dir+ self.lamella_name + '_out/' +now.strftime("%Y-%m-%d_%H_%M_%S_") + self.lamella_name +'_'+ beam_current_string + '_first_move_' + str(move_count)+'.tif'+'\n'
+                output_name = os.path.join(output_dir, now.strftime("%Y-%m-%d_%H_%M_%S_") + f'_seq{seq_group_index}_'+ beam_current_string + '_move_' + str(move_count)+'.tif')
+                current_img.save(output_name)
+                self.log_output = self.log_output + "Saved Image as : " +output_name+'\n'
                 l = vision_toolkit.locate_feature(current_img, image, favourite_matcher)
                 print("Current confidence: " + str(l.confidence))
                 self.log_output = self.log_output + "Current confidence: " + str(l.confidence) + '\n'
@@ -426,6 +427,7 @@ class fibsem:
             )
         
         xT_pattern = None
+        microscope.patterning.clear_patterns()
         
         if isinstance(pattern, RectanglePattern):
             xT_pattern = microscope.patterning.create_rectangle(

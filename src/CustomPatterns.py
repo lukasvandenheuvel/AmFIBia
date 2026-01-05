@@ -1013,12 +1013,14 @@ class PatternGroup:
         color: RGB tuple for display color (assigned based on group order)
         sequential_group: Integer for ordering/grouping patterns during milling
         delay: Delay in seconds before milling this group (integer)
+        milled_status: Status of milling: "pending", "busy", "done", or "failed"
     """
     patterns: dict = field(default_factory=dict)  # Dict of {id: DisplayablePattern}
     milling_current: float = 0.0  # Milling current in Amperes
     color: Tuple[int, int, int] = (255, 255, 0)  # RGB color tuple, default yellow
     sequential_group: int = 0  # Group ordering for milling sequence
     delay: int = 0  # Delay in seconds before milling this group
+    milled_status: str = "pending"  # "pending", "busy", "done", or "failed"
     
     @classmethod
     def create_with_index(cls, patterns: dict, milling_current: float, index: int, sequential_group: int = 0, delay: int = 0) -> "PatternGroup":
