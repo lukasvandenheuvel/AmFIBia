@@ -23,6 +23,9 @@ class SettingsPanel(QWidget):
     # Signal emitted when dwell time changes (emits value in µs)
     dwell_time_changed = pyqtSignal(float)
     
+    # Signal emitted when user wants to load a state file
+    load_state_requested = pyqtSignal()
+    
     # ScanningResolution presets from Autoscript (ordered by size)
     RESOLUTION_PRESETS = [
         ("512x442", "PRESET_512X442"),
@@ -97,6 +100,12 @@ class SettingsPanel(QWidget):
         dir_row_layout.addWidget(browse_btn)
         workdir_layout.addLayout(dir_row_layout)
         
+        # Load State button
+        self.load_state_btn = QPushButton("Load State")
+        self.load_state_btn.clicked.connect(self._on_load_state_clicked)
+        self.load_state_btn.setToolTip("Load a previously saved application state")
+        workdir_layout.addWidget(self.load_state_btn)
+        
         layout.addWidget(workdir_group)
         
         # Add stretch to push everything to the top
@@ -131,11 +140,21 @@ class SettingsPanel(QWidget):
         """Get the currently selected scanning resolution as display text (e.g., '1536x1024')."""
         return self.resolution_combo.currentText()
     
+    def set_scanning_resolution(self, resolution_text):
+        """Set the scanning resolution dropdown to the given resolution text (e.g., '1536x1024')."""
+        index = self.resolution_combo.findText(resolution_text)
+        if index >= 0:
+            self.resolution_combo.setCurrentIndex(index)
+    
     def get_scanning_resolution_tuple(self):
         """Get the currently selected scanning resolution as (width, height) tuple."""
         text = self.resolution_combo.currentText()
         width, height = text.split('x')
         return (int(width), int(height))
+    
+    def set_dwell_time(self, dwell_time_us):
+        """Set the dwell time input field (value in microseconds)."""
+        self.dwell_time_edit.setText(str(dwell_time_us))
     
     def _browse_directory(self):
         """Open directory chooser dialog."""
@@ -163,3 +182,7 @@ class SettingsPanel(QWidget):
     def has_working_directory(self):
         """Check if a working directory has been set."""
         return bool(self.workdir_edit.text())
+    
+    def _on_load_state_clicked(self):
+        """Handle load state button click."""
+        self.load_state_requested.emit()

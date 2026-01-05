@@ -2,6 +2,10 @@ import sys
 import os
 import time
 import uuid
+import json
+import pickle
+import math
+from datetime import datetime, timedelta
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QListWidget,
     QListWidgetItem, QHBoxLayout, QVBoxLayout,
@@ -1362,6 +1366,103 @@ class PositionList(QListWidget):
 # Milling Confirmation Dialog
 # -------------------------------------------------
 
+def calculate_pattern_time(pattern):
+    """Calculate approximate milling time for a pattern in seconds.
+    
+    Uses the formula: time = (area / pitch^2) * dwell_time * pass_count
+    
+    Args:
+        pattern: A pattern object (RectanglePattern, PolygonPattern, LinePattern, etc.)
+        
+    Returns:
+        Estimated time in seconds
+    """
+    dwell_time = getattr(pattern, 'dwell_time', 1e-6)
+    pass_count = getattr(pattern, 'pass_count', 1)
+    
+    # Get pitch values
+    pitch_x = getattr(pattern, 'pitch_x', None)
+    pitch_y = getattr(pattern, 'pitch_y', None)
+    pitch = getattr(pattern, 'pitch', None)  # For LinePattern
+    
+    # Calculate area based on pattern type
+    if hasattr(pattern, 'vertices') and pattern.vertices:
+        # PolygonPattern - use shoelace formula
+        vertices = pattern.vertices
+        n = len(vertices)
+        if n < 3:
+            return 0.0
+        area = 0.0
+        for i in range(n):
+            j = (i + 1) % n
+            area += vertices[i][0] * vertices[j][1]
+            area -= vertices[j][0] * vertices[i][1]
+        area = abs(area) / 2.0
+    elif hasattr(pattern, 'width') and hasattr(pattern, 'height'):
+        # RectanglePattern
+        area = pattern.width * pattern.height
+    elif hasattr(pattern, 'outer_diameter'):
+        # CirclePattern
+        outer_r = pattern.outer_diameter / 2
+        inner_r = getattr(pattern, 'inner_diameter', 0) / 2
+        area = math.pi * (outer_r**2 - inner_r**2)
+    elif hasattr(pattern, 'length'):
+        # LinePattern - treat as 1D, use pitch directly
+        if pitch and pitch > 0:
+            num_points = pattern.length / pitch
+            return num_points * dwell_time * pass_count
+        return 0.0
+    else:
+        return 0.0
+    
+    # Calculate number of dwell points
+    if pitch_x and pitch_y and pitch_x > 0 and pitch_y > 0:
+        num_dwell_points = area / (pitch_x * pitch_y)
+    else:
+        # Fallback if pitch not set
+        return 0.0
+    
+    return num_dwell_points * dwell_time * pass_count
+
+
+def calculate_task_list_duration(task_list):
+    """Calculate total duration for a task list including delays.
+    
+    Args:
+        task_list: List of Task objects with pattern_group attribute
+        
+    Returns:
+        Tuple of (total_milling_seconds, total_delay_seconds, first_delay_seconds)
+    """
+    total_milling_time = 0.0
+    total_delay_time = 0.0
+    first_delay = 0
+    
+    for i, task in enumerate(task_list):
+        pg = task.pattern_group
+        delay = pg.delay if hasattr(pg, 'delay') else 0
+        total_delay_time += delay
+        
+        if i == 0:
+            first_delay = delay
+        
+        # Calculate time for each pattern in the group
+        if hasattr(pg, 'patterns'):
+            for dp in pg.patterns.values():
+                if dp.pattern:
+                    total_milling_time += calculate_pattern_time(dp.pattern)
+    
+    return total_milling_time, total_delay_time, first_delay
+
+
+def format_duration(seconds):
+    """Format duration in seconds as HHh:MMm:SSs string."""
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+    return f"{hours:02d}h:{minutes:02d}m:{secs:02d}s"
+
+
 class MillingConfirmDialog(QDialog):
     """Dialog to confirm milling tasks before starting."""
     
@@ -1369,7 +1470,7 @@ class MillingConfirmDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Confirm Milling Tasks")
         self.setMinimumWidth(600)
-        self.setMinimumHeight(300)
+        self.setMinimumHeight(400)
         
         layout = QVBoxLayout(self)
         
@@ -1406,6 +1507,27 @@ class MillingConfirmDialog(QDialog):
         self.task_table.resizeColumnsToContents()
         
         layout.addWidget(self.task_table)
+        
+        # Calculate and display timing information
+        milling_time, delay_time, first_delay = calculate_task_list_duration(task_list)
+        total_time = milling_time + delay_time
+        
+        now = datetime.now()
+        start_time = now + timedelta(seconds=first_delay)
+        end_time = now + timedelta(seconds=total_time)
+        
+        # Timing info group
+        timing_group = QGroupBox("Estimated Timing")
+        timing_layout = QFormLayout(timing_group)
+        
+        timing_layout.addRow("Milling duration:", QLabel(f"<b>{format_duration(milling_time)}</b>"))
+        timing_layout.addRow("Total delays:", QLabel(f"{format_duration(delay_time)}"))
+        timing_layout.addRow("Total duration:", QLabel(f"<b>{format_duration(total_time)}</b>"))
+        timing_layout.addRow("", QLabel(""))  # Spacer
+        timing_layout.addRow("Start time:", QLabel(f"{start_time.strftime('%H:%M:%S')} (after {first_delay}s delay)"))
+        timing_layout.addRow("Estimated end:", QLabel(f"<b>{end_time.strftime('%H:%M:%S')}</b>"))
+        
+        layout.addWidget(timing_group)
         
         # Buttons
         button_layout = QHBoxLayout()
@@ -1483,10 +1605,12 @@ class MainWindow(QWidget):
         self.pattern_maker_btn.setStyleSheet(tab_style)
         self.settings_btn.setStyleSheet(tab_style)
         
-        # Save State button
+        # Save State button (disabled until working directory is set)
         self.save_state_btn = QPushButton("Save State")
         self.save_state_btn.clicked.connect(self.save_state)
         self.save_state_btn.setStyleSheet(tab_style)
+        self.save_state_btn.setEnabled(False)
+        self.save_state_btn.setToolTip("Set a working directory in Settings first")
         
         # Layout for tab buttons
         tab_buttons_layout = QHBoxLayout()
@@ -1602,10 +1726,11 @@ class MainWindow(QWidget):
         self.settings_panel.setVisible(True)  # Visible by default
         self.settings_panel.setFixedWidth(300)
 
-        # Connect settings panel signal to update run button state
+        # Connect settings panel signals
         self.settings_panel.working_dir_changed.connect(self._on_working_dir_changed)
         self.settings_panel.resolution_changed.connect(self._on_resolution_changed)
         self.settings_panel.dwell_time_changed.connect(self._on_dwell_time_changed)
+        self.settings_panel.load_state_requested.connect(self.load_state)
         
         # In dev mode, set a default working directory
         if MODE == "dev":
@@ -1963,8 +2088,120 @@ class MainWindow(QWidget):
             self.settings_btn.setText("Settings ◀")
 
     def save_state(self):
-        """Save the current application state."""
-        pass
+        """Save the current application state to a file in the working directory."""
+        working_dir = self.settings_panel.get_working_directory()
+        if not working_dir:
+            print("Warning: No working directory set. Cannot save state.")
+            return
+        
+        # Collect all position data
+        state_data = {
+            'positions': [],
+            'scanning_resolution': self.scanning_resolution,
+            'dwell_time': self.dwell_time,
+        }
+        
+        for i in range(self.position_list.count()):
+            item = self.position_list.item(i)
+            data = item.data(Qt.UserRole)
+            
+            # Store position data (exclude QPixmap which isn't picklable)
+            position_data = {
+                'coords': data.get('coords'),
+                'rect': data.get('rect'),
+                'pixel_to_um': data.get('pixel_to_um'),
+                'tracking_area': data.get('tracking_area'),
+                'patterns': data.get('patterns', []),  # PatternGroups are picklable
+                'image': data.get('image'),  # AdornedImage is picklable (numpy array + dataclasses)
+            }
+            state_data['positions'].append(position_data)
+        
+        # Save to file using pickle
+        file_path = os.path.join(working_dir, 'AmFIBia.state')
+        try:
+            with open(file_path, 'wb') as f:
+                pickle.dump(state_data, f)
+            print(f"State saved to {file_path}")
+        except Exception as e:
+            print(f"Error saving state: {e}")
+    
+    def load_state(self):
+        """Load application state from a file."""
+        working_dir = self.settings_panel.get_working_directory()
+        file_path = os.path.join(working_dir, 'AmFIBia.state')
+        if not os.path.isfile(file_path):
+            QMessageBox.warning(
+                self,
+                "State File Not Found",
+                f"Could not find state file at:\n{file_path}"
+            )
+            return
+        
+        try:
+            with open(file_path, 'rb') as f:
+                state_data = pickle.load(f)
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Error Loading State",
+                f"Failed to load state file:\n{e}"
+            )
+            return
+        
+        # Clear existing positions
+        self.position_list.clear()
+        self.positions.clear()
+        
+        # Restore settings
+        if 'scanning_resolution' in state_data:
+            self.scanning_resolution = state_data['scanning_resolution']
+            self.settings_panel.set_scanning_resolution(self.scanning_resolution)
+        if 'dwell_time' in state_data:
+            self.dwell_time = state_data['dwell_time']
+            self.settings_panel.set_dwell_time(self.dwell_time * 1e6)  # Convert seconds to µs for display
+        
+        # Restore positions
+        for position_data in state_data.get('positions', []):
+            item = QListWidgetItem()
+            
+            # Reconstruct QPixmap from AdornedImage if available
+            adorned_image = position_data.get('image')
+            pixmap = None
+            if adorned_image is not None:
+                img_data = adorned_image.data
+                height, width = img_data.shape[:2]
+                if img_data.ndim == 2:  # Grayscale
+                    pixmap = QPixmap.fromImage(
+                        QImage(img_data.data, width, height, width, QImage.Format_Grayscale8)
+                    )
+                else:  # RGB
+                    pixmap = QPixmap.fromImage(
+                        QImage(img_data.data, width, height, width * 3, QImage.Format_RGB888)
+                    )
+            
+            data = {
+                'coords': position_data.get('coords'),
+                'rect': position_data.get('rect'),
+                'pixmap': pixmap,
+                'image': adorned_image,
+                'pixel_to_um': position_data.get('pixel_to_um'),
+                'patterns': position_data.get('patterns', []),
+                'tracking_area': position_data.get('tracking_area'),
+            }
+            
+            item.setData(Qt.UserRole, data)
+            self.position_list.addItem(item)
+        
+        # Rebuild positions to update UI
+        self.rebuild_positions()
+        
+        # Select and display first position if available
+        if self.position_list.count() > 0:
+            first_item = self.position_list.item(0)
+            self.position_list.setCurrentItem(first_item)
+            self.on_item_clicked(first_item)
+        
+        print(f"State loaded from {file_path}")
 
     def _on_working_dir_changed(self, directory):
         """Handle working directory change from settings panel."""
@@ -1977,6 +2214,8 @@ class MainWindow(QWidget):
             self.take_ion_beam_image_btn.setToolTip("")
             self.attach_pattern_btn.setEnabled(True)
             self.attach_pattern_btn.setToolTip("")
+            self.save_state_btn.setEnabled(True)
+            self.save_state_btn.setToolTip("")
         else:
             self.run_btn.setEnabled(False)
             self.run_btn.setToolTip("Set a working directory in Settings first")
@@ -1986,6 +2225,8 @@ class MainWindow(QWidget):
             self.take_ion_beam_image_btn.setToolTip("Set a working directory in Settings first")
             self.attach_pattern_btn.setEnabled(False)
             self.attach_pattern_btn.setToolTip("Set a working directory in Settings first")
+            self.save_state_btn.setEnabled(False)
+            self.save_state_btn.setToolTip("Set a working directory in Settings first")
 
     def _on_resolution_changed(self, resolution_text):
         """Handle scanning resolution change from settings panel."""
@@ -2807,7 +3048,11 @@ class MainWindow(QWidget):
         task_list = self.build_task_list()
         
         if len(task_list) == 0:
-            print("No tasks to run.")
+            QMessageBox.information(
+                self,
+                "No Tasks",
+                "There are no pending tasks to run.\n\nMake sure you have positions with patterns that are marked as 'pending'."
+            )
             return
         
         # Show confirmation dialog

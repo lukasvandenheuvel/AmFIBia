@@ -30,25 +30,58 @@ class PatternMaker(QWidget):
     DEFAULT_FINE_CURRENT = 15e-9     # 15 nA
     DEFAULT_POLISH_CURRENT = 0.1e-9  # 0.1 nA for polishing
     
-    # Hard-coded pattern properties from reference PTF file
-    # Pattern index -> (scan_direction, enabled)
-    # All patterns share: dwell_time=1e-6, scan_type="Serpentine", application_file="Si"
-    PATTERN_PROPERTIES = {
-        0:  {'scan_direction': 'DynamicAllDirections', 'enabled': False},  # Block (reference, disabled)
-        1:  {'scan_direction': 'BottomToTop', 'enabled': True},            # inner bottom
-        2:  {'scan_direction': 'LeftToRight', 'enabled': True},            # inner left top
-        3:  {'scan_direction': 'RightToLeft', 'enabled': True},            # inner right
-        4:  {'scan_direction': 'RightToLeft', 'enabled': True},            # outer right
-        5:  {'scan_direction': 'BottomToTop', 'enabled': True},            # outer bottom
-        6:  {'scan_direction': 'TopToBottom', 'enabled': True},            # inner top
-        7:  {'scan_direction': 'LeftToRight', 'enabled': True},            # outer left top
-        8:  {'scan_direction': 'TopToBottom', 'enabled': True},            # trench top
-        9:  {'scan_direction': 'LeftToRight', 'enabled': True},            # outer left bottom
-        10: {'scan_direction': 'LeftToRight', 'enabled': True},            # inner left bottom
-        11: {'scan_direction': 'LeftToRight', 'enabled': True},            # needle gap right top
-        12: {'scan_direction': 'RightToLeft', 'enabled': True},            # outer left trench
-        13: {'scan_direction': 'LeftToRight', 'enabled': True},            # needle gap
-        14: {'scan_direction': 'TopToBottom', 'enabled': True},            # outer top
+    # Hard-coded pattern properties from reference PTF files
+    # Block-prep reference: patterns/reference-pattern-blockprep_DO_NOT_REMOVE.ptf
+    # Polish reference: patterns/reference-pattern-polish_DO_NOT_REMOVE.ptf
+    
+    # Common properties for all block-prep patterns (from reference file)
+    BLOCKPREP_COMMON_PROPS = {
+        'dwell_time': 1e-6,
+        'depth': 4.6688548123677e-07,
+        'pass_count': 1185,
+        'dose': 9.26916875000127e-10,
+        'volume_per_dose': 2.7e-10,
+        'pitch_x': 1.2e-08,
+        'pitch_y': 1.2e-08,
+        'overlap_x': 0.5,  # 50% in reference file
+        'overlap_y': 0.5,
+        'scan_type': 'Serpentine',
+        'application_file': 'Si',
+    }
+    
+    # Per-pattern scan direction for block-prep (from reference file order)
+    BLOCKPREP_SCAN_DIRECTIONS = {
+        0:  'DynamicAllDirections',  # Block (reference, disabled)
+        1:  'BottomToTop',           # inner bottom
+        2:  'LeftToRight',           # inner left top
+        3:  'RightToLeft',           # inner right
+        4:  'RightToLeft',           # outer right
+        5:  'BottomToTop',           # outer bottom
+        6:  'TopToBottom',           # inner top
+        7:  'LeftToRight',           # outer left top
+        8:  'TopToBottom',           # trench top
+        9:  'LeftToRight',           # outer left bottom
+        10: 'LeftToRight',           # inner left bottom
+        11: 'LeftToRight',           # needle gap right top
+        12: 'RightToLeft',           # outer left trench
+        13: 'LeftToRight',           # needle gap
+        14: 'TopToBottom',           # outer top
+    }
+    
+    # Common properties for all polish patterns (from reference file)
+    POLISH_COMMON_PROPS = {
+        'dwell_time': 1e-6,
+        'depth': 3.02325629584446e-06,
+        'pass_count': 19470,
+        'dose': 1.11972455401647e-08,
+        'volume_per_dose': 2.7e-10,
+        'pitch_x': 9.5e-09,
+        'pitch_y': 9.5e-09,
+        'overlap_x': 0.5,  # 50% in reference file
+        'overlap_y': 0.5,
+        'scan_type': 'Serpentine',
+        'scan_direction': 'BottomToTop',
+        'application_file': 'Si',
     }
     
     def __init__(self, parent=None, mode="dev", scope=None):
@@ -338,7 +371,7 @@ class PatternMaker(QWidget):
             'needle_gap_width': float(self.needle_gap_width_um.text()) * 1e-6,
             'needle_gap_height': float(self.needle_gap_height_um.text()) * 1e-6,
             'needle_gap_overlap': 2 * 1e-6,
-            'trench_safety_margin': 25 * 1e-6,
+            'trench_safety_margin': 40 * 1e-6,
             'mode': self.mode_combo.currentText(),
         }
     
@@ -558,21 +591,29 @@ class PatternMaker(QWidget):
                 if i == 0:  # Skip the block pattern (index 0)
                     continue
                 if i in self.ENABLE_PATTERNS[group]:
-                    # Get hard-coded properties for this pattern index
-                    props = self.PATTERN_PROPERTIES.get(i, {})
-                    scan_dir = props.get('scan_direction', 'TopToBottom')
+                    # Get scan direction for this pattern index
+                    scan_dir = self.BLOCKPREP_SCAN_DIRECTIONS.get(i, 'TopToBottom')
                     
-                    # Create RectanglePattern with all properties
+                    # Create RectanglePattern with all properties from reference file
                     centerX, centerY, w, l = self.rectangle_properties(verts)
+                    props = self.BLOCKPREP_COMMON_PROPS
                     pattern = RectanglePattern(
                         center_x=centerX,
                         center_y=centerY,
                         width=w,
                         height=l,
-                        dwell_time=1e-6,
+                        dwell_time=props['dwell_time'],
+                        depth=props['depth'],
+                        pass_count=props['pass_count'],
+                        dose=props['dose'],
+                        volume_per_dose=props['volume_per_dose'],
+                        pitch_x=props['pitch_x'],
+                        pitch_y=props['pitch_y'],
+                        overlap_x=props['overlap_x'],
+                        overlap_y=props['overlap_y'],
                         scan_direction=scan_dir,
-                        scan_type='Serpentine',
-                        application_file='Si',
+                        scan_type=props['scan_type'],
+                        application_file=props['application_file'],
                         enabled=True
                     )
                     # Convert to pixel coordinates for display
@@ -738,34 +779,47 @@ class PatternMaker(QWidget):
         bottom_center_x = np.mean(x2)
         bottom_center_y = np.mean(y2)
         
-        # Top pattern - uses BottomToTop scan direction (matches reference PTF)
+        # Get common properties from reference file
+        props = self.POLISH_COMMON_PROPS
+        
+        # Top pattern - uses user's depth and properties from reference PTF
         top_pattern = PolygonPattern(
             center_x=top_center_x,
             center_y=top_center_y,
             vertices=top_coords,
-            depth=depth,
-            dwell_time=1e-6,
-            scan_direction='BottomToTop',
-            scan_type='Serpentine',
-            application_file='Si',
+            depth=depth,  # User-specified depth
+            dwell_time=props['dwell_time'],
+            pass_count=props['pass_count'],
+            dose=props['dose'],
+            volume_per_dose=props['volume_per_dose'],
+            pitch_x=props['pitch_x'],
+            pitch_y=props['pitch_y'],
+            scan_direction=props['scan_direction'],
+            scan_type=props['scan_type'],
+            application_file=props['application_file'],
             enabled=True,
-            overlap_x=0.5,
-            overlap_y=0.5
+            overlap_x=props['overlap_x'],
+            overlap_y=props['overlap_y']
         )
         
-        # Bottom pattern - uses BottomToTop scan direction (matches reference PTF)
+        # Bottom pattern - uses user's depth and properties from reference PTF
         bottom_pattern = PolygonPattern(
             center_x=bottom_center_x,
             center_y=bottom_center_y,
             vertices=bottom_coords,
-            depth=depth,
-            dwell_time=1e-6,
-            scan_direction='BottomToTop',
-            scan_type='Serpentine',
-            application_file='Si',
+            depth=depth,  # User-specified depth
+            dwell_time=props['dwell_time'],
+            pass_count=props['pass_count'],
+            dose=props['dose'],
+            volume_per_dose=props['volume_per_dose'],
+            pitch_x=props['pitch_x'],
+            pitch_y=props['pitch_y'],
+            scan_direction=props['scan_direction'],
+            scan_type=props['scan_type'],
+            application_file=props['application_file'],
             enabled=True,
-            overlap_x=0.5,
-            overlap_y=0.5
+            overlap_x=props['overlap_x'],
+            overlap_y=props['overlap_y']
         )
         
         # Create displayable patterns
