@@ -2056,7 +2056,7 @@ class MainWindow(QWidget):
 
         # Take image
         if MODE == "scope":
-            adorned_img = scope.take_image_IB(resolution=self.scanning_resolution)
+            adorned_img = scope.take_image_IB(resolution=self.scanning_resolution, dwell_time=self.dwell_time)
             img = adorned_img.data
             width = adorned_img.width
             height = adorned_img.height
