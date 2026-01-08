@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Getting started</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+
+<body>
+<h1>Getting started</h1>
+
+This section will walk you through the process of creating and executing a test project with the AutoScript software.<br>
+It is assumed that the product has been installed in the recommended
+<a href="../InstallationConfigurations.html">Remote scripting configuration</a>.
+
+<br><br>
+
+<strong>On the Microscope computer:</strong>
+
+<ol class="spaced-list">
+
+    <li>Login with a regular user account.</li>
+
+    <li>Start the XT Server and the Microscope Control user interface application.</li>
+
+    <li>
+        Prepare the system for SEM image acquisition
+        <ol style="list-style-type:lower-roman; margin-top: 7px;">
+            <li>The vacuum system and electron beam gun are in an operational state.</li>
+            <li>Stage is homed and specimen is in position suitable for imaging.</li>
+        </ol>
+    </li>
+    <li>
+        Check the taskbar tray to ensure that the AutoScript Server icon is blue.
+
+        <p><img src="../Resources/Intro_ASIconInTray.png" alt="" height="32" width="32" /></p>
+
+        A blue icon indicates that the AutoScript Server is running and that all prerequisites for executing
+        scripts are met. If you don't see the icon, launch the AutoScript Server from the Start menu by navigating
+        to <em>Thermo Scientific AutoScript &gt;  AutoScript Server</em>.
+    </li>
+</ol>
+
+<strong>On the Support computer</strong> (or the computer where the AutoScript Client software is installed).
+
+<ol class="spaced-list">
+    <li>
+        Open PyCharm Community Edition.
+
+        <p><img alt="" src="../Resources/Intro_PyCharmIcon.png" style="width: 76px; height: 95px"></p>
+    </li>
+
+    <li>If PyCharm is started for the first time, then:
+        <ol style="list-style-type:lower-roman; margin-top: 7px;">
+            <li>Accept the JetBrains Privacy Policy: Tick <strong>I confirm…</strong> and select <strong>Continue</strong>.</li>
+            <li>At the data sharing options, select <strong>Don't send</strong>.</li>
+        </ol>
+    </li>
+
+    <li>
+        In the PyCharm welcome screen, select <strong>New Project</strong>.
+
+        <p><img alt="" src="../Resources/Intro_PyCharmNewProject.png" style="width: 786px; height: 322px"></p>
+    </li>
+
+    <li>
+        In Location, enter the folder name for the new project: <em>"Test"</em>. This will also be the name of the new project.<br>
+        Keep the Python interpreter option set to the preselected <em>"Python 3.11 (AutoScript)"</em> option.<br>
+        Press <strong>Create</strong>.
+
+        <p><img alt="" src="../Resources/Intro_PyCharmProjectName.png" style="width: 786px; height: 235px"></p>
+
+        When creating the first project in PyCharm with the specific interpreter settings,
+        it scans Python packages installed with that interpreter. This process is called <strong>indexing</strong>.
+        During indexing, the editor's functionality is limited, and scripts cannot be executed.<br>
+        <strong>Wait for the indexing to finish.</strong> This may take up to 15 minutes.
+
+        <p><img alt="" src="../Resources/Intro_PyCharmIndexing.png" style="width: 610px; height: 53px"></p>
+    </li>
+
+    <li>
+        In the Project panel, right-click on the Test project and select <em>"New &gt; AutoScript File with Examples"</em>.
+
+        <p><img alt="" src="../Resources/Intro_PyCharmNewFile.png" style="width: 786px; height: 311px"></p>
+    </li>
+
+    <li>Enter the filename for the new script: <em>"test"</em>. The script file will be saved as <em>test.py</em>.</li>
+
+    <li>
+        In the script, locate the function
+
+        <p><code>microscope.connect()</code></p>
+
+        This function, when called with no parameters, will attempt to contact the AutoScript server at the default
+        microscope computer IP address 192.168.0.1.<br>
+        If you intend to run the script locally on the microscope PC (you are in
+        <a href="../InstallationConfigurations.html">Local scripting configuration</a>),
+        modify the command to
+
+        <p><code>microscope.connect("localhost")</code></p>
+   </li>
+
+    <li>
+        In the Project panel, right-click on <em>test.py</em> and select <strong>Run test</strong>.<br>
+
+        Note that the test script adjusts the acceleration voltage of the electron beam and attempts to acquire a full
+        frame image using the same beam. It also changes the active detector in imaging view 1.
+
+
+        <p><img alt="" src="../Resources/Intro_PycharmTestRun.png" style="width: 895px; height: 662px"></p>
+    </li>
+
+    <li>
+        After closing the window with the acquired image, the "<code>Example script finished successfully</code>" appears in the output panel.
+    </li>
+</ol>
+
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>auto_functions.run_auto_stigmator_centering</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/auto_functions.html">auto_functions</a>.<a class="header-path" href="../../../sdb_microscope/_auto_functions/AutoFunctions/run_auto_stigmator_centering.html">run_auto_stigmator_centering</a></h1>
+    <p>Runs a routine that automatically optimizes stigmator centering in the active view.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">run_auto_stigmator_centering()
+run_auto_stigmator_centering(settings)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>settings</td>
+            <td><a href="../../../structures/RunAutoStigmatorCenteringSettings/RunAutoStigmatorCenteringSettings.html">RunAutoStigmatorCenteringSettings</a></td>
+            <td>Settings for the automatic stigmator centering adjustment routine.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    This routine only works with the electron beam, which must be selected as the imaging device in the active view.<br>
+    There is only one method available for the routine, <code>Volumescope</code>, which has to be declared explicitly because of its specialized nature.
+
+    <h2>Examples</h2>
+    <pre><code class="language-python">
+    # Run the auto stigmator centering routine in "Volumescope" algorithm variant 
+    microscope.auto_functions.run_auto_stigmator_centering(RunAutoStigmatorCenteringSettings(method="Volumescope"))
+
+    # Run the auto stigmator centering routine, specifying position of the reduced area
+    settings = RunAutoStigmatorCenteringSettings(method="Volumescope", reduced_area=Rectangle(0.4, 0.4, 0.2, 0.2))
+    microscope.auto_functions.run_auto_stigmator_centering(settings)
+    </code></pre>
+    
+    <h2>See also</h2>
+    <a href="run_auto_cb.html">auto_functions.run_auto_cb()</a><br>
+    <a href="run_auto_focus.html">auto_functions.run_auto_focus()</a><br>
+    <a href="run_auto_lens_alignment.html">auto_functions.run_auto_lens_alignment()</a><br>
+    <a href="run_auto_source_tilt.html">auto_functions.run_auto_source_tilt()</a><br>
+    <a href="run_auto_stigmator.html">auto_functions.run_auto_stigmator()</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

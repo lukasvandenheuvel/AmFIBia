@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+
+<h1><a class="header-path" href="UserGuide.html">User guide: </a> <a class="header-path" href="#">Temperature stages</a></h1>
+
+<p>
+    This chapter demonstrates how to control temperature stages. Thermo Fisher Scientific electron microscopes support a variety of heating and cooling
+    stages. Each type differs in the temperature range and chamber pressure conditions under which it operates.
+    All types are controlled by the same API - functions under the <code>microscope.specime.temperature_stage</code> group.
+    <br>
+    <br>
+    In the current AutoScript version, these stage types are supported: Cooling Stage, Heating Stage 1000/1000S/1400, High Vacuum Heating Stage, and &#181;Heater.<br>
+    In the following code examples it is assumed that the &#181;Heater device is connected and has been calibrated in the Microscope Control user interface.
+    <br><br>
+    First, initialize the AutoScript client with the code:
+</p>
+
+<pre><code class="language-python">
+    from autoscript_sdb_microscope_client import SdbMicroscopeClient
+    from autoscript_sdb_microscope_client.enumerations import *
+    from autoscript_sdb_microscope_client.structures import *
+    
+    microscope = SdbMicroscopeClient()
+    microscope.connect("localhost")
+</code></pre>
+
+<p>
+    Find out if the microscope supports temperature stages at all.<br>
+    This test does not tell if any of the stages is currently connected.
+    It only determines if the system is equipped with the electronics and software necessary to control the temperature stages.
+</p>
+
+<pre><code class="language-python">
+    installed = microscope.specimen.temperature_stage.is_installed
+    print(installed)
+</code></pre>
+
+<p>Determine the type of temperature stage that is currently connected:</p>
+
+<pre><code class="language-python">
+    type = microscope.specimen.temperature_stage.type
+    print(type)
+    
+    # If no stage is connected, None is returned.
+</code></pre>
+
+<p>
+    Turn the temperature stage on and off.<br>
+    Note that the stage immediately starts to regulate the actual temperature towards the target temperature immediately after it is switched on.<br>
+    For some of the older SEM systems this behavior is different - see the Remarks section of <a href="../../autoscript_sdb_microscope_client/sdb_microscope/specimen/_temperature_stage/TemperatureStage/turn_on.html">specimen.temperature_stage.turn_on()</a>.
+</p>
+
+<pre><code class="language-python">
+    print("Turning on the temperature stage...")
+    microscope.specimen.temperature_stage.turn_on()
+    print(microscope.specimen.temperature_stage.is_on)
+    
+    print("Turning off the temperature stage...")
+    microscope.specimen.temperature_stage.turn_off()
+    print(microscope.specimen.temperature_stage.is_on)
+</code></pre>
+
+<p>
+    Read stage temperature limits, actual and target values.<br>
+    As with all other AutoScript API functions, by default the values are given in base SI units, which in this case is Kelvin.
+    In the case of temperature, you can configure your preferred unit by calling
+    <a href="../../autoscript_sdb_microscope_client/sdb_microscope/service/autoscript/_client/Client/set_preferred_unit.html">service.autoscript.client.set_preferred_unit()</a>.
+</p>
+
+<pre><code class="language-python">
+    limits = microscope.specimen.temperature_stage.temperature.limits
+    value = microscope.specimen.temperature_stage.temperature.value
+    target_value = microscope.specimen.temperature_stage.temperature.target_value
+
+    print(limits)
+    print(value)
+    print(target_value)
+</code></pre>
+
+<p>Read limits of the temperature ramping speed, in Kelvins per second. Set the speed to its minimum value.</p>
+
+<pre><code class="language-python">
+    limits = microscope.specimen.temperature_stage.ramp_speed.limits
+    microscope.specimen.temperature_stage.ramp_speed.value = limits.min
+</code></pre>
+
+<p>
+    For a synchronous change of temperature the API provides the <code class="language-python">ramp()</code> function. 
+    Please read the description of the 
+    <a href="../../autoscript_sdb_microscope_client/sdb_microscope/specimen/_temperature_stage/TemperatureStage/ramp.html">ramp()</a>
+    function first to learn about the two stages it executes.
+    <br><br>
+
+    Raise the temperature to a new set point by specifying the target value, ramping speed and tolerance.<br>
+    The ramp() function terminates after the temperature is reached.
+</p>
+
+<pre><code class="language-python">
+    import time
+    
+    start_time = time.time()
+    
+    settings = TemperatureSettings(target_temperature=500, ramping_speed=2, tolerance=0.1)
+    microscope.specimen.temperature_stage.ramp(settings)
+    
+    end_time = time.time()
+    print(f"Target temperature reached in {(end_time - start_time):.1f} s")
+</code></pre>
+    
+<p style="height:1px"/>
+
+<img alt ="" src="Resources/TemperatureStagesExample1.png" width="517" height="309">
+    
+<p style="height:290px"/>
+
+
+<p>
+    Increase the temperature to 700K at a rate of 4K/s and then remain at the new temperature for another 30s.<br>
+    The ramp() function will terminate after the temperature is reached and the "soak time" of 30s has elapsed.
+</p>
+
+<pre><code class="language-python">
+    settings = TemperatureSettings(target_temperature=700, ramping_speed=4, tolerance=0.1, soak_time=30, timeout=200)
+    microscope.specimen.temperature_stage.ramp(settings)
+</code></pre>
+
+<img alt="" src="Resources/TemperatureStagesExample2.png" width="519" height="309">
+
+</body>
+</html>

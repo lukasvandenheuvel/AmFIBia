@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EdsStream.close</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_dynamic_object_proxies/EdsStream/EdsStream.html">EdsStream</a>.<a class="header-path" href="../../_dynamic_object_proxies/EdsStream/close.html">close</a></h1>
+    <p>Closes the EDS stream, indicating the end of the EDS experiment and allowing for the subsequent processing of the data stored in the stream.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">close()</code></pre>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+
+    <ul class="spaced-list">
+        <li>
+            Closing the stream triggers several actions: 
+            <ul class="not-spaced-list">
+                <li>
+                    Electron beam scanning is stopped to enable export of stream data.
+                </li>
+                <li>
+                    All data contained in the stream is set aside for future processing.
+                    The copy is exclusively owned by AutoScript, so no further actions on the SEM can affect it.
+                </li>
+                <li>
+                    A new, empty EDS stream is established in the platform software to register incoming X-rays.
+                </li>
+                <li>
+                    AutoScript stores a single SEM image from the active view. The image is later analyzed by the mapping
+                    engine to identify sample segments and their boundaries.
+                </li>
+            </ul>
+        </li>
+        <li>        
+            It is safe to call <code>close()</code> even though the stream is already closed.
+        </li>
+    </ul>
+ 
+    <!--<h2>Examples</h2>-->
+    
+    <h2>See also</h2>
+    <a href="is_open.html">EdsStream.is_open</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

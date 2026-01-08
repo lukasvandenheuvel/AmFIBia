@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+
+<h1><a class="header-path" href="UserGuide.html">User guide: </a> <a class="header-path" href="#">Imaging</a></h1>
+
+<p>This chapter demonstrates how to execute microscope imaging tasks.</p>
+
+SEM systems from Thermo Fisher Scientific, and therefore AutoScript, support two methods of imaging:
+
+<ol>
+    <li>The <strong>standard</strong> imaging technique occurs when any resolution from the 
+        <a href="../../autoscript_sdb_microscope_client/enumerations/ScanningResolution/ScanningResolution.html">ScanningResolution</a> enumeration  is used.
+        This method supports all settings that can be specified in the
+        <a href="../../autoscript_sdb_microscope_client/structures/GrabFrameSettings/GrabFrameSettings.html">GrabFrameSettings</a> structure.
+        The standard imaging technique is also optimized for speed, and therefore provides the best results for performance critical applications.
+        The available resolutions correspond to the selection in the resolution dropbox in the toolbar of the main user interface application
+        ("Microscope Control"). The highest resolution that can be achieved with this method is <strong>6144x4096</strong>.<br><br>
+    </li>
+      
+    <li>Imaging with <strong>non-standard</strong> resolutions.
+        When a resolution outside of
+        <a href="../../autoscript_sdb_microscope_client/enumerations/ScanningResolution/ScanningResolution.html">ScanningResolution</a>
+        enumeration is specified, the <strong>"Large image acquisition"</strong> imaging technique is employed.
+        This technique supports resolutions up to <strong>65536x65536</strong>. Imaging in this mode
+        is associated with performance penalty caused by image file creation and transfer between the microscope computer and the computer running the AutoScript client.
+        Besides the performance losses, additional restrictions apply to the scan settings that can be specified in the 
+        <a href="../../autoscript_sdb_microscope_client/structures/GrabFrameSettings/GrabFrameSettings.html">GrabFrameSettings</a> structure.
+    </li>
+</ol>
+
+<p>For examples on large image acquisition go to <a href="LargeImageAcquisition.html">Large image acquisition</a> page.</p>
+
+<p>
+Before proceeding with the code snippets below, initialize AutoScript with the following code:
+</p>
+
+<pre><code class="language-python">
+    from autoscript_sdb_microscope_client import SdbMicroscopeClient
+    from autoscript_sdb_microscope_client.enumerations import *
+    from autoscript_sdb_microscope_client.structures import *
+    
+    microscope = SdbMicroscopeClient()
+    microscope.connect("localhost")
+</code></pre>
+
+<p>Set the active view  to view number 2 (the upper right display in "Microscope Control" application):</p>
+
+<pre><code class="language-python">
+    microscope.imaging.set_active_view(2)
+</code></pre>
+
+<p>Set the active imaging device in the active view:</p>
+
+<pre><code class="language-python">
+    import time
+    
+    print("Using electron beam as the active imaging device...")
+    microscope.imaging.set_active_device(ImagingDevice.ELECTRON_BEAM)
+    time.sleep(1)
+    print("Using ion beam as the active imaging device...")
+    microscope.imaging.set_active_device(ImagingDevice.ION_BEAM)
+    time.sleep(1)
+    print("Using CCD camera as the active imaging device...")
+    microscope.imaging.set_active_device(ImagingDevice.CCD_CAMERA)
+</code></pre>
+
+<p>Start live image acquisition in the active view in scanning resolution currently set in the active view:</p>
+
+<pre><code class="language-python">
+    microscope.imaging.start_acquisition()
+</code></pre>
+
+<p>Stop live image acquisition in the active view:</p>
+
+<pre><code class="language-python">
+    microscope.imaging.stop_acquisition()
+</code></pre>
+
+<p>
+    Retrieve the microscope image and examine the image data using <code>matplotlib</code> package.<br>
+    Note that this code does not initiate acquisition of a new image.
+    The <a href="../../autoscript_sdb_microscope_client/sdb_microscope/_imaging/Imaging/get_image.html">get_image()</a> function returns
+    an image that was acquired at an earlier time and stored in the image buffer of the active view.
+</p>
+
+<pre><code class="language-python">
+    from matplotlib import pyplot as plot
+    
+    image = microscope.imaging.get_image()
+    
+    plot.imshow(image.data, cmap='gray')
+    plot.show()
+</code></pre>
+
+<p>Retrieve the microscope image and inspect its metadata:</p>
+
+<pre><code class="language-python">
+    image = microscope.imaging.get_image()
+    print(image.metadata.optics.acceleration_voltage)
+</code></pre>
+
+<p>Acquire a new image in the active view with the current scan settings and display it in a popup window:</p>
+
+<pre><code class="language-python">
+    from matplotlib import pyplot as plot
+    
+    image = microscope.imaging.grab_frame()
+    
+    plot.imshow(image.data, cmap='gray')
+    plot.show()
+</code></pre>
+
+<p>
+    Acquire a new image in the active view with the specified scan settings and display it in a popup window.<br>
+    Note that specifying scan settings does not permanently affect the state of the imaging view, but applies only for one call.
+</p>
+
+<pre><code class="language-python">
+    from matplotlib import pyplot as plot
+    
+    settings = GrabFrameSettings(resolution=ScanningResolution.PRESET_1536X1024, dwell_time=500e-9)
+    image = microscope.imaging.grab_frame(settings)
+    
+    plot.imshow(image.data, cmap='gray')
+    plot.show()
+</code></pre>
+
+<p>Acquire a new image in the reduced area of the active view and display it:</p>
+
+<pre><code class="language-python">
+    from matplotlib import pyplot as plot
+    
+    settings = GrabFrameSettings(reduced_area=Rectangle(0.60, 0.60, 0.30, 0.30))
+    image = microscope.imaging.grab_frame(settings)
+    
+    plot.imshow(image.data, cmap='gray')
+    plot.show()
+</code></pre>
+
+<p>Acquire a new image in the active view with specific bit depth and and display it:</p>
+
+<pre><code class="language-python">
+    from matplotlib import pyplot as plot
+    
+    settings = GrabFrameSettings(bit_depth=16)
+    image = microscope.imaging.grab_frame(settings)
+    
+    plot.imshow(image.data, cmap='gray')
+    plot.show()
+</code></pre>
+
+<p>Acquire a new image and save it in TIFF format:</p>
+
+<pre><code class="language-python">
+    image = microscope.imaging.grab_frame()
+    image.save('c:\\image.tif')
+</code></pre>
+
+<p>Load a TIFF image from file and display it:</p>
+
+<pre><code class="language-python">
+    from matplotlib import pyplot as plot
+    
+    image = AdornedImage.load('c:\\image.tif')
+    
+    plot.imshow(image.data, cmap='gray')
+    plot.show()
+</code></pre>
+
+<p>Load a TIFF image file and inspect its metadata related to electron beam scanning:</p>
+
+<pre><code class="language-python">
+    from autoscript_sdb_microscope_client.serialization.ini_metadata_reader import IniMetadataReader
+    
+    image = AdornedImage.load("c:\\ProgramData\\Thermo Scientific AutoScript\\UserGuide\\Resources\\Image_8-bit.tif")
+    
+    metadata_reader = IniMetadataReader()
+    metadata_dictionary = metadata_reader.read_from_string(image.metadata.metadata_as_ini)
+    
+    for key in [k for k in metadata_dictionary if k.startswith("EScan")]:
+        value = metadata_dictionary[key]
+        print(key, "=", value)
+</code></pre>
+
+</body>
+</html>

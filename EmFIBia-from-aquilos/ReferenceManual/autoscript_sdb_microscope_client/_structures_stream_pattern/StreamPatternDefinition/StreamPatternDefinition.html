@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>StreamPatternDefinition</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_structures_stream_pattern/StreamPatternDefinition/StreamPatternDefinition.html">StreamPatternDefinition</a></h1>
+    <p>Contains the definition of a stream pattern.</p>
+    <h2>Items</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_stream_pattern/StreamPatternDefinition/raw_points.html">raw_points</a></td>
+            <td>bytes</td>
+            <td>Pattern points in a raw form. Do not access this property directly in your code, it may be removed in future versions of AutoScript.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_stream_pattern/StreamPatternDefinition/repeat_count.html">repeat_count</a></td>
+            <td>int</td>
+            <td>The number of patterning cycles.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_stream_pattern/StreamPatternDefinition/bit_depth.html">bit_depth</a></td>
+            <td>int</td>
+            <td>The bit depth of pattern point coordinates. It can be either 12 or 16.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_stream_pattern/StreamPatternDefinition/points.html">points</a></td>
+            <td>Numpy.ndarray</td>
+            <td>Pattern points in a form of 2D array.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_stream_pattern/StreamPatternDefinition/dac_units.html">dac_units</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>Specifies the coordinate system of the pattern points. False means that the pattern points are in the range 0..2^bit_depth, with the point [0, 0] in the upper left corner of the field of view. If you specify True, the hardware (DAC) coordinates are used instead.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_stream_pattern/StreamPatternDefinition/dwell_time_base.html">dwell_time_base</a></td>
+            <td><em>[Optional]</em> int</td>
+            <td>Dwell time base in nanoseconds used internally to calculate the dwell time of each pattern point. Can be 25 or 100.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_stream_pattern/StreamPatternDefinition/point_count.html">point_count</a></td>
+            <td><em>[Optional]</em> int</td>
+            <td>Returns the number of points in the stream pattern definitions. Cannot be set directly. You can set the points array via the .points property.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_stream_pattern/StreamPatternDefinition/no_blank_problem.html">no_blank_problem</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>If True, all warning messages issued by the platform software when the stream pattern is created are suppressed.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_stream_pattern/StreamPatternDefinition/no_blanking.html">no_blanking</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>If True, any blanking flags specified for pattern points will be ignored and the beam will remain unblanked throughout the entire patterning process.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_stream_pattern/StreamPatternDefinition/load.html">load()</a></td>
+            <td>Loads the stream pattern definition from a stream (*.str) file.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_stream_pattern/StreamPatternDefinition/save.html">save()</a></td>
+            <td>Saves the stream pattern definition to a stream (*.str) file.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            The stream pattern definition can be initialized in two ways:
+            <ul class="not-spaced-list">
+                <li>
+                    Loaded from a stream file: Use the static <a href="load.html">load()</a> function.
+                </li>
+                <li>
+                    Created from 
+                    an array of points: At least the <code>points </code>and <code>repeat_count</code> properties must be initialized.
+                    <code>bit_detph</code> defaults to 16 and <code>dwell_time_base</code> to 25ns.
+                </li>
+            </ul>
+            
+            The two options can also be combined - you can load the definition from a stream file and then customize the properties, including the points, in code.
+        </li>
+        
+        <li>
+            Pattern points can be defined in the form of a 2D <code>numpy.array</code> via the <code>points</code> property. Each point is represented by 4 elements <code>[x, y, dwell_time, flags]</code>, where the values have the following semantics:
+   
+            <ul class="not-spaced-list">
+                <li>
+                    <code>x</code> is the horizontal coordinate of the point in a range [0, 2<sup>bit_depth</sup>], ascending from left to right.
+                </li>
+                <li>
+                    <code>y</code> is the vertical coordinate of the point in a range [0, 2<sup>bit_depth</sup>], ascending from top to bottom.
+                </li>
+                <li>
+                    <code>dwell_time</code> is the dwell time in seconds. It must be a multiple of <code>dwell_time_base</code>.
+                </li>
+                <li>
+                    <code>flags</code> specify additional point properties: use 0 for no flags, 1 to blank the point.
+                </li>
+            </ul>
+    
+            Note that 
+            the X and Y coordinates are subject to the offset defined by stream pattern center. A point in the middle of the available range (e.g. [32768, 32768] for
+    		<code>bit_depth = 16</code>) corresponds to the center of the stream pattern.
+        </li>
+        
+        <li>
+            In AutoScript version 4.8.0, the handling of the stream definition structure has been optimized for speed.
+            Creating a stream pattern is significantly faster if the definition is loaded from a file, none
+            of its properties are changed and the <code>.points</code> array is not read.
+        </li>
+        
+        <li>
+            The maximum frequency of beam blanking is limited to 200kHz for most systems (5µs between two blankings).
+            If the stream file defines a higher blanking frequency, a warning is displayed in the Application Status window
+            of the main user interface. The warning can be suppressed by setting <code>no_blank_problem</code> to True.           
+        </li>
+        
+        <li>
+            Once a pattern has been created with pattern points from a stream file definition,
+            it is not possible to change the number or coordinates of the points.
+            This is only possible by recreating the pattern with a new definition.
+        </li>
+        
+        <li>
+            Not all settings are applicable on all SEM/DualBeam systems. Newer systems only support the 16-bit depth of pattern
+            point coordinates, and return an error when trying to create a 12-bit stream pattern.
+            On older systems, the <code>no_blanking</code> or <code>no_blank_problem</code> flags can be ignored.
+        </li>
+    </ul>
+        
+    
+    <h2>Examples</h2>
+    
+    
+    <p>The following example shows how to create a stream pattern definition in code:</p>
+    <pre><code class="language-python">
+        import numpy
+        
+        spd = StreamPatternDefinition()
+        spd.points = numpy.array([[1000, 11922, 1e-06, 0],  # X = 1000, Y = 11922, dwell_time = 1us, flags = 0 (no blanking)
+                                  [32767, 11922, 1e-06, 0],
+                                  [64535, 11922, 1e-06, 0],
+                                  [64535, 53613, 1e-06, 0],
+                                  [32767, 53613, 1e-06, 0],
+                                  [1000, 53613, 1e-06, 0]])
+        spd.repeat_count = 1000
+    </code></pre>
+    
+    <p>The following example shows how to load a stream pattern definition from a stream (*.str) file:</p>
+    <pre><code class="language-python">
+        stream_file_path = "c:\\ProgramData\\Thermo Scientific AutoScript\\UserGuide\\Resources\\grid_pattern_definition.str"
+        stream_pattern_definition = StreamPatternDefinition.load(stream_file_path)
+    </code></pre>
+    
+    
+    <h2>See also</h2>
+    <a href="../../sdb_microscope/_patterning/Patterning/create_stream.html">patterning.create_stream()</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>service.alignments.tool_readiness</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/service.html">service</a>.<a class="header-path" href="../../../../sdb_microscope/_service/Service/alignments.html">alignments</a>.<a class="header-path" href="../../../../sdb_microscope/service/_alignments/Alignments/tool_readiness.html">tool_readiness</a></h1>
+    <p>Provides access to the ToolReadiness service, which monitors the status of microscopic alignments and allows running selected alignments either individually or in a sequence.</p>
+    <h2>Properties</h2>
+    <table>
+        <tr>
+            <td><a href="../../../../sdb_microscope/service/alignments/_tool_readiness/ToolReadiness/is_installed.html">is_installed</a></td>
+            <td><em>[Read only]</em> Returns True if the ToolReadiness service is installed and running.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../../sdb_microscope/service/alignments/_tool_readiness/ToolReadiness/is_running.html">is_running</a></td>
+            <td><em>[Read only]</em> Returns True if the ToolReadiness service is executing any alignment.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../../../../sdb_microscope/service/alignments/_tool_readiness/ToolReadiness/abort.html">abort()</a></td>
+            <td>Aborts all running alignments that were initiated asynchronously by calling the @Service.Alignments.ToolReadiness.StartAlignment or <a href="../../../../sdb_microscope/service/alignments/_tool_readiness/ToolReadiness/start_direct_alignment.html">start_direct_alignment()</a> functions.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../../sdb_microscope/service/alignments/_tool_readiness/ToolReadiness/get_alignment_status.html">get_alignment_status()</a></td>
+            <td>Returns the status of the provided alignment procedures.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../../sdb_microscope/service/alignments/_tool_readiness/ToolReadiness/get_available_alignments.html">get_available_alignments()</a></td>
+            <td>Retrieves the list of available alignments in the ToolReadiness service.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../../sdb_microscope/service/alignments/_tool_readiness/ToolReadiness/get_available_direct_alignments.html">get_available_direct_alignments()</a></td>
+            <td>Retrieves the list of direct alignments available in the ToolReadiness service.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../../sdb_microscope/service/alignments/_tool_readiness/ToolReadiness/run_alignments.html">run_alignments()</a></td>
+            <td>Runs one or more alignment procedures synchronously. The function call will return only after all procedures have been completed.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../../sdb_microscope/service/alignments/_tool_readiness/ToolReadiness/run_direct_alignment.html">run_direct_alignment()</a></td>
+            <td>Runs a direct alignment synchronously. The function call will return only when the alignment has finished.&lt;summary&gt;    &lt;/summary&gt;    &lt;param name=&quot;alignment&quot;&gt;An object that specifies which direct alignment should be run.&lt;/param&gt;    &lt;returns&gt;A data structure that provides status information for the completed alignment.&lt;/returns&gt;</td>
+        </tr>
+        <tr>
+            <td><a href="../../../../sdb_microscope/service/alignments/_tool_readiness/ToolReadiness/start_alignments.html">start_alignments()</a></td>
+            <td>Runs one or more alignment procedures asynchronously. The call initiates the procedures and returns without waiting for their completion.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../../sdb_microscope/service/alignments/_tool_readiness/ToolReadiness/start_direct_alignment.html">start_direct_alignment()</a></td>
+            <td>Runs a direct alignment asynchronously. The call initiates the procedure and returns without waiting for its completion.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

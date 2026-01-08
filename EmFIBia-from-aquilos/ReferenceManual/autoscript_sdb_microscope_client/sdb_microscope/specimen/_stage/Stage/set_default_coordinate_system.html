@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>specimen.stage.set_default_coordinate_system</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/specimen.html">specimen</a>.<a class="header-path" href="../../../../sdb_microscope/_specimen/Specimen/stage.html">stage</a>.<a class="header-path" href="../../../../sdb_microscope/specimen/_stage/Stage/set_default_coordinate_system.html">set_default_coordinate_system</a></h1>
+    <p>Sets the default coordinate system of the stage.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">set_default_coordinate_system(coordinate_system)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>coordinate_system</td>
+            <td>str</td>
+            <td>The stage coordinate system to set as default. You can select a coordinate system from the <a href="../../../../enumerations/CoordinateSystem/CoordinateSystem.html">CoordinateSystem</a> enumeration.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    <ul>
+        <li>
+            The default coordinate system before the method is called is <a href="../../../../enumerations/CoordinateSystem/SPECIMEN.html">Specimen</a>.
+        </li>
+        <li>
+            The functions <a href="absolute_move.html">specimen.stage.absolute_move()</a> and
+            <a href="relative_move.html">specimen.stage.relative_move()</a> use this system if none is specified by the position.
+        </li>
+    </ul>
+
+    <!--<h2>Examples</h2>-->
+    <h2>See also</h2>
+    <a href="set_default_move_settings.html">specimen.stage.set_default_move_settings()</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

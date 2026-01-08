@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>patterning</title>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../SdbMicroscopeClient/patterning.html">patterning</a></h1>
+    <p>Enables control and provides the status of the microscope patterning engine.</p>
+    <h2>Classes</h2>
+    <table>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/ispi.html">ispi</a></td>
+            <td>Enables control over the intermittent simultaneous patterning and imaging (iSPI) process.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/real_time_monitor.html">real_time_monitor</a></td>
+            <td>Enables control and provides the status of the Real Time Monitor (RTM).</td>
+        </tr>
+    </table>
+    <h2>Properties</h2>
+    <table>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/mode.html">mode</a></td>
+            <td>Gets and sets the active patterning mode.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/state.html">state</a></td>
+            <td><em>[Read only]</em> Gets the current state of the patterning engine.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/clear_patterns.html">clear_patterns()</a></td>
+            <td>Deletes all existing patterns in the active view.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/create_bitmap.html">create_bitmap()</a></td>
+            <td>Creates a bitmap pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/create_circle.html">create_circle()</a></td>
+            <td>Creates a circular pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/create_cleaning_cross_section.html">create_cleaning_cross_section()</a></td>
+            <td>Creates a cleaning cross section pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/create_line.html">create_line()</a></td>
+            <td>Creates a line pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/create_polygon.html">create_polygon()</a></td>
+            <td>Creates a polygon pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/create_rectangle.html">create_rectangle()</a></td>
+            <td>Creates a rectangular pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/create_regular_cross_section.html">create_regular_cross_section()</a></td>
+            <td>Creates a regular cross section pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/create_stream.html">create_stream()</a></td>
+            <td>Creates a stream file pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/get_patterns.html">get_patterns()</a></td>
+            <td>Returns a list of patterns created in the active view for the current imaging device.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/list_all_application_files.html">list_all_application_files()</a></td>
+            <td>Returns all application files available on the system.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/pause.html">pause()</a></td>
+            <td>Pauses a patterning job in progress.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/resume.html">resume()</a></td>
+            <td>Resumes a paused patterning job.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/run.html">run()</a></td>
+            <td>Executes a patterning job synchronously, i.e. waits for the patterning to end.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/set_default_application_file.html">set_default_application_file()</a></td>
+            <td>Sets the default application file to be assigned to newly created patterns.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/set_default_beam_type.html">set_default_beam_type()</a></td>
+            <td>Sets the beam type to be assigned to newly created patterns.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/start.html">start()</a></td>
+            <td>Starts a patterning job asynchronously.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_patterning/Patterning/stop.html">stop()</a></td>
+            <td>Aborts a patterning job in progress.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

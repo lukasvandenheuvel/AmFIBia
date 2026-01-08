@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AdornedImage</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></h1>
+    <p>Contains microscope image data along with metadata describing the state of the microscope under which the image was acquired.</p>
+    <h2>Items</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImage/width.html">width</a></td>
+            <td><em>[Read only]</em> int</td>
+            <td>The width of the image.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImage/height.html">height</a></td>
+            <td><em>[Read only]</em> int</td>
+            <td>The height of the image.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImage/bit_depth.html">bit_depth</a></td>
+            <td><em>[Read only]</em> int</td>
+            <td>The bit depth of the image data.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImage/metadata.html">metadata</a></td>
+            <td><em>[Optional]</em> <a href="../../_structures_adorned_image/AdornedImageMetadata/AdornedImageMetadata.html">AdornedImageMetadata</a></td>
+            <td>Metadata containing information about system state at the time this image was acquired.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImage/data.html">data</a></td>
+            <td><em>[Read only]</em> Numpy.ndarray</td>
+            <td>Image data arranged either in 2D (for grayscale images) or 3D (for RGB images) array.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImage/encoding.html">encoding</a></td>
+            <td><em>[Read only]</em> int</td>
+            <td>Encoding of the image. Accepts and returns values from the <a href="../../enumerations/ImageDataEncoding/ImageDataEncoding.html">ImageDataEncoding</a> enumeration.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImage/checksum.html">checksum</a></td>
+            <td><em>[Read only]</em> int</td>
+            <td>Checksum of the raw-data.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImage/thumbnail.html">thumbnail</a></td>
+            <td><em>[Read only]</em> <a href="../../_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+            <td>Thumbnail of the original image.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImage/load.html">load()</a></td>
+            <td>Loads an image from a TIFF file.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImage/save.html">save()</a></td>
+            <td>Saves the image at the specified path as a TIFF file.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <!-- Language Python - START -->
+    <h2>Remarks</h2>
+    
+    <p>
+        The new AdornedImage can be constructed either empty or from the given data if passed.
+        The data has to be in a format of a <code class="language-python">numpy.ndarray</code>.
+    </p>
+    <!-- Language Python - END -->
+
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        import cv2
+        from matplotlib import pyplot as plot
+        
+        # Take one image with scan settings currently set in the active view
+        image_original = microscope.imaging.grab_frame()
+        
+        # Threshold the image using OpenCV
+        thresh, data_processed = cv2.threshold(image_original.data, 127, 255, cv2.THRESH_BINARY)
+        
+        # Construct an adorned image object from the processed data
+        image_processed = AdornedImage(data_processed)
+        
+        # Recommended: Construct an adorned image object from the processed data reusing the original metadata
+        image_processed = AdornedImage(data_processed, image_original.metadata)
+        
+        # Display the processed image in a window
+        plot.imshow(image_processed.data, cmap="gray")
+        plot.show()
+    </code></pre>
+    
+    <!-- Language Python - START -->
+    <h2>See also</h2>
+    
+    <a href="../../_structures_adorned_spectrum/AdornedSpectrum/AdornedSpectrum.html">AdornedSpectrum structure</a>
+    <!-- Language Python - END -->
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

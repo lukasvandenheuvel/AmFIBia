@@ -1,0 +1,55 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>AutoScript introduction</title>
+
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+
+<body>
+<h1>AutoScript introduction</h1>
+
+The chapters listed below offer insights into key AutoScript concepts. We recommend reviewing all chapters before writing your first script.
+
+<ol>
+    <li><a href="Introduction/GettingStarted.html">Getting started</a></li>
+    <li><a href="Introduction/ApiDesignPrinciples.html">API design principles</a></li>
+    <li><a href="Introduction/ActiveViewConcept.html">Active view concept</a></li>
+    <li><a href="Introduction/Concurrency.html">Concurrency</a></li>
+    <li><a href="Introduction/SafetyConsiderations.html">Safety considerations</a></li>
+    <li><a href="Introduction/CoordinateSystems.html">Coordinate systems</a></li>
+</ol>
+
+</body>
+</html>

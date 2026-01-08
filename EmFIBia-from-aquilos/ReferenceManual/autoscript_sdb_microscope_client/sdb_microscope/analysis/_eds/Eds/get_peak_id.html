@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>analysis.eds.get_peak_id</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/analysis.html">analysis</a>.<a class="header-path" href="../../../../sdb_microscope/_analysis/Analysis/eds.html">eds</a>.<a class="header-path" href="../../../../sdb_microscope/analysis/_eds/Eds/get_peak_id.html">get_peak_id</a></h1>
+    <p>Identifies the presence of chemical elements in the given EDS spectrum.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">get_peak_id(spectrum)
+get_peak_id(spectrum, excluded_elements)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>spectrum</td>
+            <td><a href="../../../../_structures_adorned_spectrum/AdornedSpectrum/AdornedSpectrum.html">AdornedSpectrum</a></td>
+            <td>The spectrum object that holds both the characteristic X-ray counts and system metadata.</td>
+        </tr>
+        <tr>
+            <td>excluded_elements</td>
+            <td>List[<a href="../../../../_structures_eds/ChemicalElement/ChemicalElement.html">ChemicalElement</a>]</td>
+            <td>The list of chemical elements to be excluded from peak identification.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td>List[<a href="../../../../_structures_eds/ChemicalElement/ChemicalElement.html">ChemicalElement</a>]</td>
+            <td>The list of chemical elements found in the given EDS spectrum.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    <ul class="spaced-list">
+        <li>
+            In offline mode, the function does not execute actual processing of the provided spectrum.
+            Instead, it returns simulated results - four fixed elements [Boron, Fluorine, Mercury, Thallium].
+        </li>
+        <li>
+            Some chemical elements are not supported by the AutoScript EDS quantification engine. 
+            These elements cannot be marked as excluded via the <code>excluded_elements</code> parameter: <em>Helium, Neon, Krypton, Xenon, Radon, Hydrogen, Lithium, Polonium, Astatine, Actinium, Protactinium, Curium, Berkelium, Californium, Einsteinium, Fermium, Mendelevium, Nobelium, Lawrencium, Francium, Radium, Rutherfordium, Dubnium, Seaborgium, Bohrium, Hassium, Meitnerium, Darmstadtium, Roentgenium, Copernicium, Nihonium, Flerovium, Moscovium, Livermorium, Tennessine, Oganesson</em>.            
+        </li>
+    </ul>
+  
+    
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Acquire spectrum from the entire field of view
+        region = Region(type=RegionType.FULL_FRAME)
+        spectrum = microscope.analysis.eds.acquire_spectrum(region, 3)
+        
+        # Identify chemical elements present in the spectrum
+        elements_found = microscope.analysis.eds.get_peak_id(spectrum)
+        
+        # Returned list: [Boron, Nitrogen, Fluorine, Gallium, Silicon]
+    </code></pre>
+    
+    <pre><code class="language-python">
+        # Identify chemical elements but exclude Nitrogen from identification
+        elements_found = microscope.analysis.eds.get_peak_id(spectrum, [PeriodicTable.NITROGEN])        
+        
+        # Returned list: [Boron, Fluorine, Gallium, Silicon]
+    </code></pre>
+
+    <h2>See also</h2>
+    <a href="get_composition.html">analysis.eds.get_composition()</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

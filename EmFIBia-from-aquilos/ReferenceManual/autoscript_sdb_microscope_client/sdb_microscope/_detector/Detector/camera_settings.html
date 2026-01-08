@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>detector.camera_settings</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/detector.html">detector</a>.<a class="header-path" href="../../../sdb_microscope/_detector/Detector/camera_settings.html">camera_settings</a></h1>
+    <p>Contains settings of several camera detectors - Optical microscope (HiResOptical), Fluorescence light microscope (FLM) and others.</p>
+    <h2>Classes</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_camera_settings/CameraSettings/background_correction.html">background_correction</a></td>
+            <td>Enables you to eliminate noise or dirt present on the camera glass from the live image.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_camera_settings/CameraSettings/binning.html">binning</a></td>
+            <td>Allows you to access the binning parameter of the active camera detector.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_camera_settings/CameraSettings/bit_depth.html">bit_depth</a></td>
+            <td>Allows you to access the bit depth parameter of the active detector.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_camera_settings/CameraSettings/bright_field.html">bright_field</a></td>
+            <td>Allows you to access the bright field parameter of the active detector.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_camera_settings/CameraSettings/dark_field.html">dark_field</a></td>
+            <td>Allows you to access the dark field parameter of the active detector.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_camera_settings/CameraSettings/emission.html">emission</a></td>
+            <td>Allows you to access the emission parameter of the active camera detector.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_camera_settings/CameraSettings/exposure_time.html">exposure_time</a></td>
+            <td>Allows you to access the exposure time parameter of the active detector.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_camera_settings/CameraSettings/filter.html">filter</a></td>
+            <td>Allows you to access the filter parameter of the active camera detector.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_camera_settings/CameraSettings/focus.html">focus</a></td>
+            <td>Allows you to access the focus parameter of the active camera detector.</td>
+        </tr>
+    </table>
+    <h2>Properties</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_camera_settings/CameraSettings/color.html">color</a></td>
+            <td>Gets or sets the color correction for the active detector. Color channels are set within the range of [0, 1] corresponding to 0% - 100%. The alpha channel is ignored.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    
+    Similar to other API items within the detector API group,
+    the properties listed above affect an <strong>active camera detector</strong> within the <strong>active view</strong>.
+    However, not all settings are relevant to all camera types.
+    The following table provides a summary of which settings are applicable to specific camera types.
+    <br>
+    <br>
+    
+    <table class="small-table">
+        <tr>
+            <td>&nbsp;</td>
+            <td><strong><a href="../../../enumerations/ImagingDevice/IR_CAMERA.html">Infra Red Camera</a></strong></td>
+            <td><strong><a href="../../../enumerations/ImagingDevice/FLUORESCENCE_LIGHT_MICROSCOPE.html">FLM Camera</a></strong></td>
+            <td><strong><a href="../../../enumerations/ImagingDevice/OPTICAL_MICROSCOPE.html">Optical Microscope Camera</a></strong></td>
+            <td><strong><a href="../../../enumerations/ImagingDevice/CCD_CAMERA.html">CCD Camera</a></strong></td>
+            <td><strong><a href="../../../enumerations/ImagingDevice/VOLUMESCOPE_APPROACH_CAMERA.html">Approach Camera</a></strong></td>
+        </tr>
+
+        <tr>
+            <td><code>background_correction</code></td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>binning</code></td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>bit_depth</code></td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>bright_field</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>dark_field</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>emission</code></td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>exposure_time</code></td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>filter</code></td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>focus</code></td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>color</code></td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+        </tr>
+    </table>
+    
+    
+    
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

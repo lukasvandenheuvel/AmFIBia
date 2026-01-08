@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+<!-- Custom part - START -->
+	<h1><a class="header-path" href="../DcPatterningEngine.html">DcPatterningEngine</a>.<a class="header-path" href="#">define_fiducial</a></h1>
+	<p>
+	    Configures the drift correction engine with a fiducial image to be used for measuring sample
+	    drift during patterning execution.<br>
+	    The fiducial image is not provided directly; instead, the full-frame image and the initial position
+	    of the fiducial are provided. The engine will extract the fiducial template itself.	</p>
+	<h2>Syntax</h2>
+	<pre><code class="language-python">define_fiducial(image, center, size)</code></pre>
+	<h2>Parameters</h2>
+	<table>
+		<tr>
+			<td>image</td>
+			<td><a href="../../../autoscript_sdb_microscope_client/_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+			<td>The overview image containing a distinctive mark (the fiducial) whose drift will be measured.</td>
+		</tr>
+		<tr>
+			<td>center</td>
+			<td>float</td>
+			<td>The center point of the fiducial, specified in meters.</td>
+		</tr>
+		<tr>
+			<td>size</td>
+			<td>float</td>
+			<td>The size of the fiducial, in meters.</td>
+		</tr>
+	</table>
+
+	<h2>Remarks</h2>
+	<p>
+        The coordinate system employed for parameters specified in to meters (<code>center </code>and <code>size</code>) aligns
+        with the coordinate system used for patterns. In this system, the origin [0, 0] is positioned at the center of the view,
+        with X-axis coordinates increasing from left to right and Y-axis coordinates increasing from bottom to top.
+    </p>
+
+    <!--<h2>Examples</h2>-->
+
+    <h2>See also</h2>
+    <a href="../../../Extras/AutoScript/Introduction/CoordinateSystems.html">Coordinate systems</a>
+
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

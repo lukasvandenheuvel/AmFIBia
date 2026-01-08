@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>About AutoScript</title>
+    <link rel="stylesheet" type="text/css" href="Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="Resources/syntax-highlight-style.css">
+
+    <script src="Resources/common.js"></script>
+    <script src="Resources/page.js"></script>
+    <script src="Resources/page_jupyter_checking_ie.js"></script>
+    <script src="Resources/page_jupyter_checking.js"></script>
+    <script src="Resources/prism.js"></script>
+    <script src="Resources/prism-normalize-whitespace.js"></script>
+    <script src="Resources/prism-c.js"></script>
+    <script src="Resources/prism-cpp.js"></script>
+    <script src="Resources/prism-csharp.js"></script>
+    <script src="Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1>About AutoScript</h1>
+    <p>
+        <strong>AutoScript</strong> is a comprehensive software package from Thermo Fisher Scientific designed to facilitate electron microscope control and
+        related data processing tasks within a Python 3 language environment.
+        <br><br>
+
+        <img alt="" src="Extras/AutoScript/Resources/AutoScript.png">
+        <br><br>
+
+        The package encompasses the <a href="Extras/AutoScript/ProductComponents/PythonDistribution.html">Python 3 distribution</a> with an interpreter
+        and a selection of widely used packages such as <em>OpenCV</em>, <em>NumPy</em> or <em>SciPy</em>.
+
+        Most notably, it incorporates a collection of packages specifically tailored for Thermo Fisher Scientific
+        electron microscope control. These include <code>autoscript_sdb_microscope_client</code>,
+        which provides functions for microscope control, and <code>autoscript_toolkit</code>,
+        which offers domain-specific data processing capabilities with finely tuned algorithms for computer vision.
+
+        <br><br>
+        Another part of the installation is <a href="Extras/AutoScript/ProductComponents/PyCharmEditor.html">PyCharm</a>; a Python integrated development environment.
+        PyCharm is customized to enhance the ease of writing and debugging scripts that leverage the AutoScript API.
+
+        <br><br>
+        AutoScript adopts a client-server architecture, with communication handled over TCP/IP.
+        This enables clients to connect both locally and remotely, supporting simultaneous connections from multiple clients.<br>
+
+        <br>
+        This manual serves as a reference guide for the two essential packages mentioned above.<br>
+        See the following sections for detailed information:
+    </p>
+
+    <table>
+        <tr><td><a href="Extras/AutoScript/Introduction.html">AutoScript introduction</a></td></tr>
+        <tr><td><a href="autoscript_sdb_microscope_client/Index.html">Microscope API</a></td></tr>
+        <tr><td><a href="autoscript_toolkit/autoscript_toolkit.html">AutoScript toolkit</a></td></tr>
+        <tr><td><a href="Extras/UserGuide/UserGuide.html">User guide</a></td></tr>
+    </table>
+</body>
+</html>

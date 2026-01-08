@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ScanningMode</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../enumerations/ScanningMode/ScanningMode.html">ScanningMode</a></h1>
+    <p>
+        Specifies the available scanning modes for electron or ion beams.
+    </p>
+    <h2>Values</h2>
+    <table>
+        <tr>
+            <td><a href="../../enumerations/ScanningMode/CROSSOVER.html">CROSSOVER</a></td>
+            <td>7</td>
+            <td>The image of the electron source tip is acquired instead of the sample surface.</td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/ScanningMode/EXTERNAL.html">EXTERNAL</a></td>
+            <td>5</td>
+            <td>The external control of the scanning system is used, such as beam control from a third party EDX system.</td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/ScanningMode/FULL_FRAME.html">FULL_FRAME</a></td>
+            <td>1</td>
+            <td>The whole frame is acquired.</td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/ScanningMode/LINE.html">LINE</a></td>
+            <td>2</td>
+            <td>Only one line of the frame is acquired.</td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/ScanningMode/OTHER.html">OTHER</a></td>
+            <td>6</td>
+            <td>Unknown scan mode.</td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/ScanningMode/PATTERNING.html">PATTERNING</a></td>
+            <td>8</td>
+            <td>The scanning system is controlled by the patterning engine.</td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/ScanningMode/REDUCED_AREA.html">REDUCED_AREA</a></td>
+            <td>4</td>
+            <td>The specified rectangular area is acquired.</td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/ScanningMode/SPOT.html">SPOT</a></td>
+            <td>3</td>
+            <td>Only one pixel of the frame is acquired.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!-- <h2>Remarks</h2> -->
+    <!-- <h2>Examples</h2> -->
+    <!-- <h2>See also</h2> -->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

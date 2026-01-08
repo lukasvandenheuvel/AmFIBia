@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+
+<h1><a class="header-path" href="UserGuide.html">User guide: </a> <a class="header-path" href="#">Auto functions</a></h1>
+
+<p>
+    This chapter demonstrates how to execute <strong>auto functions</strong>, which are automated routines designed to optimize
+    the microscope optics and detector parameters for the highest quality of acquired images.
+<p>
+
+Before proceeding with the code snippets below, initialize AutoScript with the following code.
+Set the server address according to your environment.
+</p>
+
+<pre><code class="language-python">
+    from autoscript_sdb_microscope_client import SdbMicroscopeClient
+    from autoscript_sdb_microscope_client.enumerations import *
+    from autoscript_sdb_microscope_client.structures import *
+    
+    microscope = SdbMicroscopeClient()
+    microscope.connect("localhost")
+</code></pre>
+
+<p>Setup imaging environment:</p>
+
+<pre><code class="language-python">
+    microscope.imaging.set_active_view(1)
+    microscope.imaging.set_active_device(ImagingDevice.ELECTRON_BEAM)
+</code></pre>
+
+<p>Run the auto contrast/brightness routine in the active view using the default algorithm method:</p>
+
+<pre><code class="language-python">
+    microscope.auto_functions.run_auto_cb()
+</code></pre>
+
+<p>Run the auto contrast/brightness routine using the specialized <em>MaxContrast</em> method:</p>
+
+<pre><code class="language-python">
+    settings = RunAutoCbSettings(method="MaxContrast")
+    microscope.auto_functions.run_auto_cb(settings)
+</code></pre>
+
+<p>Run the auto contrast/brightness routine using the specialized <em>MaxContrast</em> method and provide specific settings:</p>
+
+<pre><code class="language-python">
+    settings = RunAutoCbSettings(method="MaxContrast", resolution="192x128", calibrate_detector=True)
+    microscope.auto_functions.run_auto_cb(settings)
+</code></pre>
+
+<p>Run the auto stigmator routine in the <em>OngEtAl</em> variant:</p>
+
+<pre><code class="language-python">
+    microscope.auto_functions.run_auto_stigmator(RunAutoStigmatorSettings(method="OngEtAl"))
+</code></pre>
+
+<p>Run the auto stigmator centering routine using the <em>Volumescope</em> method:</p>
+
+<pre><code class="language-python">
+    microscope.auto_functions.run_auto_stigmator_centering(RunAutoStigmatorCenteringSettings(method="Volumescope"))
+</code></pre>
+
+<p>
+    Other auto functions can be performed in a similar manner.
+    For more information about all available auto functions and their settings, see the reference manual,
+    section <a href="../../autoscript_sdb_microscope_client/SdbMicroscopeClient/auto_functions.html">auto_functions</a>.
+</p>
+
+</html>

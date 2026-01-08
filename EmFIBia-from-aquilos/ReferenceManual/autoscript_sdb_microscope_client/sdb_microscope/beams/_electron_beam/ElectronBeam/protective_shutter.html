@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>beams.electron_beam.protective_shutter</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/beams.html">beams</a>.<a class="header-path" href="../../../../sdb_microscope/_beams/Beams/electron_beam.html">electron_beam</a>.<a class="header-path" href="../../../../sdb_microscope/beams/_electron_beam/ElectronBeam/protective_shutter.html">protective_shutter</a></h1>
+    <p>Functions related to the retractable shutter that protects the SEM column during FIB milling.</p>
+    <h2>Classes</h2>
+    <table>
+        <tr>
+            <td><a href="../../../../sdb_microscope/beams/electron_beam/_protective_shutter/ProtectiveShutter/mode.html">mode</a></td>
+            <td>Allows you to control the mode of the automatic protective shutter.</td>
+        </tr>
+    </table>
+    <h2>Properties</h2>
+    <table>
+        <tr>
+            <td><a href="../../../../sdb_microscope/beams/electron_beam/_protective_shutter/ProtectiveShutter/is_installed.html">is_installed</a></td>
+            <td><em>[Read only]</em> Returns True if the system is equipped with the protective shutter.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../../sdb_microscope/beams/electron_beam/_protective_shutter/ProtectiveShutter/state.html">state</a></td>
+            <td><em>[Read only]</em> Returns the current state of the protective shutter, providing values from the <a href="../../../../enumerations/RetractableDeviceState/RetractableDeviceState.html">RetractableDeviceState</a> enumeration.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../../../../sdb_microscope/beams/electron_beam/_protective_shutter/ProtectiveShutter/insert.html">insert()</a></td>
+            <td>Inserts the protective shutter.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../../sdb_microscope/beams/electron_beam/_protective_shutter/ProtectiveShutter/retract.html">retract()</a></td>
+            <td>Retracts the protective shutter.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+
+    <ul>
+        <li>Manual control of the protective shutter is not supported on Helios PFIB systems.</li>
+        <li>To insert the protective shutter, make sure that the automatic mode is turned off.</li>
+        <li>It is important to ensure that the stage is not positioned too close to the electron column, as this may prevent the insertion of the shutter.</li>
+    </ul>
+
+    
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Turn off the automatic mode
+        microscope.beams.electron_beam.protective_shutter.mode.value = ProtectiveShutterMode.OFF
+        
+        # Insert the protective shutter
+        microscope.beams.electron_beam.protective_shutter.insert()
+    </code></pre>
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

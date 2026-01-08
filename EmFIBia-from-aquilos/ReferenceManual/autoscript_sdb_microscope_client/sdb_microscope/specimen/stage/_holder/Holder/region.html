@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>specimen.stage.holder.region</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../../Resources/common.js"></script>
+    <script src="../../../../../../Resources/page.js"></script>
+    <script src="../../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../../Resources/prism.js"></script>
+    <script src="../../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../../SdbMicroscopeClient/specimen.html">specimen</a>.<a class="header-path" href="../../../../../sdb_microscope/_specimen/Specimen/stage.html">stage</a>.<a class="header-path" href="../../../../../sdb_microscope/specimen/_stage/Stage/holder.html">holder</a>.<a class="header-path" href="../../../../../sdb_microscope/specimen/stage/_holder/Holder/region.html">region</a></h1>
+    <p>Provides access to holder regions and their positions.</p>
+    <h2>Properties</h2>
+    <table>
+        <tr>
+            <td><a href="../../../../../sdb_microscope/specimen/stage/holder/_region/Region/available_values.html">available_values</a></td>
+            <td><em>[Read only]</em> Returns the list of available regions on the currently selected specimen holder.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../../../sdb_microscope/specimen/stage/holder/_region/Region/is_available.html">is_available</a></td>
+            <td><em>[Read only]</em> Returns True if holder regions are supported on this microscope.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../../../sdb_microscope/specimen/stage/holder/_region/Region/value.html">value</a></td>
+            <td><em>[Read only]</em> Returns the name of the currently active holder region.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../../../../../sdb_microscope/specimen/stage/holder/_region/Region/activate.html">activate()</a></td>
+            <td>Activates the specified region and moves the stage to the designated position within that region. This function can also be utilized to move within an already activated region.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../../../sdb_microscope/specimen/stage/holder/_region/Region/list_all_positions.html">list_all_positions()</a></td>
+            <td>Returns a list of position names for the specified region. If no region name is provided, the function will return a list of position names for the currently active region.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

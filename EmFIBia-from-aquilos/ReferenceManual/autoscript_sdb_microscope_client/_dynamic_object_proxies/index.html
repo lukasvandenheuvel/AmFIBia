@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dynamic objects</title>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1>Dynamic objects</h1>
+<!-- Custom part - START -->
+
+    <p>
+        Unlike static-tree objects, which have the same lifetime as the root
+        <a href="../SdbMicroscopeClient/SdbMicroscopeClient.html">SdbMicroscopeClient</a> class, dynamic objects are created
+        and destroyed during code execution.
+        
+        <!-- Language Python - START -->
+        <br>
+        A dynamic object can represent a microscope device (for example <a href="Multichem/Multichem.html">Multichem</a>)
+        or an object created on-demand, like <a href="RectanglePattern/RectanglePattern.html">RectanglePattern</a> for setting up the patterning process.
+        <!-- Language Python - END -->
+        
+        <br><br>
+        
+        Dynamic objects are rarely created directly by the client code.
+        Typically, you would use a function on the <a href="../sdb_microscope/index.html">static tree</a> to create
+        the dynamic object for you.
+    
+        A key characteristic of dynamic objects is that they remain "connected" to the microscope throughout their lifetime.
+        As a result, any action performed on these objects will have an immediate effect on the microscope.
+        <br><br>
+    </p>
+
+<!-- Custom part - END -->
+    <table>
+        <tr>
+            <td><a href="../_dynamic_object_proxies/AutoloaderSlot/AutoloaderSlot.html">AutoloaderSlot</a></td>
+            <td>Represents an object of the Autoloader slot and provides access to its properties.</td>
+        </tr>
+        <tr>
+            <td><a href="../_dynamic_object_proxies/BitmapPattern/BitmapPattern.html">BitmapPattern</a></td>
+            <td>The bitmap pattern type.</td>
+        </tr>
+        <tr>
+            <td><a href="../_dynamic_object_proxies/CirclePattern/CirclePattern.html">CirclePattern</a></td>
+            <td>The circular pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../_dynamic_object_proxies/CleaningCrossSectionPattern/CleaningCrossSectionPattern.html">CleaningCrossSectionPattern</a></td>
+            <td>The cleaning cross section pattern type.</td>
+        </tr>
+        <tr>
+            <td><a href="../_dynamic_object_proxies/CryoCompartment/CryoCompartment.html">CryoCompartment</a></td>
+            <td>Represents the cryo compartment device.</td>
+        </tr>
+        <tr>
+            <td><a href="../_dynamic_object_proxies/EdsStream/EdsStream.html">EdsStream</a></td>
+            <td>Represents an EDS data container, collecting EDS data as the electron beam scans. The data includes both the count of characteristic X-rays and their positions on the sample.</td>
+        </tr>
+        <tr>
+            <td><a href="../_dynamic_object_proxies/GisPort/GisPort.html">GisPort</a></td>
+            <td>Represents a single Gas Injection System (GIS) port.</td>
+        </tr>
+        <tr>
+            <td><a href="../_dynamic_object_proxies/LinePattern/LinePattern.html">LinePattern</a></td>
+            <td>The line shaped pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../_dynamic_object_proxies/Multichem/Multichem.html">Multichem</a></td>
+            <td>Represents the MultiChem gas injection device.</td>
+        </tr>
+        <tr>
+            <td><a href="../_dynamic_object_proxies/PolygonPattern/PolygonPattern.html">PolygonPattern</a></td>
+            <td>The polygon pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../_dynamic_object_proxies/RectanglePattern/RectanglePattern.html">RectanglePattern</a></td>
+            <td>The pattern of a rectangular shape.</td>
+        </tr>
+        <tr>
+            <td><a href="../_dynamic_object_proxies/RegularCrossSectionPattern/RegularCrossSectionPattern.html">RegularCrossSectionPattern</a></td>
+            <td>The regular cross section pattern type.</td>
+        </tr>
+        <tr>
+            <td><a href="../_dynamic_object_proxies/SampleMap/SampleMap.html">SampleMap</a></td>
+            <td>Defines calibration data of a wafer sample and allows loading sitelist definitions.</td>
+        </tr>
+        <tr>
+            <td><a href="../_dynamic_object_proxies/Site/Site.html">Site</a></td>
+            <td>Describes a stored sample position.</td>
+        </tr>
+        <tr>
+            <td><a href="../_dynamic_object_proxies/SiteList/SiteList.html">SiteList</a></td>
+            <td>Defines a collection of sites.</td>
+        </tr>
+        <tr>
+            <td><a href="../_dynamic_object_proxies/StreamPattern/StreamPattern.html">StreamPattern</a></td>
+            <td>The stream file pattern type.</td>
+        </tr>
+    </table>
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

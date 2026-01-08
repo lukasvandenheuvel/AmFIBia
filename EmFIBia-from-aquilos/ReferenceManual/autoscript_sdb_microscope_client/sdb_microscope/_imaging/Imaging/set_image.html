@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>imaging.set_image</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/imaging.html">imaging</a>.<a class="header-path" href="../../../sdb_microscope/_imaging/Imaging/set_image.html">set_image</a></h1>
+    <p>Uploads an image into the active view, including its metadata.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">set_image(image)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>image</td>
+            <td><a href="../../../_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+            <td>An image in form of <a href="../../../_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a> instance.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    <ul class="spaced-list">
+		<li>The image must contain a valid metadata block to identify important microscope parameters and set them to the imaging view.</li>
+		<li>The active scanning device in this view will be switched to the device with which the image was acquired.
+		    Attempting to set an image from a non-existent imaging device (such as an ion beam image on a SEM) will result in an error.</li>
+		<li>There is a built-in limitation on the image format that can be provided. 
+		    Only 8-bit and 16-bit grayscale images are allowed. Also, only images originating from electron or ion devices are allowed.</li>
+        <li>If the set image is in one of the <a href="../../../enumerations/ScanningResolution/ScanningResolution.html">supported standard resolutions</a> and contains a databar section,
+            the image is resized to exclude the databar.</li>
+        <li>The image set with this function is automatically displayed in the main user interface of the microscope ("Microscope Control").</li>
+        <li>In <strong>offline mode</strong>, the set_image() function can be used to assign a simulation image source to
+            an imaging device.<br>Subsequent calls to <a href="get_image.html">get_image()</a>, <a href="grab_frame.html">grab_frame()</a> or
+            <a href="grab_frame_to_disk.html">grab_frame_to_disk()</a> will return images based on the given image source, possibly resized to the target resolution.
+            This mechanism works only for standard scanning resolutions - 
+            those from the <a href="../../../enumerations/ScanningResolution/ScanningResolution.html">ScanningResolution</a> enumeration.
+        </li>
+    </ul>
+    
+    <h2>Examples</h2>
+    <pre><code class="language-python">
+    ion_image = AdornedImage.load('IonImageWithDatabar3072x2188x8bit.tif')
+    microscope.imaging.set_active_view(1)
+    microscope.imaging.set_image(ion_image)
+    
+    # The image was loaded into view 1 and resized to 3072x2048 pixels by cutting off the databar part.
+    # Active imaging device in view 1 has been switched to Ions.
+    # The image is visible in the upper-left display of the Microscope Control application.
+    # Subsequently calling get_image() will return the loaded image including metadata.
+    # Subsequently calling grab_image() will replace the image with newly scanned one.
+    </code></pre>
+
+    <h2>See also</h2>
+    <a href="get_image.html">get_image()</a><br>
+    <a href="grab_frame.html">grab_frame()</a><br>
+    <a href="../../../enumerations/ScanningResolution/ScanningResolution.html">ScanningResolution</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

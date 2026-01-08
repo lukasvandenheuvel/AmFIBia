@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DetectorMode</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../enumerations/DetectorMode/DetectorMode.html">DetectorMode</a></h1>
+    <p>
+        Specifies the supported detector modes.
+    </p>
+    <h2>Values</h2>
+    <table>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/ALL.html">ALL</a></td>
+            <td>"All"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/A_MINUS_B.html">A_MINUS_B</a></td>
+            <td>"AminusB"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/ANGULAR.html">ANGULAR</a></td>
+            <td>"Angular"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/ANGULAR_PARTIAL.html">ANGULAR_PARTIAL</a></td>
+            <td>"AngularPartial"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/ANGULAR_PARTIAL_COMPLEMENT.html">ANGULAR_PARTIAL_COMPLEMENT</a></td>
+            <td>"AngularPartialComplement"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/ANULAR_A.html">ANULAR_A</a></td>
+            <td>"AnularA"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/ANULAR_B.html">ANULAR_B</a></td>
+            <td>"AnularB"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/ANULAR_C.html">ANULAR_C</a></td>
+            <td>"AnularC"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/ANULAR_D.html">ANULAR_D</a></td>
+            <td>"AnularD"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/A_PLUS_B.html">A_PLUS_B</a></td>
+            <td>"AplusB"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/BACKSCATTER_ELECTRONS.html">BACKSCATTER_ELECTRONS</a></td>
+            <td>"BackscatterElectrons"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/BEAM_DECELERATION.html">BEAM_DECELERATION</a></td>
+            <td>"BeamDeceleration"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/BLUE.html">BLUE</a></td>
+            <td>"Blue"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/BRIGHT_FIELD.html">BRIGHT_FIELD</a></td>
+            <td>"BrightField"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/BRIGHT_FIELD_DARK_FIELD.html">BRIGHT_FIELD_DARK_FIELD</a></td>
+            <td>"BrightFieldDarkField"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/CATHODO_LUMINESCENCE.html">CATHODO_LUMINESCENCE</a></td>
+            <td>"CathodoLuminescence"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/CHARGE_NEUTRALIZATION.html">CHARGE_NEUTRALIZATION</a></td>
+            <td>"ChargeNeutralization"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/CUSTOM.html">CUSTOM</a></td>
+            <td>"Custom"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/CUSTOM2.html">CUSTOM2</a></td>
+            <td>"Custom2"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/CUSTOM3.html">CUSTOM3</a></td>
+            <td>"Custom3"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/CUSTOM4.html">CUSTOM4</a></td>
+            <td>"Custom4"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/CUSTOM5.html">CUSTOM5</a></td>
+            <td>"Custom5"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/DARK_FIELD.html">DARK_FIELD</a></td>
+            <td>"DarkField"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/DARK_FIELD1.html">DARK_FIELD1</a></td>
+            <td>"DarkField1"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/DARK_FIELD2.html">DARK_FIELD2</a></td>
+            <td>"DarkField2"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/DARK_FIELD3.html">DARK_FIELD3</a></td>
+            <td>"DarkField3"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/DARK_FIELD4.html">DARK_FIELD4</a></td>
+            <td>"DarkField4"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/DEFAULT.html">DEFAULT</a></td>
+            <td>"Default"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/DOWN_HOLE_VISIBILITY.html">DOWN_HOLE_VISIBILITY</a></td>
+            <td>"DownHoleVisibility"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/GREEN.html">GREEN</a></td>
+            <td>"Green"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/GREEN_PLUS_BLUE.html">GREEN_PLUS_BLUE</a></td>
+            <td>"GreenPlusBlue"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/HIGH_ANGLE.html">HIGH_ANGLE</a></td>
+            <td>"HighAngle"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/INNER_MINUS_OUTER.html">INNER_MINUS_OUTER</a></td>
+            <td>"InnerMinusOuter"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/LOW_ANGLE.html">LOW_ANGLE</a></td>
+            <td>"LowAngle"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/MIX.html">MIX</a></td>
+            <td>"Mix"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/NONE.html">NONE</a></td>
+            <td>"None"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/PANCHROMATIC.html">PANCHROMATIC</a></td>
+            <td>"Panchromatic"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/RED.html">RED</a></td>
+            <td>"Red"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/RED_PLUS_PANCHROMATIC.html">RED_PLUS_PANCHROMATIC</a></td>
+            <td>"RedPlusPanchromatic"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/SCINTILLATION.html">SCINTILLATION</a></td>
+            <td>"Scintillation"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/SECONDARY_ELECTRONS.html">SECONDARY_ELECTRONS</a></td>
+            <td>"SecondaryElectrons"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/SECONDARY_IONS.html">SECONDARY_IONS</a></td>
+            <td>"SecondaryIons"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/SEGMENT_A.html">SEGMENT_A</a></td>
+            <td>"SegmentA"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/SEGMENT_B.html">SEGMENT_B</a></td>
+            <td>"SegmentB"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/TOPOGRAPHY.html">TOPOGRAPHY</a></td>
+            <td>"Topography"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/DetectorMode/Z_CONTRAST.html">Z_CONTRAST</a></td>
+            <td>"ZContrast"</td>
+            <td></td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    <p>The <a href="../../sdb_microscope/detector/_mode/Mode/value.html">detector.mode.value</a> property returns and accepts values from this enumeration.</p>
+    <p>	
+		Not all modes from the enumeration are always applicable. To get available modes for the current microscope state use the property 
+        <a href="../../sdb_microscope/detector/_mode/Mode/available_values.html">detector.mode.available_values</a>.
+    </p>
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Active view concept</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+
+<body style="float: left">
+<h1>Active view concept</h1>
+
+AutoScript shares the concept of an <strong>active view</strong> with the main user interface application, "Microscope Control".
+In this user interface, the screen is divided into four displays (views),
+each streaming a video signal from an independent imaging channel.
+
+<br><br>
+<img src="../Resources/MicroscopeControl.png" alt="" height="32" width="32">
+<br><br>
+
+Each view can be configured with one of the available imaging devices, such as electron beam, ion beam, navigation camera etc.
+Only one view is active at any given time, indicated by a highlighted data bar at the bottom of the view.
+When activated, the main user interface switches all its control elements to display properties of the imaging device
+in the active view.
+<br><br>
+
+This concept extends to include the configuration of <strong>detectors</strong>.
+Each view is assigned one of the detectors available on the system,
+provided it is compatible with the view's device.
+The complete configuration of the detector is stored for the view.<br>
+
+For example, view 1 may be configured with electrons and an <em>ETD </em>detector in <em>Backscatter Electrons</em> mode,
+while view 2 can be configured with ions, also with the <em>ETD </em>detector but operating in <em>Secondary Electrons</em> mode.
+When image acquisition starts in a given view, the software platform configures the detector with the stored mode and routes the detector signal to the imaging pipeline attached to the view.
+<br><br>
+
+AutoScript allows you to control the active view, its device, and detector via dedicated API functions.<br>
+To activate view 2 (upper right view):
+
+<pre><code class="language-python">
+    microscope.imaging.set_active_view(2)
+</code></pre>
+
+Note that the Microscope Control application immediately reflects this change and updates its user interface accordingly.<br><br>
+
+Once view 2 is active, we can configure it with an electron beam device:
+
+<pre><code class="language-python">
+    microscope.imaging.set_active_device(ImagingDevice.ELECTRON_BEAM)
+</code></pre>
+
+After setting the device, we can assign a detector to the view:<br>
+
+<pre><code class="language-python">
+    microscope.detector.type.value = DetectorType.TLD
+</code></pre>
+
+Once the detector is set, we can configure its properties:
+
+<pre><code class="language-python">
+    microscope.detector.mode.value = DetectorMode.SECONDARY_ELECTRONS
+    microscope.detector.custom_settings.suction_tube_voltage.value = 240
+</code></pre>
+
+Note that the new detector configuration is applied only to view 2, other views maintain their original detector configuration.
+
+<br><br>
+
+Many functions present in the AutoScript API that control the state of the microscope are
+<strong>designed to act on the active view</strong>:
+
+<ul>
+    <li>
+        All image acquisition functions (found under <a href="../../../autoscript_sdb_microscope_client/SdbMicroscopeClient/imaging.html"><code>imaging</code></a> API branch).<br>
+        Functions that configure the imaging pipeline
+        (<a href="../../../autoscript_sdb_microscope_client/sdb_microscope/_imaging/Imaging/scanning_filter.html"><code>imaging.scanning_filter</code></a>
+        and <a href="../../../autoscript_sdb_microscope_client/sdb_microscope/_imaging/Imaging/lut.html"><code>imaging.lut</code></a>)
+        store settings for the combination of the active view and imaging device.
+        Thus, for instance, filter settings for electrons in view 1 is stored separately from filter settings for ions in the same view.
+    </li>
+    <li>
+        All patterning process control functions (located in the <a href="../../../autoscript_sdb_microscope_client/SdbMicroscopeClient/patterning.html"><code>patterning</code></a> API branch).<br>
+        Patterns created with functions <code>patterning.create_*</code> are stored for the active view and device combination.
+    </li>
+    <li>
+        All functions under the <a href="../../../autoscript_sdb_microscope_client/SdbMicroscopeClient/detector.html"><code>detector</code></a> API branch.
+    </li>
+    <li>
+        Certain specimen manipulation functions, such as continuous stage movement ("jogging"), rely on important information from the active view.
+    </li>
+</ul>
+
+<strong>Column and scanning control functions are excluded</strong> from the active-view concept in the AutoScript API.
+There are dedicated branches in the API for adjusting
+<a href="../../../autoscript_sdb_microscope_client/sdb_microscope/_beams/Beams/electron_beam.html">electron beam</a> or
+<a href="../../../autoscript_sdb_microscope_client/sdb_microscope/_beams/Beams/ion_beam.html">ion beam</a> column settings
+at any time, regardless of which beam is the active view configured with.
+<br>
+
+</body>
+</html>

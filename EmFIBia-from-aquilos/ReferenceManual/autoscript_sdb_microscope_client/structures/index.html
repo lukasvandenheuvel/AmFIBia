@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data structures</title>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1>Data structures</h1>
+<!-- Custom part - START -->
+
+    <p>
+        Data structures are simple objects for transporting data.
+        They may contain several auxiliary functions and/or overloaded operators for more convenience.
+        Structures are often used to combine multiple function arguments (for example <a href="MoveSettings/MoveSettings.html">MoveSettings</a>),
+        or to represent data formats
+        (<a href="../_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a>).
+        <br><br>
+    </p>
+    
+<!-- Custom part - END -->
+    <table>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+            <td>Contains microscope image data along with metadata describing the state of the microscope under which the image was acquired.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImageMetadata/AdornedImageMetadata.html">AdornedImageMetadata</a></td>
+            <td>Image metadata that captures the state of the microscope at the time of image acquisition.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImageMetadataAcquisition/AdornedImageMetadataAcquisition.html">AdornedImageMetadataAcquisition</a></td>
+            <td>Section of image metadata related to image acquisition.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImageMetadataBinaryResult/AdornedImageMetadataBinaryResult.html">AdornedImageMetadataBinaryResult</a></td>
+            <td>Section of image metadata that describes the properties of the resulting image.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImageMetadataCore/AdornedImageMetadataCore.html">AdornedImageMetadataCore</a></td>
+            <td>Section of image metadata that describes software environment on the microscope computer.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImageMetadataDetector/AdornedImageMetadataDetector.html">AdornedImageMetadataDetector</a></td>
+            <td>Section of image metadata related to the detector used for image acquisition.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImageMetadataEdsMap/AdornedImageMetadataEdsMap.html">AdornedImageMetadataEdsMap</a></td>
+            <td>Section of image metadata describing the result of the EDS elemental or phase mapping experiment.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImageMetadataEnergyFilterSettings/AdornedImageMetadataEnergyFilterSettings.html">AdornedImageMetadataEnergyFilterSettings</a></td>
+            <td>Section of image metadata describing properties of the electron or ion beam.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImageMetadataGasInjectionSystem/AdornedImageMetadataGasInjectionSystem.html">AdornedImageMetadataGasInjectionSystem</a></td>
+            <td>Section of image metadata describing the state of the gas injection system.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImageMetadataGasInjectionSystemGas/AdornedImageMetadataGasInjectionSystemGas.html">AdornedImageMetadataGasInjectionSystemGas</a></td>
+            <td>Section of image metadata describing one gas in the gas injection system.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImageMetadataInstrument/AdornedImageMetadataInstrument.html">AdornedImageMetadataInstrument</a></td>
+            <td>Section of image metadata describing the properties of the microscope system and its software environment.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImageMetadataOptics/AdornedImageMetadataOptics.html">AdornedImageMetadataOptics</a></td>
+            <td>Section of image metadata explaining the optical parameters of the electron or ion beam column.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImageMetadataOpticsAperture/AdornedImageMetadataOpticsAperture.html">AdornedImageMetadataOpticsAperture</a></td>
+            <td>Section of image metadata related to beam apertures.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImageMetadataOpticsScanFieldSize/AdornedImageMetadataOpticsScanFieldSize.html">AdornedImageMetadataOpticsScanFieldSize</a></td>
+            <td>Section of image metadata related to scan field size.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImageMetadataSample/AdornedImageMetadataSample.html">AdornedImageMetadataSample</a></td>
+            <td>Section of image metadata describing the properties of the sample.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImageMetadataScanSettings/AdornedImageMetadataScanSettings.html">AdornedImageMetadataScanSettings</a></td>
+            <td>Section of image metadata describing scan settings.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImageMetadataStageSettings/AdornedImageMetadataStageSettings.html">AdornedImageMetadataStageSettings</a></td>
+            <td>Section of image metadata describing stage settings.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_image/AdornedImageMetadataVacuumProperties/AdornedImageMetadataVacuumProperties.html">AdornedImageMetadataVacuumProperties</a></td>
+            <td>Section of image metadata describing vacuum properties.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_spectrum/AdornedSpectrum/AdornedSpectrum.html">AdornedSpectrum</a></td>
+            <td>Contains EDS spectrum data and metadata.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_spectrum/AdornedSpectrumMetadata/AdornedSpectrumMetadata.html">AdornedSpectrumMetadata</a></td>
+            <td>Metadata describing one EDS spectrum.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_spectrum/AdornedSpectrumMetadataDetector/AdornedSpectrumMetadataDetector.html">AdornedSpectrumMetadataDetector</a></td>
+            <td>Section of spectrum metadata that refers to the EDS detector used for spectrum acquisition.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_spectrum/AdornedSpectrumMetadataExperiment/AdornedSpectrumMetadataExperiment.html">AdornedSpectrumMetadataExperiment</a></td>
+            <td>Section of spectrum metadata describing the experiment.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_spectrum/AdornedSpectrumMetadataRateStatistics/AdornedSpectrumMetadataRateStatistics.html">AdornedSpectrumMetadataRateStatistics</a></td>
+            <td>Section of spectrum metadata with statistics on X-ray pulses.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_spectrum/AdornedSpectrumMetadataScene/AdornedSpectrumMetadataScene.html">AdornedSpectrumMetadataScene</a></td>
+            <td>Section of spectrum metadata describing beam and stage properties.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_spectrum/AdornedSpectrumMetadataSpectrum/AdornedSpectrumMetadataSpectrum.html">AdornedSpectrumMetadataSpectrum</a></td>
+            <td>Section of spectrum metadata describing details of the acquired spectrum.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_spectrum/AdornedSpectrumMetadataStatistics/AdornedSpectrumMetadataStatistics.html">AdornedSpectrumMetadataStatistics</a></td>
+            <td>Section of spectrum metadata with statistics on X-ray pulses.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_spectrum/AdornedSpectrumMetadataSystem/AdornedSpectrumMetadataSystem.html">AdornedSpectrumMetadataSystem</a></td>
+            <td>Section of spectrum metadata describing properties of the microscope system.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_adorned_spectrum/AdornedSpectrumMetadataTimeStatistics/AdornedSpectrumMetadataTimeStatistics.html">AdornedSpectrumMetadataTimeStatistics</a></td>
+            <td>Section of spectrum metadata with additional time-related statistics.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_bitmap_pattern/BitmapPatternDefinition/BitmapPatternDefinition.html">BitmapPatternDefinition</a></td>
+            <td>Contains the definition of a bitmap pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_alignments/CapProbeCalibration/CapProbeCalibration.html">CapProbeCalibration</a></td>
+            <td>Defines the Cap Probe scale factor.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_alignments/CapProbeStatistics/CapProbeStatistics.html">CapProbeStatistics</a></td>
+            <td>Contains statistical data calculated from multiple Cap Probe measurements.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_alignments/CapProbeTrainedValue/CapProbeTrainedValue.html">CapProbeTrainedValue</a></td>
+            <td>Defines the Cap Probe set point for a stage tilt angle.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_eds/ChemicalCompositionEntry/ChemicalCompositionEntry.html">ChemicalCompositionEntry</a></td>
+            <td>Holds quantification data of one chemical element.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_eds/ChemicalElement/ChemicalElement.html">ChemicalElement</a></td>
+            <td>Represents one chemical element.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_primitives/Color/Color.html">Color</a></td>
+            <td>Represents the RGBA color model. The alpha channel controls the transparency of the color, while the other channels determine the color intensity. Values are in the range of [0, 1] corresponding to 0% - 100%.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_primitives/ColorTable/ColorTable.html">ColorTable</a></td>
+            <td>An auxiliary class providing a selection of named colors that align with the color scheme used in the main microscope user interface for rendering EDS elemental and phase maps.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_positions/CompustagePosition/CompustagePosition.html">CompustagePosition</a></td>
+            <td>Defines a Compustage position.</td>
+        </tr>
+        <tr>
+            <td><a href="../structures/DetectorInfo/DetectorInfo.html">DetectorInfo</a></td>
+            <td>Contains information about the detector&#39;s current state and physical properties.</td>
+        </tr>
+        <tr>
+            <td><a href="../structures/DetectorInsertSettings/DetectorInsertSettings.html">DetectorInsertSettings</a></td>
+            <td>Contains additional settings for the function <a href="../sdb_microscope/_detector/Detector/insert.html">insert()</a>.</td>
+        </tr>
+        <tr>
+            <td><a href="../structures/DetectorRetractSettings/DetectorRetractSettings.html">DetectorRetractSettings</a></td>
+            <td>Contains additional settings for the function <a href="../sdb_microscope/_detector/Detector/retract.html">retract()</a>.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_eds/EdsElementalAnalysisResult/EdsElementalAnalysisResult.html">EdsElementalAnalysisResult</a></td>
+            <td>Contains the results of elemental analysis of the EDS stream, obtained from the function <a href="../_dynamic_object_proxies/EdsStream/run_elemental_analysis.html">run_elemental_analysis()</a>.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_eds/EdsElementalAnalysisSettings/EdsElementalAnalysisSettings.html">EdsElementalAnalysisSettings</a></td>
+            <td>Contains settings for the EDS elemental analysis, which is conducted by the function <a href="../_dynamic_object_proxies/EdsStream/run_elemental_analysis.html">run_elemental_analysis()</a>.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_eds/EdsPhaseAnalysisResult/EdsPhaseAnalysisResult.html">EdsPhaseAnalysisResult</a></td>
+            <td>Holds the outcomes of phase analysis conducted on the EDS stream, retrieved from the function <a href="../_dynamic_object_proxies/EdsStream/run_phase_analysis.html">run_phase_analysis()</a>.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_eds/EdsPhaseAnalysisSettings/EdsPhaseAnalysisSettings.html">EdsPhaseAnalysisSettings</a></td>
+            <td>Contains settings for the EDS phase analysis, which is conducted by the function <a href="../_dynamic_object_proxies/EdsStream/run_phase_analysis.html">run_phase_analysis()</a>.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_eds/EdsPhaseStatisticsEntry/EdsPhaseStatisticsEntry.html">EdsPhaseStatisticsEntry</a></td>
+            <td>Contains statistical data for a single phase identified in an EDS stream. The function <a href="../_dynamic_object_proxies/EdsStream/run_phase_analysis.html">run_phase_analysis()</a> returns a list of these structures for each phase it identifies in the input stream.</td>
+        </tr>
+        <tr>
+            <td><a href="../structures/GetImageSettings/GetImageSettings.html">GetImageSettings</a></td>
+            <td>Contains additional settings for the <a href="../sdb_microscope/_imaging/Imaging/get_image.html">get_image()</a> function.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_rtm/GetRtmDataSettings/GetRtmDataSettings.html">GetRtmDataSettings</a></td>
+            <td>Contains settings for the function <a href="../sdb_microscope/patterning/_real_time_monitor/RealTimeMonitor/get_data.html">get_data()</a>.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_rtm/GetRtmPositionSettings/GetRtmPositionSettings.html">GetRtmPositionSettings</a></td>
+            <td>Contains settings for the function <a href="../sdb_microscope/patterning/_real_time_monitor/RealTimeMonitor/get_positions.html">get_positions()</a>.</td>
+        </tr>
+        <tr>
+            <td><a href="../structures/GrabFrameSettings/GrabFrameSettings.html">GrabFrameSettings</a></td>
+            <td>Contains additional settings for the <a href="../sdb_microscope/_imaging/Imaging/grab_frame.html">grab_frame()</a> function.</td>
+        </tr>
+        <tr>
+            <td><a href="../structures/ImageMatch/ImageMatch.html">ImageMatch</a></td>
+            <td>Contains the result of matching a template in an image.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_primitives/KeyValue/KeyValue.html">KeyValue</a></td>
+            <td>A generic structure that contains a key and value of type string.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_primitives/Limits/Limits.html">Limits</a></td>
+            <td>Defines maximum and minimum values of a scalar quantity.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_primitives/Limits2d/Limits2d.html">Limits2d</a></td>
+            <td>Defines maximum and minimum values of a 2D quantity.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_positions/ManipulatorPosition/ManipulatorPosition.html">ManipulatorPosition</a></td>
+            <td>Defines a manipulator position.</td>
+        </tr>
+        <tr>
+            <td><a href="../structures/MoveSettings/MoveSettings.html">MoveSettings</a></td>
+            <td>Contains additional options for a stage move.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_eds/PeriodicTable/PeriodicTable.html">PeriodicTable</a></td>
+            <td>An auxiliary class representing the periodic table of chemical elements.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_primitives/Point/Point.html">Point</a></td>
+            <td>Defines the X and Y coordinates of a point.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_primitives/Rectangle/Rectangle.html">Rectangle</a></td>
+            <td>Defines a rectangle by the coordinate of its upper-left corner, its width and height.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_eds/Region/Region.html">Region</a></td>
+            <td>Specifies the area for image or spectrum acquisition.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_rtm/RtmDataSet/RtmDataSet.html">RtmDataSet</a></td>
+            <td>Defines a pattern point data set.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_rtm/RtmPosition/RtmPosition.html">RtmPosition</a></td>
+            <td>Defines a pattern point position.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_rtm/RtmPositionSet/RtmPositionSet.html">RtmPositionSet</a></td>
+            <td>Contains a set of pattern point positions.</td>
+        </tr>
+        <tr>
+            <td><a href="../structures/RunAutoCbSettings/RunAutoCbSettings.html">RunAutoCbSettings</a></td>
+            <td>Contains settings for the automatic brightness and contrast adjustment routine.</td>
+        </tr>
+        <tr>
+            <td><a href="../structures/RunAutoFocusSettings/RunAutoFocusSettings.html">RunAutoFocusSettings</a></td>
+            <td>Contains settings for the automatic focus routine.</td>
+        </tr>
+        <tr>
+            <td><a href="../structures/RunAutoLensAlignmentSettings/RunAutoLensAlignmentSettings.html">RunAutoLensAlignmentSettings</a></td>
+            <td>Contains settings for the automatic lens alignment adjustment routine.</td>
+        </tr>
+        <tr>
+            <td><a href="../structures/RunAutoSourceTiltSettings/RunAutoSourceTiltSettings.html">RunAutoSourceTiltSettings</a></td>
+            <td>Contains settings for the automatic source tilt adjustment routine.</td>
+        </tr>
+        <tr>
+            <td><a href="../structures/RunAutoStigmatorCenteringSettings/RunAutoStigmatorCenteringSettings.html">RunAutoStigmatorCenteringSettings</a></td>
+            <td>Contains settings for the automatic adjustment of stigmator center.</td>
+        </tr>
+        <tr>
+            <td><a href="../structures/RunAutoStigmatorSettings/RunAutoStigmatorSettings.html">RunAutoStigmatorSettings</a></td>
+            <td>Contains settings for the automatic stigmator adjustment routine.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_positions/StagePosition/StagePosition.html">StagePosition</a></td>
+            <td>Defines a stage position.</td>
+        </tr>
+        <tr>
+            <td><a href="../structures/StageVelocity/StageVelocity.html">StageVelocity</a></td>
+            <td>Defines a stage velocity.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_stream_pattern/StreamPatternDefinition/StreamPatternDefinition.html">StreamPatternDefinition</a></td>
+            <td>Contains the definition of a stream pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../structures/TemperatureSettings/TemperatureSettings.html">TemperatureSettings</a></td>
+            <td>Contains settings for controlling temperature of heating or cooling stages.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_alignments/ToolReadinessAlignment/ToolReadinessAlignment.html">ToolReadinessAlignment</a></td>
+            <td>Defines properties of an alignment in the ToolReadiness service.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_alignments/ToolReadinessAlignmentParameter/ToolReadinessAlignmentParameter.html">ToolReadinessAlignmentParameter</a></td>
+            <td>Specifies the name and value of a parameter for an alignment in the ToolReadiness service.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_alignments/ToolReadinessAlignmentStatus/ToolReadinessAlignmentStatus.html">ToolReadinessAlignmentStatus</a></td>
+            <td>Specifies the status of an alignment in the ToolReadiness service.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_alignments/ToolReadinessDirectAlignment/ToolReadinessDirectAlignment.html">ToolReadinessDirectAlignment</a></td>
+            <td>Defines properties of a direct alignment in the ToolReadiness service.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_alignments/ToolReadinessDirectAlignmentStatus/ToolReadinessDirectAlignmentStatus.html">ToolReadinessDirectAlignmentStatus</a></td>
+            <td>Specifies the status of a direct alignment in the ToolReadiness service.</td>
+        </tr>
+        <tr>
+            <td><a href="../_structures_alignments/ToolReadinessUseCaseSettings/ToolReadinessUseCaseSettings.html">ToolReadinessUseCaseSettings</a></td>
+            <td>Specifies settings for the usecase of a ToolReadiness alignment.</td>
+        </tr>
+        <tr>
+            <td><a href="../structures/VacuumSettings/VacuumSettings.html">VacuumSettings</a></td>
+            <td>Contains settings for the function <a href="../sdb_microscope/_vacuum/Vacuum/pump.html">pump()</a>.</td>
+        </tr>
+    </table>
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

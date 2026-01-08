@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multichem.list_all_gases</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_dynamic_object_proxies/Multichem/Multichem.html">Multichem</a>.<a class="header-path" href="../../_dynamic_object_proxies/Multichem/list_all_gases.html">list_all_gases</a></h1>
+    <p>Lists all gases in MultiChem.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">list_all_gases()
+list_all_gases(include_combinations)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>include_combinations</td>
+            <td>bool</td>
+            <td>If set to true, the function also returns the available gas combinations.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td>List[str]</td>
+            <td>The list of gas names.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    
+    <h2>Remarks</h2>
+
+    <p>
+        When the parameter <code>include_combinations</code> is set to true,
+        the returned list also includes allowed combinations of available gases. The combinations use '+' as a separator.
+        For example, a gas combination can be HMCHS+O2.
+        Note that the order matters; HMCHS+O2 is not the same as O2+HMCHS in this scenario.
+    </p>
+    
+    <h2>Examples</h2>
+    
+    Get all available gases in MultiChem:
+    <pre><code class="language-python">
+        # Obtain the MultiChem object
+        multichem = microscope.gas.get_multichem()
+        
+        # Get available gases
+        gases = multichem.list_all_gases()
+        
+        # or
+        gases = multichem.list_all_gases(False)
+    </code></pre>
+    
+    <br>
+    Get available gases including their allowed combinations:
+    <pre><code class="language-python">
+        # Obtain the MultiChem object
+        multichem = microscope.gas.get_multichem()
+        
+        # Read available gases and their combinations
+        gases = multichem.list_all_gases(True)
+    </code></pre>
+    
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

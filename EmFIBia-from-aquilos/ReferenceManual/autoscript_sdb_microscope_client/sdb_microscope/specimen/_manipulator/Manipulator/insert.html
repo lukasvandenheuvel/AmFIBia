@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>specimen.manipulator.insert</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/specimen.html">specimen</a>.<a class="header-path" href="../../../../sdb_microscope/_specimen/Specimen/manipulator.html">manipulator</a>.<a class="header-path" href="../../../../sdb_microscope/specimen/_manipulator/Manipulator/insert.html">insert</a></h1>
+    <p>Inserts the manipulator either to a default or specified position.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">insert()
+insert(insert_position)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>insert_position</td>
+            <td><a href="../../../../_structures_positions/ManipulatorPosition/ManipulatorPosition.html">ManipulatorPosition</a></td>
+            <td>The position to which the manipulator should be inserted.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    <ul class="spaced-list">
+        <li>
+            The parameterless function inserts the manipulator into a position from which it was previously retracted,
+            or <a href="../../../../enumerations/ManipulatorSavedPosition/EUCENTRIC.html">Eucentric </a> when the manipulator
+            is being inserted for the first time.
+        </li>
+        <li>
+            If the insertion position is specified in <a href="../../../../enumerations/ManipulatorCoordinateSystem/STAGE.html">Stage</a>
+            coordinate system, the manipulator will reach the position after the needle has been inserted.
+        </li>
+        <li>
+            The meaning of <code>insert_position</code> parameter is different if the position is given in
+            <a href="../../../../enumerations/ManipulatorCoordinateSystem/RAW.html">Raw</a> coordinate system.
+            In this case the retracted manipulator is first moved to this position and then inserted.
+            It is therefore a position <strong>from</strong> which the manipulator should be inserted.
+        </li>
+        <li>
+            If the manipulator is already inserted, calling <code>insert()</code> again will have no effect,
+            even if a different <code>insert_position</code> is specified.
+            To move an inserted manipulator to a new position, simply call
+            <a href="absolute_move.html">specimen.manipulator.absolute_move()</a>.
+        </li>
+    </ul>
+
+    <h2>Examples</h2>
+
+    <pre><code class="language-python">
+		# Insert the manipulator needle into the Park position
+		park_position = microscope.specimen.manipulator.get_saved_position(ManipulatorSavedPosition.PARK)
+		microscope.specimen.manipulator.insert(park_position)
+    </code></pre>
+
+    <h2>See also</h2>
+
+    <a href="retract.html">specimen.manipulator.retract()</a><br>
+    <a href="get_saved_position.html">specimen.manipulator.get_saved_position()</a><br>
+    <a href="../../../../enumerations/ManipulatorCoordinateSystem/ManipulatorCoordinateSystem.html">ManipulatorCoordinateSystem</a>
+
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

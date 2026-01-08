@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EdsStream.run_elemental_analysis</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_dynamic_object_proxies/EdsStream/EdsStream.html">EdsStream</a>.<a class="header-path" href="../../_dynamic_object_proxies/EdsStream/run_elemental_analysis.html">run_elemental_analysis</a></h1>
+    <p>Analyzes the data contained within the EDS stream and prepares a mapping engine for elemental map generation. The stream must be closed before calling this function.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">run_elemental_analysis()
+run_elemental_analysis(settings)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>settings</td>
+            <td><a href="../../_structures_eds/EdsElementalAnalysisSettings/EdsElementalAnalysisSettings.html">EdsElementalAnalysisSettings</a></td>
+            <td>Parameters of the elemental analysis, primarily specifying properties of the mapping engine.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_eds/EdsElementalAnalysisResult/EdsElementalAnalysisResult.html">EdsElementalAnalysisResult</a></td>
+            <td>The analysis result, which includes both a list of elements identified in the EDS stream and the calculated chemical composition.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            The <a href="../../enumerations/EdsMappingEngineType/QUANT.html">Quant mapping engine type</a> and
+            <a href="../../enumerations/EdsSegmentationMethod/OBJECT_BASED.html">object-based
+            segmentation method</a> are the default configuration of the mapping
+            algorithm unless overridden in the <code>settings</code> parameter.
+        </li>
+
+        <li>
+            Conducting an analysis is a mandatory step before calling the
+            <a href="get_elemental_map.html">EdsStream.get_elemental_map()</a> function to generate map images.
+        </li>
+        
+        <li>
+            Only one mapping engine can be initialized at a time.
+            If you want to generate maps with multiple engines, do it in succession.
+            For example, first perform the analysis with the <a href="../../enumerations/EdsMappingEngineType/QUANT.html">Quant</a> 
+            engine, generate Quant maps, then repeat the analysis with the
+            <a href="../../enumerations/EdsMappingEngineType/GROSS_COUNT.html">GrossCount</a> engine and generate GrossCount maps.
+        </li>
+    </ul>
+    
+    <h2>Examples</h2>
+    See examples in <a href="get_elemental_map.html">EdsStream.get_elemental_map()</a>.
+    
+    <h2>See also</h2>
+    <a href="get_peak_id.html">EdsStream.get_peak_id()</a><br>
+        
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

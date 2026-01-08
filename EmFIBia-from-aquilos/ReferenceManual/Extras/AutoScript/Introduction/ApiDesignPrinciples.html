@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API design principles</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+
+<body>
+<h1>API design principles</h1>
+
+
+<h2>Common API</h2>
+
+AutoScript ensures a uniform API structure across all supported SEM system families, regardless of the installed
+hardware components or the platform software version. If an attempt is made to access parts of the API that control non-existent hardware devices, an error (an exception) will occur.<br>
+This design decision guarantees maximum script portability across various microscope systems.
+
+
+<h2>Synchronicity</h2>
+
+By default, functions in the API are designed as synchronous, meaning they return when all effects of the action
+on the microscope hardware and software have subsided. Synchronous functions simplify client-side code, making constructs such as waiting loops or event registration unnecessary.
+<br><br>
+
+The word "<strong>Run</strong>" is sometimes included in function names to emphasize the synchronous nature
+of the command. For example, the function
+<a href="../../../autoscript_sdb_microscope_client/sdb_microscope/_auto_functions/AutoFunctions/run_auto_focus.html">auto_functions.run_auto_focus()</a>
+executes the autofocus function synchronously.<br><br>
+
+Sometimes it is beneficial to have an asynchronous version of the function available, often alongside the synchronous one.
+In such cases, the word "<strong>Start</strong>" is used to denote the asynchronicity.
+For instance,
+<a href="../../../autoscript_sdb_microscope_client/sdb_microscope/_patterning/Patterning/start.html">patterning.start()</a>
+is an asynchronous variant of the function
+<a href="../../../autoscript_sdb_microscope_client/sdb_microscope/_patterning/Patterning/run.html">patterning.run()</a>.
+
+
+<h2>Units of measurement</h2>
+
+Unless configured differently, all physical quantities are returned in the <strong>base Standard International (SI) units</strong>,
+that is kelvins, amperes, meters, volts, coulombs, pascals etc.<br><br>
+AutoScript provides a
+<a href="../../../autoscript_sdb_microscope_client/sdb_microscope/service/autoscript/_client/Client/set_preferred_unit.html">function</a>
+to configure a different unit for a quantity.
+Once changed, all properties and functions in the API dealing with the quantity will accept and return values
+in the new unit. In its current version, AutoScript only allows changing <strong>temperature</strong> units.
+
+
+<h2>Stateless vs stateful control</h2>
+
+AutoScript <strong>combines the concepts of stateful and stateless control</strong> with the aim of simplifying client
+code as much as possible.<br><br>
+
+In the <strong>stateful</strong> control approach, the client code relies on the current state of the microscope,
+and the initiated action carries minimal state information. An example of a stateful command is:
+
+<pre><code class="language-python">
+   image = microscope.imaging.grab_frame()
+</code></pre>
+
+In this case, the grab-frame action is requested without supplying any specifics of the beam scanning conditions.
+Therefore, the function will acquire the image under the <strong>current</strong> scanning conditions.
+You can always observe the system's current state in the main user interface application,
+which serves as a state monitor, always up-to-date with the true state of hardware and lower software layers.<br><br>
+
+In the <strong>stateless</strong> control approach, the function parameters define system state under which it is to be executed,
+like for instance:
+
+<pre><code class="language-python">
+    settings = GrabFrameSettings(dwell_time=50e-9)
+    image = microscope.imaging.grab_frame(settings)
+</code></pre>
+
+In this second case, the function configures the scanning subsystem to use a dwell time of 50ns for a single image
+acquisition, and returns the system value of dwell time to its original value when the function finishes.<br><br>
+
+An equivalent code in the stateful approach (with error handling left out) would be:
+
+<pre><code class="language-python">
+    original_dwell = microscope.beams.electron_beam.scanning.dwell_time.value
+    microscope.beams.electron_beam.scanning.dwell_time.value = 50e-9
+    image = microscope.imaging.grab_frame()
+    microscope.beams.electron_beam.scanning.dwell_time.value = original_dwell
+</code></pre>
+
+Typically, all parameters omitted from the stateless functions are backfilled from the global system state.
+However, there are a few exceptions to this rule, where hard-coded constants are used for missing input parameters.
+Such exceptions are always documented in this user manual.
+
+
+<h2>Error reporting</h2>
+
+When a function call encounters an error, an exception is raised in the user code.
+Exceptions originating from the AutoScript server are consistently of the <code>ApplicationServerException</code> type.
+However, exceptions originating from the AutoScript client can vary in type. While <code>ApiException</code> is common,
+sometimes a more specific exception, like <code>ValueError</code> or <code>IndexError</code>, is thrown to better detail the error.<br>
+Regardless of the type, every exception includes a message explaining the error in a human-readable way.
+
+<h2>Recurring patterns</h2>
+
+The AutoScript API is designed to maintain internal consistency by modeling microscope subsystems with
+similar functionality in a uniform manner. The following are some of the recurring patterns in the API:
+
+<ol class="spaced-list">
+    <li>
+        <strong>The </strong> <code><strong>is_installed</strong></code><strong> property.</strong><br>
+
+        An API group that represents an optional device usually includes an <code>is_installed</code> property.
+        This property is helpful for checking the availability of the device without needing to write exception handlers.
+        In certain cases, an <code>is_available</code> property is included instead for sections that relate to software
+        capability rather than hardware devices.
+        <br>
+    </li>
+    <li>
+        <strong>The <code>value</code> and <code>available_values</code> pair.</strong><br>
+
+        States are commonly depicted through a pair of properties: <code>value</code>, returning the current state,
+        and <code>available_values</code>, providing a collection of states applicable at the time.
+    </li>
+    <li>
+        <strong>The <code>value</code> and <code>limits</code> pair.</strong><br>
+
+        Functions that retrieve or adjust continuous values within allowable ranges are usually represented
+        by a pair of properties: <code>value</code> and <code>limits</code>.
+        The <code>limits</code> property returns the
+        <a href="../../../autoscript_sdb_microscope_client/_structures_primitives/Limits/Limits.html">Limits</a> structure,
+        detailing the minimum and maximum permissible values.
+    </li>
+    <li>
+        <strong>Two dimensional values.</strong><br>
+
+        Properties of the microscope that involve two-dimensional aspects are typically presented as a pair consisting
+        of <code>value</code> and <code>limits</code>.
+        The <code>value</code> property returns a
+        <a href="../../../autoscript_sdb_microscope_client/_structures_primitives/Point/Point.html">Point</a> structure,
+        encapsulating its X and Y components, while the <code>limits</code> property returns a
+        <a href="../../../autoscript_sdb_microscope_client/_structures_primitives/Limits2d/Limits2d.html">Limits2d</a>
+        structure, detailing the boundaries in both the X and Y directions.
+    </li>
+    <li>
+        <strong>Settings structures.</strong><br>
+
+        Functions that take numerous optional input parameters are designed to accept a single "settings" parameter,
+        as an instance of a data class with optional items.
+        This approach allows the settings structures to be easily expanded with new
+        items without having to change function signatures.<br>
+        The naming convention for the settings structure often mirrors the name of the function for which it is intended.
+        For example,
+        <a href="../../../autoscript_sdb_microscope_client/structures/RunAutoFocusSettings/RunAutoFocusSettings.html">RunAutoFocusSettings</a>
+        is a settings structure intended for the <a href="../../../autoscript_sdb_microscope_client/sdb_microscope/_auto_functions/AutoFunctions/run_auto_focus.html">auto_functions.run_auto_focus()</a> function.
+        However, there are exceptions to this convention, where the settings structure serves a broader purpose, for instance
+        is utilized for multiple functions.
+    </li>
+</ol>
+
+
+<h2>Enumerations</h2>
+
+Functions in the AutoScript API intentionally avoid using parameters of enumeration type
+(i.e., classes derived from the Enum class in Python) to describe states, opting instead for simple types like <code>int</code> or <code>string</code>.
+This design choice is made to ensure flexibility in both AutoScript and the underlying software platform release cycles.
+In scenarios where a newer version of the microscope platform introduces new states that are unknown to an older version
+of AutoScript, these new states can be still provided as parameters to functions as plain strings or integers.<br><br>
+
+However, AutoScript does define <a href="../../../autoscript_sdb_microscope_client/enumerations/index.html">enumeration classes</a>,
+which provide named constants to be used in place of strings or integers.
+This approach helps prevent typos and enhances the readability of the code.
+
+<pre><code class="language-python">
+    # The following lines are equivalent, the second is preferred
+    microscope.detector.mode.value = "SecondaryElectrons"
+    microscope.detector.mode.value = DetectorMode.SECONDARY_ELECTRONS
+</code></pre>
+
+
+<h2>Private configuration space</h2>
+
+Multiple clients (running scripts) can connect to the AutoScript server simultaneously.
+The server ensures that any configuration settings made by one script do not affect other scripts.
+Examples of per-client configuration are the
+
+<a href="../../../autoscript_sdb_microscope_client/sdb_microscope/specimen/_stage/Stage/set_default_coordinate_system.html">default stage coordinate system</a>,
+<a href="../../../autoscript_sdb_microscope_client/sdb_microscope/_patterning/Patterning/set_default_beam_type.html">default beam</a> or
+<a href="../../../autoscript_sdb_microscope_client/sdb_microscope/_patterning/Patterning/set_default_application_file.html">application file for new patterns</a>,
+<a href="../../../autoscript_sdb_microscope_client/sdb_microscope/specimen/_stage/Stage/set_default_move_settings.html">default stage move settings</a>,
+<a href="../../../autoscript_sdb_microscope_client/sdb_microscope/service/autoscript/_client/Client/set_preferred_unit.html">preferred unit of measurement</a>,
+
+and others.<br>
+The per-client configuration is not persisted in any way,
+meaning that scripts must reapply their preferences each time they are run.
+
+
+<h2>Breaking changes</h2>
+
+Despite we make every effort to uphold stability and backward compatibility in the AutoScript API,
+occasional changes are inevitable.
+
+A process is in place for announcing planned breaking changes:<br>
+
+When an API element is set to be altered or deprecated, it is flagged with a warning message in this reference manual
+for three consecutive major software versions. If the element is a callable object (such as a function or property),
+it also issues a warning message to the output console when called.
+Subsequently, in the fourth release, the element is either removed from the API or its signature is modified.<br>
+Such alterations are thoroughly documented in the product release notes.<br><br>
+
+Changes that are considered breaking include:
+
+<ol>
+    <li>Removal, renaming, or relocation of any part of the API, such as function groups, functions, properties, enumerations, or structures.</li>
+    <li>Altering the order of function arguments, including constructor arguments.</li>
+    <li>Deleting or modifying portions of image or spectrum metadata.</li>
+    <li>Eliminating support for file formats.</li>
+    <li>Significantly altering function behavior due to changes in AutoScript's business logic implementation.</li>
+</ol>
+
+Changes that are <strong>not</strong> considered breaking include:
+
+<ol>
+    <li>Adding an optional function argument, an optional item to data classes (structures) or a value to an enumeration.</li>
+    <li>Modifying an exception message string.</li>
+    <li>Correcting the behavior of a function that previously caused errors.</li>
+    <li>Updating a Python package to a new version in the default "AutoScript" Python environment.</li>
+    <li>Adjusting function behavior due to changes made to the microscope hardware or underlying platform software.</li>
+    <li>Any modifications to API functions marked as experimental in this reference manual.</li>
+</ol>
+
+Detecting and handling breaking changes made to <strong>third-party Python packages</strong> included with the AutoScript product
+by their authors or the Python community may not always follow the same process as described above.
+However, if we do identify such changes, we provide a warning in the release notes.
+
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>specimen.sputter_coater.run</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/specimen.html">specimen</a>.<a class="header-path" href="../../../../sdb_microscope/_specimen/Specimen/sputter_coater.html">sputter_coater</a>.<a class="header-path" href="../../../../sdb_microscope/specimen/_sputter_coater/SputterCoater/run.html">run</a></h1>
+    <p>Executes the sputtering procedure.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">run(time)
+run(time, grids)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>time</td>
+            <td>int</td>
+            <td>The sputtering time in seconds.</td>
+        </tr>
+        <tr>
+            <td>grids</td>
+            <td>List[int]</td>
+            <td>Specifies indices of the grids on which to execute the sputtering process.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    
+    <p>
+        On the <strong>Arctis</strong> system, this function additionally performs the home procedure
+        of the fluorescence light microscope (FLM) and moves the compustage to the sputtering position.
+        After the sputtering is completed, it returns the compustage to its original position.
+    </p>
+    
+    <p>
+        The <code>grids</code> parameter is required for the sputtering procedure on <strong>Hydra Bio</strong> systems.
+        For other systems, it should be omitted.
+    </p>
+    
+    <h2>Examples</h2>
+    
+    Run sputtering on <strong>Aquilos</strong> system:
+
+    <pre><code class="language-python">
+        # Prepare for sputtering
+        microscope.specimen.sputter_coater.prepare()
+
+        # Change chamber pressure to 20 Pa and sputter current to 10 mA
+        microscope.vacuum.pump(VacuumSettings(pressure=20))
+        microscope.specimen.sputter_coater.current.value = 0.01
+
+        # Perform the sputtering procedure with a run time of 10 seconds
+        microscope.specimen.sputter_coater.run(10)
+
+        # Recover from sputtering
+        microscope.specimen.sputter_coater.recover()
+    </code></pre>
+    
+    Run sputtering on <strong>Hydra Bio</strong> system:
+    
+    <pre><code class="language-python">
+        # Find out whether the MicroSputter is installed
+        print(microscope.specimen.sputter_coater.is_installed)
+        
+        # Inspect the sputter current and its possible values
+        print(microscope.specimen.sputter_coater.current.value)
+        print(microscope.specimen.sputter_coater.current.available_values)
+        
+        # Prepare for sputtering
+        microscope.beams.ion_beam.turn_on()
+        if not microscope.specimen.sputter_coater.is_homed:
+            microscope.specimen.sputter_coater.home()
+        
+        # Perform sputtering with a run time of 10 s at grid 1 and grid 2 positions
+        microscope.specimen.sputter_coater.run(10, [1, 2])   
+    </code></pre>
+   
+    <h2>See also</h2>
+
+    <a href="prepare.html">specimen.sputter_coater.prepare()</a><br>
+    <a href="recover.html">specimen.sputter_coater.recover()</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

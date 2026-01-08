@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>analysis.eds.acquire_spectrum</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/analysis.html">analysis</a>.<a class="header-path" href="../../../../sdb_microscope/_analysis/Analysis/eds.html">eds</a>.<a class="header-path" href="../../../../sdb_microscope/analysis/_eds/Eds/acquire_spectrum.html">acquire_spectrum</a></h1>
+    <p>Scans the specified region and collects EDS spectrum data from it.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">acquire_spectrum(region, acquisition_time)
+acquire_spectrum(region, acquisition_time, counts)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>region</td>
+            <td><a href="../../../../_structures_eds/Region/Region.html">Region</a></td>
+            <td>The region to be scanned by electron beam to collect the EDS spectrum. The specified region object must have been initialized with the correct type, position and shape data.</td>
+        </tr>
+        <tr>
+            <td>acquisition_time</td>
+            <td>float</td>
+            <td>The amount of time in seconds the region should be exposed to the beam.</td>
+        </tr>
+        <tr>
+            <td>counts</td>
+            <td>int</td>
+            <td>Optional criteria for the duration of scanning. Spectrum acquisition stops when the number of X-ray counts is reached.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td><a href="../../../../_structures_adorned_spectrum/AdornedSpectrum/AdornedSpectrum.html">AdornedSpectrum</a></td>
+            <td>The object containing both the EDS spectrum data and metadata describing the system state.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            Scanning will stop once the specified time has elapsed or the number of x-rays counts has been collected, whichever comes first. Stopping scanning may leave the current image frame unfinished.
+        </li>
+        
+        <li>The function internally performs a sequence of the following actions:
+            <ol class="not-spaced-list">
+                <li>Stop scanning</li>
+                <li><a href="reset_spectrum.html">Reset EDS spectrum buffer</a></li>
+                <li>Start scanning</li>
+                <li>Wait until the end criterion is met</li>
+                <li>Stop scanning</li>
+                <li><a href="get_spectrum.html">Get spectrum data</a></li>
+            </ol>
+            
+            The strategy for controlling scanning differs based on region type.
+            For point regions, the beam is blanked and unblanked.
+            For full frame and rectangular regions, the live acquisition is started/stopped.
+            For polygon regions, the patterning is started/stopped.
+        </li>
+        
+        <li>
+            Position and size of <a href="../../../../_structures_eds/Region/Region.html">Regions</a> are defined by default in the pixel
+            coordinate system. It is also possible to use a "native" coordinate system of the underlying scanning or patterning object:
+            <ul class="not-spaced-list">
+                <li><a href="../../../../enumerations/RegionCoordinateSystem/SPOT.html">Spot</a> coordinate system for point regions.</li>
+                <li><a href="../../../../enumerations/RegionCoordinateSystem/REDUCED_AREA.html">Reduced area</a> coordinate system for rectangle regions.</li>
+                <li><a href="../../../../enumerations/RegionCoordinateSystem/PATTERNING.html">Patterning</a> coordinate system for polygon regions.</li>
+            </ul>
+            The coordinate system can be specified in the constructor of the region.
+        </li>
+        
+        <li>
+            On Axia ChemiSEM systems, the polygon-type regions are supported from platform software version 27.2.2.
+        </li>
+    </ul>
+
+
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Collect a spectrum from the entire field of view by scanning it for 3 seconds
+        region = Region(type=RegionType.FULL_FRAME)
+        spectrum = microscope.analysis.eds.acquire_spectrum(region, 3)
+    </code></pre>
+    
+    <pre><code class="language-python">
+        # Collect a spectrum with 5000 X-ray counts from a rectangular subregion of the field of view.
+        # The coordinates of the rectangle are in pixels, with respect to the current scanning resolution of the electron beam.
+        # The time criterion (here 120 seconds) must also be specified and serves as a timeout.
+        region = Region(type=RegionType.RECTANGLE, rectangle=Rectangle(100, 100, 400, 400))
+        spectrum = microscope.analysis.eds.acquire_spectrum(region, 120, 5000)
+    </code></pre>
+      
+    <pre><code class="language-python">
+        # Collect a spectrum from a rectangular region given in the reduced area coordinate system
+        region = Region(type=RegionType.RECTANGLE, rectangle=Rectangle(0.1, 0.2, 0.4, 0.4),
+                        coordinate_system=RegionCoordinateSystem.REDUCED_AREA)
+        spectrum = microscope.analysis.eds.acquire_spectrum(region, 120, 5000)
+    </code></pre>
+      
+    <pre><code class="language-python">
+        # Collect a spectrum by scanning a single point for 5 seconds.
+        # The coordinates of the point are in pixels.
+        region = Region(type=RegionType.POINT, point=Point(200, 300))
+        spectrum = microscope.analysis.eds.acquire_spectrum(region, 5)
+    </code></pre>
+
+    <pre><code class="language-python">
+        # Acquire a spectrum from a non-rectangular subregion of the field of view defined as a polygon with three vertices (= triangle).
+        # The coordinates are given in pixels.
+        region = Region(type=RegionType.POLYGON, vertices=[Point(10, 10), Point(200, 200), Point(20, 400)])
+        spectrum = microscope.analysis.eds.acquire_spectrum(region, 5)
+    </code></pre>
+
+    <pre><code class="language-python">
+        # You can also specify the coordinates of vertices in reduced area coordinate system
+        region = Region(type=RegionType.POLYGON, vertices=[Point(0.1, 0.1), Point(0.5, 0.3), Point(0.1, 0.6)],
+                        coordinate_system=RegionCoordinateSystem.REDUCED_AREA)
+        spectrum = microscope.analysis.eds.acquire_spectrum(region, 5)
+    </code></pre>
+    
+    <pre><code class="language-python">
+        # Or you can specify the coordinates in patterning coordinate system
+        region = Region(type=RegionType.POLYGON, vertices=[Point(10e-6, 10e-6), Point(-5e-6, -5e-6), Point(0, 5e-6)],
+                        coordinate_system=RegionCoordinateSystem.PATTERNING)
+        spectrum = microscope.analysis.eds.acquire_spectrum(region, 5)
+    </code></pre>
+
+    <h2>See also</h2>
+    <a href="get_spectrum.html">analysis.eds.get_spectrum()</a><br>
+    <a href="../../../beams/electron_beam/_scanning/Scanning/resolution.html">beams.electron_beam.scanning.resolution</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

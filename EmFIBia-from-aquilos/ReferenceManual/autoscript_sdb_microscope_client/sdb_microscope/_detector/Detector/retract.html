@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>detector.retract</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/detector.html">detector</a>.<a class="header-path" href="../../../sdb_microscope/_detector/Detector/retract.html">retract</a></h1>
+    <p>Retracts the active detector unless a specific detector type is provided in settings.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">retract()
+retract(settings)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>settings</td>
+            <td><a href="../../../structures/DetectorRetractSettings/DetectorRetractSettings.html">DetectorRetractSettings</a></td>
+            <td>The additional settings for the retract operation.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+
+    <ul class="spaced-list">
+        <li>
+            Retracting a detector that is already retracted will have no effect.
+        </li>
+        <li>
+            Attempting to retract a non-retractable detector will throw an exception.
+            You can check if a detector is retractable by calling <a href="get_info.html">detector.get_info()</a>.
+        </li>
+        <li>
+            The parameterless version of the function operates on the active detector in the active view.
+            If a detector type is specified in the settings, the function will retract it without needing
+            to activate it in the view.
+        </li>
+        <li>
+            In the current version, AutoScript does not support image acquisition with the "T-PIX" detector
+            or the ability to change its insertion state.
+        </li>
+    </ul>
+    
+
+    <h2>Examples</h2>
+
+    <pre><code class="language-python">
+        # Retract the active detector
+        microscope.detector.retract()
+    </code></pre>
+    
+    <pre><code class="language-python">
+        # Retract ABS detector
+        settings = DetectorRetractSettings(type=DetectorType.ABS)
+        microscope.detector.retract(settings)
+    </code></pre>
+    
+    <pre><code class="language-python">
+        # Retract all inserted detectors
+        installed_detectors = microscope.detector.type.all_values
+        for detector_type in installed_detectors:
+            detector_info = microscope.detector.get_info(detector_type)
+            if detector_info.is_retractable and detector_info.can_retract:
+                print("Retracting", detector_type)
+                microscope.detector.retract(DetectorRetractSettings(type=detector_type))
+    </code></pre>
+
+
+    <h2>See also</h2>
+    
+    <a href="insert.html">detector.insert()</a><br>
+    <a href="state.html">detector.state</a><br>
+    <a href="get_info.html">detector.get_info()</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

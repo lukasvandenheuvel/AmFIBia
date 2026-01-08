@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AutoScript Package Manager</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+
+        function ScrollTo(elementId) {
+            document.getElementById(elementId).scrollIntoView();
+        }
+    </script>
+    <style>
+        hr { height:2px; visibility:hidden; }
+    </style>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+
+<body>
+
+<h1>AutoScript Package Manager</h1>
+
+The AutoScript Package Manager is a user interface extension designed for the
+<a href="../PythonDistribution.html">Enthought Deployment Manager</a> command line tool (EDM).
+It simplifies the management of installed packages, removing the need to interact with EDM's command line interface.
+
+<br><br>
+
+<img src="../../Resources/PackageManager.png" alt="" height="562" width="1068">
+
+<br><br>
+
+On the left side <strong>(1)</strong>, the tool displays the list of available packages on the Enthought Deployment Server
+along with license information for each package.
+Packages can be filtered according to their license by clicking the License button <strong>(2)</strong>
+and selecting the desired license types.
+On the right side <strong>(3)</strong>, a list of currently installed packages in the active Python environment is displayed,
+along with version information and a status indicator.
+The status color is green if the package version is the most recent available version.
+The status is orange if a newer version exists on the deployment server.
+
+
+<br><br>
+You can easily add a new package by first selecting it in the left pane and then clicking the
+<strong>Install Selected Version</strong> button. Similarly, you can update or remove an installed package by selecting it in the
+right pane and clicking the <strong>Update to Latest Version</strong> or <strong>Uninstall Package</strong> buttons.
+<br>
+Note that installing or updating a Python package resolves the entire chain of dependencies on other packages.
+Therefore, adding or updating a single package may result in adding or updating multiple dependent packages.
+You will be asked to review and approve the list of packages to be added or updated before the changes are applied.
+<br><br>
+
+The two search boxes at the top <strong>(4)</strong> help you quickly navigate to the desired package by removing all packages that
+do not contain the entered text in their name.
+<br><br>
+
+The Package Manager also provides the capability to create or remove virtual environments using the <strong>Environment</strong>
+button <strong>(6)</strong>.
+You can create a new environment with or without AutoScript packages. The drop-down button <strong>(5)</strong> presents
+a list of all local Python environments. Selecting an environment will activate it within the Package Manager,
+and the right-side pane will be refreshed to display the packages installed in that specific environment.<br><br>
+Environments can be also deleted, with the exception of the default "AutoScript" environment.<br>
+
+The Package Manager requires an active Internet connection.<br><br>
+
+For further information about the Package Manager, please refer to the chapters on <a href="../PythonDistribution/PackageManagement.html">package management</a> and <a href="../PythonDistribution/EnvironmentManagement.html">environment management</a>.
+
+</body>
+</html>

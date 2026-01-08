@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+<!-- Custom part - START -->
+    <h1><a class="header-path" href="#">plot_spectrum</a></h1>
+    
+    <p>
+        Opens a pop-up window displaying a plot of the provided EDS spectrum, given as an AdornedSpectrum instance.
+    </p>
+    
+    <h2>Syntax</h2>
+    
+    <pre><code class="language-python">
+        plot_sectrum(spectrum, label=None)
+    </code></pre>
+    
+    <h2>Parameters</h2>
+    
+    <table>
+        <tr>
+            <td>spectrum</td>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_adorned_spectrum/AdornedSpectrum/AdornedSpectrum.html">AdornedSpectrum</a></td>
+            <td>The spectrum to display.</td>
+        </tr>
+        <tr>
+            <td>label</td>
+            <td>str</td>
+            <td>The title of the window displaying the spectrum. If left unspecified, it will be automatically generated based on the <a href="../../autoscript_sdb_microscope_client/_structures_adorned_spectrum/AdornedSpectrumMetadataExperiment/title.html">experiment name in spectrum metadata</a>.</td>
+        </tr>
+    </table>
+    
+     
+    <h2>Examples</h2>
+    
+<pre><code class="language-python">
+	import autoscript_toolkit.user_interface as ui_toolkit
+	
+    # Read an EDS spectrum collected from previous scanning activity
+    spectrum = microscope.analysis.eds.get_spectrum()
+    
+    # Display the spectrum in a pop-up window
+    ui_toolkit.plot_spectrum(spectrum)
+</code></pre>
+
+    <img src="../Resources/PlotSpectrum.png" alt="">
+
+
+    <h2>See also</h2>
+
+    <a href="plot_spectra.html">plot_spectra()</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

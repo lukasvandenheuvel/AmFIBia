@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ChemicalElement.K</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_structures_eds/ChemicalElement/ChemicalElement.html">ChemicalElement</a>.<a class="header-path" href="../../_structures_eds/ChemicalElement/K.html">K</a></h1>
+    <p>Returns a copy of this chemical element with the selected spectral line &quot;K&quot;.</p>
+    <h2>Data type</h2>
+    <em>[Optional]</em> <a href="../../_structures_eds/ChemicalElement/ChemicalElement.html">ChemicalElement</a>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    
+    EDS mapping functions factor in the chemical element's line family when generating color maps from the <a href="../../_dynamic_object_proxies/EdsStream/EdsStream.html">EDS stream</a>.
+    
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+    silicon_k = PeriodicTable.SILICON.K
+    </code></pre>
+    
+   <h2>See also</h2>
+   <a href="l.html">ChemicalElement.L</a><br>
+   <a href="m.html">ChemicalElement.M</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

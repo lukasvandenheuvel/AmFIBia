@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>analysis.eds</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/analysis.html">analysis</a>.<a class="header-path" href="../../../sdb_microscope/_analysis/Analysis/eds.html">eds</a></h1>
+    <p>Provides functions for chemical microanalysis of the sample using an energy dispersive spectroscopy (EDS) detector.</p>
+    <h2>Classes</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/analysis/_eds/Eds/mapping.html">mapping</a></td>
+            <td>Functions related to the generation of EDS elemental and phase maps.</td>
+        </tr>
+    </table>
+    <h2>Properties</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/analysis/_eds/Eds/is_installed.html">is_installed</a></td>
+            <td><em>[Read only]</em> Indicates whether the EDS detector is installed on the system.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/analysis/_eds/Eds/acquire_spectrum.html">acquire_spectrum()</a></td>
+            <td>Scans the specified region and collects EDS spectrum data from it.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/analysis/_eds/Eds/get_composition.html">get_composition()</a></td>
+            <td>Performs quantification of chemical elements in the specified EDS spectrum.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/analysis/_eds/Eds/get_peak_id.html">get_peak_id()</a></td>
+            <td>Identifies the presence of chemical elements in the given EDS spectrum.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/analysis/_eds/Eds/get_spectrum.html">get_spectrum()</a></td>
+            <td>Returns the EDS spectrum collected since the last reset of the EDS spectrum buffer.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/analysis/_eds/Eds/reset_spectrum.html">reset_spectrum()</a></td>
+            <td>Clears the buffer containing EDS spectrum data.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    <p>Certain new systems, such as the <strong>Apreo ChemiSEM</strong> (xT 37.x), may feature a retractable EDS detector. Ensure that the EDS detector is properly inserted; otherwise, the EDS spectrum will be empty.</p>
+    <br>
+    <pre><code class="language-python">
+# Insert EDS detector
+insert_settings = DetectorInsertSettings(type=DetectorType.EDS, insert_position=EdsDetectorPositions.STANDARD_INSERTED)
+microscope.detector.insert(insert_settings)       
+    </code></pre>
+    <!--<h2>Examples</h2>-->
+    <h2>See also</h2>
+    <a href="../../../enumerations/EdsDetectorPositions/EdsDetectorPositions.html">EdsDetectorPositions</a><br>
+	<a href="../../_detector/Detector/insert.html">detector.insert()</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

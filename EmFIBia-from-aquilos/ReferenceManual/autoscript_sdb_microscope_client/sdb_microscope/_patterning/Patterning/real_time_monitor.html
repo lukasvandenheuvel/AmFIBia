@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>patterning.real_time_monitor</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/patterning.html">patterning</a>.<a class="header-path" href="../../../sdb_microscope/_patterning/Patterning/real_time_monitor.html">real_time_monitor</a></h1>
+    <p>Enables control and provides the status of the Real Time Monitor (RTM).</p>
+    <h2>Properties</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/patterning/_real_time_monitor/RealTimeMonitor/mode.html">mode</a></td>
+            <td>Gets or sets the resolution mode of Real Time Monitor. Maps to <a href="../../../enumerations/RtmMode/RtmMode.html">RtmMode</a> enumeration.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/patterning/_real_time_monitor/RealTimeMonitor/get_data.html">get_data()</a></td>
+            <td>Retrieves grey scale values of pattern points in a pattern or multiple patterns.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/patterning/_real_time_monitor/RealTimeMonitor/get_positions.html">get_positions()</a></td>
+            <td>Retrieves positions of all pattern points in a pattern or multiple patterns.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/patterning/_real_time_monitor/RealTimeMonitor/restart.html">restart()</a></td>
+            <td>Restarts the real time monitoring process.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/patterning/_real_time_monitor/RealTimeMonitor/start.html">start()</a></td>
+            <td>Starts the real time monitoring process.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/patterning/_real_time_monitor/RealTimeMonitor/stop.html">stop()</a></td>
+            <td>Stops the real time monitoring process.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <!--<h2>Remarks</h2>-->
+    
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        microscope.patterning.real_time_monitor.mode = RtmMode.HIGH_RESOLUTION
+        microscope.patterning.real_time_monitor.start()
+        
+        rtm_positions = []
+        
+        # Configure and start patterning here
+        # ...
+        
+        while microscope.patterning.state != PatterningState.IDLE:
+            rtm_data = microscope.patterning.real_time_monitor.get_data()
+            if len(rtm_positions) == 0:
+                rtm_positions = microscope.patterning.real_time_monitor.get_positions()
+        
+            if len(rtm_positions) &gt;  0 and len(rtm_data) &gt; 0:
+                # Process RTM positions and data
+                # ...
+        
+        microscope.patterning.real_time_monitor.stop()
+    </code></pre>
+    
+    <!--<h2>See also</h2>-->
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

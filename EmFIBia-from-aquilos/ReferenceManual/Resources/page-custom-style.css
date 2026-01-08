@@ -1,0 +1,62 @@
+﻿.disclaimer {
+    color: #E34444;
+}
+
+.red {
+    background-color: #EE3134;
+}
+
+.green {
+    background-color: #9BC53D;
+}
+
+table.small-table {
+    width: auto;
+}
+
+table.small-table tr {
+    line-height: 12px;
+}
+
+.spaced-list {
+}
+
+.spaced-list li {
+    margin-bottom: 7px;
+}
+
+.not-spaced-list {
+}
+
+.not-spaced-list li {
+    margin-bottom: 0px;
+}
+
+strong {
+    color:#606060
+}
+
+.spaced-unindented-list {
+    margin-left:0;
+    padding-left:4mm;
+}
+
+.spaced-unindented-list li {
+    margin-bottom: 7px;
+}
+
+.visibility-python {
+}
+
+.visibility-csharp {
+    display:none;
+}
+
+.visibility-cpp {
+    display:none;
+}
+
+.visibility-vendor {
+    display:none;
+}
+

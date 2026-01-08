@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>detector.get_info</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/detector.html">detector</a>.<a class="header-path" href="../../../sdb_microscope/_detector/Detector/get_info.html">get_info</a></h1>
+    <p>Provides details on the detector&#39;s physical properties and current state.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">get_info()
+get_info(detector_type)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>detector_type</td>
+            <td>str</td>
+            <td>The type of the detector.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td><a href="../../../structures/DetectorInfo/DetectorInfo.html">DetectorInfo</a></td>
+            <td>A DetectorInfo structure containing the detector&#39;s state and physical properties.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    
+    The state information returned is valid only at the time the <code>get_info()</code> function is called.
+    Accessing properties from the returned DetectorInfo structure later will provide the cached state,
+    not the current microscope state.
+    
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Find all retractable detectors installed on the microscope
+        installed_detectors = microscope.detector.type.all_values
+        retractable_detectors = [detector for detector in installed_detectors if microscope.detector.get_info(detector).is_retractable]
+    </code></pre>
+    
+    <!--<h2>See also</h2>-->
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

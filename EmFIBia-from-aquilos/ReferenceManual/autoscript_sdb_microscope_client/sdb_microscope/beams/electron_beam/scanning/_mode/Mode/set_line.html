@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>beams.electron_beam.scanning.mode.set_line</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../../../Resources/common.js"></script>
+    <script src="../../../../../../../Resources/page.js"></script>
+    <script src="../../../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../../../Resources/prism.js"></script>
+    <script src="../../../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../../../SdbMicroscopeClient/beams.html">beams</a>.<a class="header-path" href="../../../../../../sdb_microscope/_beams/Beams/electron_beam.html">electron_beam</a>.<a class="header-path" href="../../../../../../sdb_microscope/beams/_electron_beam/ElectronBeam/scanning.html">scanning</a>.<a class="header-path" href="../../../../../../sdb_microscope/beams/electron_beam/_scanning/Scanning/mode.html">mode</a>.<a class="header-path" href="../../../../../../sdb_microscope/beams/electron_beam/scanning/_mode/Mode/set_line.html">set_line</a></h1>
+    <p>Activates the line scanning mode.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">set_line()
+set_line(y)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>y</td>
+            <td>float</td>
+            <td>The position of the line in a view. Valid values are in the range [0, 1], where 0 represents top of the view and 1 represents bottom of the view.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    
+    <h2>Remarks</h2>
+    
+    <p>
+        In this scan mode, image acquisition is performed along the specified horizontal line.<br>
+        If parameter <code class="language-python">y</code> is provided, the function also sets position of the line in the active view.
+        If no parameter is passed, the last line position is used.
+    </p>
+    
+    
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Activate the line scan mode and set the line position to 0.7
+        microscope.beams.electron_beam.scanning.mode.set_line(0.7)
+        
+        # Activate the full frame scanning mode
+        microscope.beams.electron_beam.scanning.mode.set_full_frame()
+        
+        # Activate the line scan mode again; line position remains at 0.7
+        microscope.beams.electron_beam.scanning.mode.set_line()
+    </code></pre>
+    
+    <h2>See also</h2>
+    <a href="set_full_frame.html">beams.electron_beam.scanning.mode.set_full_frame()</a><br>
+    <a href="set_reduced_area.html">beams.electron_beam.scanning.mode.set_reduced_area()</a><br>
+    <a href="set_spot.html">beams.electron_beam.scanning.mode.set_spot()</a><br>
+    <a href="set_crossover.html">beams.electron_beam.scanning.mode.set_crossover()</a><br>
+    <a href="set_external.html">beams.electron_beam.scanning.mode.set_external()</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

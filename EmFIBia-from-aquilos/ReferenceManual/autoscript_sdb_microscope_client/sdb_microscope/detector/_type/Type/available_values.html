@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>detector.type.available_values</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/detector.html">detector</a>.<a class="header-path" href="../../../../sdb_microscope/_detector/Detector/type.html">type</a>.<a class="header-path" href="../../../../sdb_microscope/detector/_type/Type/available_values.html">available_values</a></h1>
+    <p>Retrieves all detector types compatible with the active imaging device.</p>
+    <h2>Data type</h2>
+    <em>[Read only]</em> List[str]
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            The returned list includes detectors that are physically present on the microscope and compatible
+            with the active imaging device. Some may not be selectable at certain times due to the state
+            of the microscope. AutoScript provides a way to determine if a detector can be selected 
+            (i.e., if it is enabled) using the <a href="../../../_detector/Detector/get_info.html">detector.get_info()</a> function.
+        </li>
+        <li>
+            To get a list of all installed detectors, regardless of their compatibility with the active
+            imaging device, call <a href="all_values.html">detector.type.all_values</a>.                
+        </li>
+    </ul>
+
+    <!--<h2>Examples</h2>-->
+    
+    <h2>See also</h2>
+    <a href="all_values.html">detector.type.all_values</a><br>
+    <a href="value.html">detector.type.value</a><br>
+    <a href="../../../_detector/Detector/get_info.html">detector.get_info()</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

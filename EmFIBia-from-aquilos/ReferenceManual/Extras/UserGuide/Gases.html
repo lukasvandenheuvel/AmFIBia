@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+
+<h1><a class="header-path" href="UserGuide.html">User guide: </a> <a class="header-path" href="#">Gases</a></h1>
+
+<p>This chapter shows how to control gas injection systems including <em>GIS</em> and <em>MultiChem</em>.</p>
+
+<p>
+    Before proceeding with the code snippets below, initialize AutoScript with the following code.
+    Set the server address according to your environment.
+</p>
+
+<pre><code class="language-python">
+    from autoscript_sdb_microscope_client import SdbMicroscopeClient
+    from autoscript_sdb_microscope_client.enumerations import *
+    from autoscript_sdb_microscope_client.structures import *
+    
+    microscope = SdbMicroscopeClient()
+    microscope.connect("localhost")
+</code></pre>
+
+<p>Get a list of available GIS (gas injection system) ports and print it:</p>
+
+<pre><code class="language-python">
+    ports = microscope.gas.list_all_gis_ports()
+    print(ports)
+</code></pre>
+
+<p>Insert and retract the platinum deposition GIS needle:</p>
+
+<pre><code class="language-python">
+    # First, link stage Z stage axis to free working distance to enable needle insertion.
+    # It is assumed that the electron beam is on and the active view is unpaused.
+    microscope.specimen.stage.link()
+    
+    platinum_gis = microscope.gas.get_gis_port("Pt dep")
+    platinum_gis.insert()
+    platinum_gis.retract()
+</code></pre>
+
+<p>Insert and retract MultiChem needle:</p>
+
+<pre><code class="language-python">
+    # First, link stage Z coordinate to working distance to enable needle insertion.
+    # It is assumed that the electron beam is on, stage is at eucentric height and the active view is unpaused.
+    microscope.specimen.stage.link()
+    
+    multichem = microscope.gas.get_multichem()
+    multichem.insert()
+    multichem.retract()
+</code></pre>
+
+</body>
+</html>

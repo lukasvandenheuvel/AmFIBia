@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MoveSettings</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../structures/MoveSettings/MoveSettings.html">MoveSettings</a></h1>
+    <p>Contains additional options for a stage move.</p>
+    <h2>Items</h2>
+    <table>
+        <tr>
+            <td><a href="../../structures/MoveSettings/rotate_compucentric.html">rotate_compucentric</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>The option specifies if compucentric rotation should be used in the move.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/MoveSettings/link_z_y.html">link_z_y</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>The option specifies if z-y compensation should be used in the move.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/MoveSettings/link_z_b.html">link_z_b</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>The option specifies if z-beta compensation should be used in the move. Supported for Compustage movements only.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/MoveSettings/z_cap_move.html">z_cap_move</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>The option specifies if the Cap Probe sensor should be used in the move to adjust the Z axis.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/MoveSettings/tilt_compucentric.html">tilt_compucentric</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>The option specifies if compucentric tilt should be used in the move.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/MoveSettings/use_coarse_only.html">use_coarse_only</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>When set to True, the stage is moved only with the coarse motors. Applicable only on systems equipped with the piezo stage.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/MoveSettings/use_fine_only.html">use_fine_only</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>When set to True, the stage is moved only with the fine motors. Applicable only on systems equipped with the piezo stage.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    
+    <p>
+        The structure is used with the functions 
+        <a href="../../sdb_microscope/specimen/_stage/Stage/absolute_move.html">specimen.stage.absolute_move()</a>, 
+        <a href="../../sdb_microscope/specimen/_stage/Stage/relative_move.html">specimen.stage.relative_move()</a> and
+        their equivalents on the compustage object - 
+        <a href="../../sdb_microscope/specimen/_compustage/Compustage/absolute_move.html">specimen.compustage.absolute_move()</a> and
+        <a href="../../sdb_microscope/specimen/_compustage/Compustage/relative_move.html">specimen.compustage.relative_move()</a>.
+        
+        <br><br>
+
+        <strong>For stage moves:</strong> 
+        If any of the move settings items are not initialized, they default to the values set by the function
+        <a href="../../sdb_microscope/specimen/_stage/Stage/set_default_move_settings.html">specimen.stage.set_default_move_settings()</a>
+        or to <strong>False</strong> if the function was not yet used to set the default values.
+    </p>
+    
+    <p>
+        <strong>For compustage moves:</strong> If any of the move settings items are not initialized, they default to <strong>False</strong>.
+    </p>
+    
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

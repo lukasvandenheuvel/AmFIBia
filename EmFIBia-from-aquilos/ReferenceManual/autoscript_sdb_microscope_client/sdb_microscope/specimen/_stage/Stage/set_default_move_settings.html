@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>specimen.stage.set_default_move_settings</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/specimen.html">specimen</a>.<a class="header-path" href="../../../../sdb_microscope/_specimen/Specimen/stage.html">stage</a>.<a class="header-path" href="../../../../sdb_microscope/specimen/_stage/Stage/set_default_move_settings.html">set_default_move_settings</a></h1>
+    <p>Sets the default settings for stage moves. Subsequent <a href="../../../../sdb_microscope/specimen/_stage/Stage/absolute_move.html">absolute_move()</a> and <a href="../../../../sdb_microscope/specimen/_stage/Stage/relative_move.html">relative_move()</a> calls where <a href="../../../../structures/MoveSettings/MoveSettings.html">MoveSettings</a> are not specified use these settings.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">set_default_move_settings(settings)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>settings</td>
+            <td><a href="../../../../structures/MoveSettings/MoveSettings.html">MoveSettings</a></td>
+            <td>Move settings to be saved as new defaults.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            The function configures the behavior of <a href="absolute_move.html">specimen.stage.absolute_move()</a> and 
+            <a href="relative_move.html">specimen.stage.relative_move()</a> calls in case the <code>settings</code>
+            parameter was not explicitly specified or some of the
+            <a href="../../../../structures/MoveSettings/MoveSettings.html">MoveSettings</a> items were not initialized
+            in the passed parameter.
+        </li>
+        
+        <!-- Language Python - START -->
+        <li>
+            The new default values are saved only for the currently executed script. Therefore, setting the defaults
+            does not affect the behavior of other scripts.
+        </li>
+        <!-- Language Python - END -->
+        
+        <li class="visibility-vendor">
+            The new default values are saved only for the calling client.
+            Thus, setting the defaults does not affect the behavior of other running API clients.
+        </li>
+        
+        <li>
+            Before this function is called, all default move settings are initialized with <strong>False</strong>.
+        </li>
+    </ul>
+
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Configure the default stage move strategy to rotate compucentrically
+        microscope.specimen.stage.set_default_move_settings(MoveSettings(rotate_compucentric=True))
+        
+        # Rotate compucentrically
+        microscope.specimen.stage.absolute_move(StagePosition(r=0.2))
+        
+        # Rotate compucentrically
+        microscope.specimen.stage.absolute_move(StagePosition(r=0.2), MoveSettings())
+        
+        # Rotate compucentrically
+        microscope.specimen.stage.absolute_move(StagePosition(r=0.2), MoveSettings(rotate_compucentric=None))
+
+        # Rotate compucentrically
+        microscope.specimen.stage.absolute_move(StagePosition(r=0.2), MoveSettings(tilt_compucentric=True))
+       
+        # Rotate normally
+        microscope.specimen.stage.absolute_move(StagePosition(r=0.2), MoveSettings(rotate_compucentric=False))
+    </code></pre>
+
+    
+    <h2>See also</h2>
+    
+    <a href="../../../../structures/MoveSettings/MoveSettings.html">MoveSettings</a><br>
+    <a href="absolute_move.html">specimen.stage.absolute_move()</a><br>
+    <a href="relative_move.html">specimen.stage.relative_move()</a><br>
+    <a href="set_default_coordinate_system.html">specimen.stage.set_default_coordinate_system()</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>state.sleep</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/state.html">state</a>.<a class="header-path" href="../../../sdb_microscope/_state/State/sleep.html">sleep</a></h1>
+    <p>Sets the microscope to sleep mode.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">sleep()</code></pre>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+
+    <ul class="spaced-list">
+        <li>
+            Both electron and ion beams are switched off.
+        </li>
+        <li>
+            Electron emission remains on.
+        </li>
+        <li>
+            Ion emission is switched off completely.
+        </li>
+        <li>
+            Plasma source remains on.
+        </li>
+        <li>
+            GIS heaters are switched off.
+        </li>
+    </ul>
+
+    <p>
+        <strong>Note:</strong> Switching off the ion emission frequently may negatively affect the ion source lifetime.
+    </p>
+
+    <!--<h2>Examples</h2>-->
+
+    <h2>See also</h2>
+
+    <a href="wake.html">state.wake()</a>
+
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

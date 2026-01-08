@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>specimen.autoloader.get_slots</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/specimen.html">specimen</a>.<a class="header-path" href="../../../../sdb_microscope/_specimen/Specimen/autoloader.html">autoloader</a>.<a class="header-path" href="../../../../sdb_microscope/specimen/_autoloader/Autoloader/get_slots.html">get_slots</a></h1>
+    <p>Returns a list of slots that are available on the cassette.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">get_slots(run_inventory)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>run_inventory</td>
+            <td>bool</td>
+            <td>If set to True, AutoScript will perform an inventory on the cassette.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td>List[<a href="../../../../_dynamic_object_proxies/AutoloaderSlot/AutoloaderSlot.html">AutoloaderSlot</a>]</td>
+            <td>The list of slots on the Autoloader cassette.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    
+    The inventory procedure systematically checks each slot to determine whether it is empty or occupied. One execution can take a couple of minutes.
+    <br>
+    <br>
+    Retrieving slots without running the inventory procedure can be useful when the inventory procedure has already been completed in the main microscope UI. 
+    This allows you to obtain the slot information without performing the inventory again, resulting in time savings.
+    
+    
+    <h2>Examples</h2>
+
+    <pre><code class="language-python">
+    # Retrieve slots without running the inventory procedure
+    slots = microscope.specimen.autoloader.get_slots(False)
+
+    # Run the inventory procedure and retrieve slots
+    slots = microscope.specimen.autoloader.get_slots(True)
+    </code></pre>
+    
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

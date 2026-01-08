@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EdsStream.run_phase_analysis</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_dynamic_object_proxies/EdsStream/EdsStream.html">EdsStream</a>.<a class="header-path" href="../../_dynamic_object_proxies/EdsStream/run_phase_analysis.html">run_phase_analysis</a></h1>
+    <p>Performs an analysis of the EDS stream to identify distinct chemical phases within the sample. Also prepares the phase mapping engine, allowing it to generate phase maps upon subsequent calls to <a href="../../_dynamic_object_proxies/EdsStream/get_phase_map.html">get_phase_map()</a>. The stream must be closed before calling this function.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">run_phase_analysis()
+run_phase_analysis(settings)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>settings</td>
+            <td><a href="../../_structures_eds/EdsPhaseAnalysisSettings/EdsPhaseAnalysisSettings.html">EdsPhaseAnalysisSettings</a></td>
+            <td>Parameters of the phases analysis, primarily specifying properties of the mapping engine.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_eds/EdsPhaseAnalysisResult/EdsPhaseAnalysisResult.html">EdsPhaseAnalysisResult</a></td>
+            <td>The analysis result, including the number of identified phases and statistical data for each phase.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    
+    
+    <ul class="spaced-list">
+    
+        <li>
+            If the settings parameter doesn't specify otherwise, the function will configure the phase mapping engine
+            with default segmentation resolution and filter, namely
+            <a href="../../enumerations/EdsSegmentationResolution/DYNAMIC_OBJECT_BASED.html">dynamic object-based segmentation</a>,
+            <a href="../../enumerations/EdsSegmentationFilterType/MEAN.html">mean filter</a> and
+            <a href="../../enumerations/EdsSegmentationFilterMask/AUTO.html">auto strength</a>.
+        </li>
+        
+        <li>
+            If you don't provide the <a href="../../_structures_eds/EdsPhaseAnalysisSettings/component_count.html">component_count</a> parameter in the settings to advise the analysis on the number of components
+            to search for in the stream, the count will be determined automatically and included in the analysis result object.
+        </li>
+        
+        <li>
+            Running the analysis is a mandatory step before calling the
+            <a href="get_phase_map.html">get_phase_map()</a> or <a href="get_phase_spectrum.html">get_phase_spectrum()</a> functions.
+        </li>
+
+        <li>
+            Only one phase mapping engine can be initialized at a time.
+            If you need to generate maps with different engine settings,
+            execute the analyses successively. For instance, first, perform the analysis with the mean filter and generate
+            the initial set of maps, then repeat the process with the median filter to produce a second set of maps.
+        </li>
+    </ul>
+
+    <h2>Examples</h2>
+    
+    See examples in <a href="get_phase_map.html">EdsStream.get_phase_map()</a>.
+    
+    <h2>See also</h2>
+    <a href="run_elemental_analysis.html">EdsStream.run_elemental_analysis()</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

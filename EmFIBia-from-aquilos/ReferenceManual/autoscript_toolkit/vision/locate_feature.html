@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+<!-- Custom part - START -->
+    <h1><a class="header-path" href="#">locate_feature</a></h1>
+    
+    <p>
+        Finds the position of the specified template image within another image.
+    </p>
+    
+    <h2>Syntax</h2>
+    
+    <pre><code class="language-python">
+        locate_feature(searched_image, template_image, template_matcher=None, original_feature_center=None)
+    </code></pre>
+    
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>searched_image</td>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+            <td>The image in which the feature is to be located.</td>
+        </tr>
+        <tr>
+            <td>template_image</td>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+            <td>The template of the feature to be located.</td>
+        </tr>
+        <tr>
+            <td>template_matcher</td>
+            <td><a href="../template_matchers/TemplateMatcher.html">TemplateMatcher</a></td>
+            <td>
+                An instance of the TemplateMatcher class, to be used for matching the template against the searched image.
+                If not provided, the default template matcher
+                <a href="../template_matchers/OpencvTemplateMatcher.html">OpencvTemplateMatcher</a> is used.
+            </td>
+        </tr>
+        <tr>
+            <td>original_feature_center</td>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>
+                The center of the original feature location in pixels.
+                If provided, the resulting <a href="FeatureLocation.html">FeatureLocation</a>
+                structure will contain the feature shift data. When not provided, only the current feature position is returned.
+            </td>
+        </tr>
+    </table>
+    
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td><a href="FeatureLocation.html">FeatureLocation</a></td>
+            <td>A data class containing details of the feature location.</td>
+        </tr>
+    </table>
+    
+    <h2>Remarks</h2>
+    
+    When using the <a href="../template_matchers/OpencvTemplateMatcher.html">OpenCV-based</a>
+    template matching algorithm, the result object does not include a confidence factor; it will be set to <code>None</code>.
+    When configured with <a href="../template_matchers/HogMatcher.html">HOG </a> or 
+    <a href="../template_matchers/CognexMatcher.html">Cognex</a> algorithms, the confidence level is provided.
+      
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        import autoscript_toolkit.vision as vision_toolkit
+        from autoscript_toolkit.template_matchers import HogMatcher
+        
+        # Take a full-frame image
+        settings = GrabFrameSettings(resolution="1536x1024", dwell_time=1e-6)
+        searched_image = microscope.imaging.grab_frame(settings)
+        
+        # Take a reduced-area image to serve as a template
+        settings.reduced_area = Rectangle(0.05, 0.05, 0.10, 0.10)
+        template_image = microscope.imaging.grab_frame(settings)
+        
+        # Locate the template in the full-frame image using the OpenCV matcher
+        feature_location = vision_toolkit.locate_feature(searched_image, template_image)
+        feature_location.print_all_information()
+        
+        # Locate the template again, now with the histogram-of-gradients matcher
+        hog_matcher = HogMatcher(microscope)
+        feature_location = vision_toolkit.locate_feature(searched_image, template_image, hog_matcher)
+        feature_location.print_all_information()
+    </code></pre>
+
+    
+    <h2>See also</h2>
+    <a href="../template_matchers/Index.html">Template matchers</a><br>
+    <a href="../user_interface/plot_match.html">plot_match()</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

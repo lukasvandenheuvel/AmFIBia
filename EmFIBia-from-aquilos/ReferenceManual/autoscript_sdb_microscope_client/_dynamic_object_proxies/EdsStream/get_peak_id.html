@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EdsStream.get_peak_id</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_dynamic_object_proxies/EdsStream/EdsStream.html">EdsStream</a>.<a class="header-path" href="../../_dynamic_object_proxies/EdsStream/get_peak_id.html">get_peak_id</a></h1>
+    <p>Identifies the presence of chemical elements in the EDS stream. The stream must be closed before calling this function.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">get_peak_id()
+get_peak_id(excluded_elements)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>excluded_elements</td>
+            <td>List[<a href="../../_structures_eds/ChemicalElement/ChemicalElement.html">ChemicalElement</a>]</td>
+            <td>The list of chemical elements to be excluded from peak identification.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td>List[<a href="../../_structures_eds/ChemicalElement/ChemicalElement.html">ChemicalElement</a>]</td>
+            <td>The list of chemical elements found in this EDS stream.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            Calling <code>get_peak_id()</code> on an EDS stream is analogous to 
+            <a href="get_scene_spectrum.html">retrieving the scene spectrum</a> 
+            from the stream and then calling <a href="../../sdb_microscope/analysis/_eds/Eds/get_peak_id.html">analysis.eds.get_peak_id()</a> on that spectrum.
+        </li>
+    
+        <li>
+            Some chemical elements are not supported by the AutoScript EDS quantification engine.
+            These elements cannot be marked as excluded via the excluded_elements parameter:
+            <em>Helium, Neon, Krypton, Xenon, Radon, Hydrogen, Lithium, Polonium, Astatine, Actinium, Protactinium, Curium, Berkelium, Californium, Einsteinium, Fermium, Mendelevium, Nobelium, Lawrencium, Francium, Radium, Rutherfordium, Dubnium, Seaborgium, Bohrium, Hassium, Meitnerium, Darmstadtium, Roentgenium, Copernicium, Nihonium, Flerovium, Moscovium, Livermorium, Tennessine, Oganesson</em>.
+        </li>
+    </ul>
+    
+    <!--<h2>Examples</h2>-->
+    
+    <h2>See also</h2>
+    <a href="../../sdb_microscope/analysis/_eds/Eds/get_peak_id.html">analysis.eds.get_peak_id()</a><br>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+
+<h1><a class="header-path" href="UserGuide.html">User guide: </a> <a class="header-path" href="#">Large image acquisition</a></h1>
+
+<p>
+This chapter shows you how to acquire images with non-standard resolutions, that is resolutions not listed in the  
+<a href="../../autoscript_sdb_microscope_client/enumerations/ScanningResolution/ScanningResolution.html">ScanningResolution</a> enumeration.
+This method of image acquisition supports any resolution up to 65536x65536. Please read the first paragraph 
+in <a href="Imaging.html">User guide: Imaging</a> to also learn about disadvantages of large image acquisition technique.
+
+<p>
+The functionality is accessible via two functions: 
+<a href="../../autoscript_sdb_microscope_client/sdb_microscope/_imaging/Imaging/grab_frame.html">imaging.grab_frame()</a>
+and <a href="../../autoscript_sdb_microscope_client/sdb_microscope/_imaging/Imaging/grab_frame_to_disk.html">imaging.grab_frame_to_disk().</a>
+<br>
+
+For resolutions above 6144x6144 the function <a href="../../autoscript_sdb_microscope_client/sdb_microscope/_imaging/Imaging/grab_frame.html">imaging.grab_frame()</a>,
+which treats images as in-memory objects, is no longer available due to data size.<br><br>
+
+Acquisition with the function
+<a href="../../autoscript_sdb_microscope_client/sdb_microscope/_imaging/Imaging/grab_frame_to_disk.html">imaging.grab_frame_to_disk()</a>
+
+results in a <strong>raw</strong> or <strong>tiff</strong> file on disk.
+The format is determined by the <code class="language-python">file_format</code> parameter. The filename extension has no influence on the file format.
+The function returns a down-scaled ("preview") image instead of the full-scale image.
+Resolution of the preview image can be specified optionally. If it is not specified, it will be calculated automatically.
+</p>
+
+<p>
+    Before proceeding with the code snippets below, initialize AutoScript client with the following code, and specify a correct IP address of the AutoScript server.
+</p>
+
+<pre><code class="language-python">
+    from autoscript_sdb_microscope_client import SdbMicroscopeClient
+    from autoscript_sdb_microscope_client.enumerations import *
+    from autoscript_sdb_microscope_client.structures import *
+    
+    microscope = SdbMicroscopeClient()
+    microscope.connect("localhost")
+</code></pre>
+
+<p>
+    Set up imaging environment. The 1st (upper left) view will become active and will be configured with the electron beam imaging device.
+</p>
+
+<pre><code class="language-python">
+    microscope.imaging.set_active_view(1)
+    microscope.imaging.set_active_device(ImagingDevice.ELECTRON_BEAM)
+</code></pre>
+
+<p>Acquire an 8k image and save it to disk in the RAW format:</p>
+
+<pre><code class="language-python">
+    settings = GrabFrameSettings("8192x8192")
+    microscope.imaging.grab_frame_to_disk("c:\\image.raw", ImageFileFormat.RAW, settings)
+</code></pre>
+
+<p>Acquire an image with resolution 20000x20000, save it to disk in the RAW format and display its preview in a popup window:</p>
+
+<pre><code class="language-python">
+    from matplotlib import pyplot as plot
+    
+    settings = GrabFrameSettings("20000x20000", preview_resolution="1000x1000")
+    preview_image = microscope.imaging.grab_frame_to_disk("c:\\image.raw", ImageFileFormat.RAW, settings)
+    
+    plot.imshow(preview_image.data, cmap='gray')
+    plot.show()
+</code></pre>
+
+<p>Acquire a 16k image and save it to disk in the TIFF format, including metadata:</p>
+
+<pre><code class="language-python">
+    settings = GrabFrameSettings("16384x16384")
+    microscope.imaging.grab_frame_to_disk("c:\\image.tif", ImageFileFormat.TIFF, settings)
+</code></pre>
+    
+<p>Acquire 16k image with 16-bit image depth and line integration of 4:</p>
+
+<pre><code class="language-python">
+    settings = GrabFrameSettings("16384x16384", bit_depth=16, line_integration=4)
+    microscope.imaging.grab_frame_to_disk("c:\\image.tif", ImageFileFormat.TIFF, settings)
+</code></pre>
+
+<p>Acquire an image with a non-standard resolution of 2000x1000 to memory:</p>
+
+<pre><code class="language-python">
+    settings = GrabFrameSettings("2000x1000")
+    image = microscope.imaging.grab_frame(settings)
+    
+    print(image.width, image.height)
+</code></pre>
+
+</body>
+</html>

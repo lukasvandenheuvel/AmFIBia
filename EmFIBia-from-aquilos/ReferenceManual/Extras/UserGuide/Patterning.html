@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+
+<h1><a class="header-path" href="UserGuide.html">User guide: </a> <a class="header-path" href="#">Patterning</a></h1>
+
+<p>
+    Patterning is the process of moving a beam over a defined pattern along the specimen surface with the purpose of milling,
+    deposition, or etching a pattern onto the sample surface.
+    With AutoScript you can create pattern shapes and control the patterning process.
+    This chapter shows how to prepare and run patterning jobs.
+</p>
+
+<p>
+    Before proceeding with the code snippets below, initialize AutoScript with the following code.
+    Set the server address according to your environment.
+</p>
+
+<pre><code class="language-python">
+    from autoscript_sdb_microscope_client import SdbMicroscopeClient
+    from autoscript_sdb_microscope_client.enumerations import *
+    from autoscript_sdb_microscope_client.structures import *
+
+    microscope = SdbMicroscopeClient()
+    microscope.connect("localhost")
+</code></pre>
+
+<p>Set ions as the default beam type for newly created patterns:</p>
+
+<pre><code class="language-python">
+    microscope.patterning.set_default_beam_type(BeamType.ION)
+</code></pre>
+
+<p>Set the default application file for newly created patterns:</p>
+
+<pre><code class="language-python">
+    microscope.patterning.set_default_application_file("Si")
+</code></pre>
+
+<p>Create a rectangular pattern of size 1x1 μm and depth 1 μm in the center of the active view:</p>
+
+<pre><code class="language-python">
+    pattern = microscope.patterning.create_rectangle(0, 0, 1e-6, 1e-6, 1e-6)
+</code></pre>
+
+<p>Adjust the size of the previously created pattern to 2x2 μm:</p>
+
+<pre><code class="language-python">
+    pattern.width = 2e-6
+    pattern.height = 2e-6
+</code></pre>
+
+<p>Set the gas type for the previously created pattern to <em>platinum deposition</em>:</p>
+
+<pre><code class="language-python">
+    pattern.gas_type = "Pt dep"
+</code></pre>
+
+<p>Set the scan direction to <em>dynamic in all directions</em>:</p>
+
+<pre><code class="language-python">
+    pattern.scan_direction = PatternScanDirection.DYNAMIC_ALL_DIRECTIONS
+</code></pre>
+
+<p>
+    Other pattern types can be created and modified in a similar manner to rectangular patterns.<br>
+    Supported patterns include: <em>rectangle</em>, <em>stream, bitmap, circle</em>, <em>line</em>, <em>regular cross-section</em> and <em>cleaning cross-section</em>.<br>
+</p>
+
+<p>Create a stream pattern defined by a numpy array:</p>
+
+<pre><code class="language-python">
+    import numpy
+    
+    spd = StreamPatternDefinition()
+
+    # Initialize an array to hold 15 patterning points, each of them being defined by 4 values
+    spd.points = numpy.zeros(shape=(15, 4), dtype=object)
+
+    # Define patterning points one by one
+    dwell_time = 1e-6
+    flags = 0
+    i = 0
+    for x in [22768, 27768, 32768, 37768, 42768]:
+        for y in [27768, 32768, 37768]:
+            spd.points[i] = [x, y, dwell_time, flags]  # Initialize all 4 necessary values for the each point
+            i += 1
+
+    # Set up number of passes for the whole pattern
+    spd.repeat_count = 1000
+
+    pattern = microscope.patterning.create_stream(0, 0, spd)
+</code></pre>
+
+<p>Create a stream pattern defined by a stream file:</p>
+
+<pre><code class="language-python">
+    file_path = "c:\\ProgramData\\Thermo Scientific AutoScript\\UserGuide\\Resources\\grid_pattern_definition.str"
+    spd = StreamPatternDefinition.load(file_path)
+
+    pattern = microscope.patterning.create_stream(0, 0, spd)
+</code></pre>
+
+<p>Create a bitmap pattern from a numpy array:</p>
+
+<pre><code class="language-python">
+    import numpy
+    
+    # Prepare an empty array to hold pattern points
+    size = 10
+    bpd = BitmapPatternDefinition()
+    bpd.points = numpy.zeros(shape=(size, size, 2), dtype=object)
+
+    # Fill in the array
+    flags = 0
+    i = 0
+    for y in range(size):
+        for x in range(size):
+            bpd.points[y, x] = [i / (size * size), flags]
+            i += 1
+
+    pattern = microscope.patterning.create_bitmap(0, 0, 3e-6, 3e-6, 1e-6, bpd)
+</code></pre>
+
+<p>Create a bitmap pattern from a BMP file:</p>
+
+<pre><code class="language-python">
+    file_path = "c:\\ProgramData\\Thermo Scientific AutoScript\\UserGuide\\Resources\\Puzzle.bmp"
+    bpd = BitmapPatternDefinition.load(file_path)
+
+    pattern = microscope.patterning.create_bitmap(0, 0, 3e-6, 3e-6, 1e-6, bpd)
+</code></pre>
+
+<p>Delete all patterns in the active view:</p>
+
+<pre><code class="language-python">
+    microscope.patterning.clear_patterns()
+</code></pre>
+
+<p>Prepare conditions for a new patterning job using the ion beam in view 2:</p>
+
+<pre><code class="language-python">
+    # Turn beam on
+    microscope.beams.ion_beam.turn_on()
+
+    # Switch to view 2 and ion beam imaging
+    microscope.imaging.set_active_view(2)
+    microscope.imaging.set_active_device(ImagingDevice.ION_BEAM)
+
+    # Clear all patterns in the active view
+    microscope.patterning.clear_patterns()
+
+    # Adjust field width
+    microscope.beams.ion_beam.horizontal_field_width.value = 20e-6
+
+    # Create one rectangle pattern
+    microscope.patterning.set_default_beam_type(BeamType.ION)
+    microscope.patterning.set_default_application_file("Si")
+    pattern = microscope.patterning.create_rectangle(0, 0, 5e-6, 5e-6, 1e-6)
+</code></pre>
+
+<p>Start and control a patterning job:</p>
+
+<pre><code class="language-python">
+    import time
+
+    print("Starting patterning...")
+    microscope.patterning.start()
+    time.sleep(2)
+    print("Pausing patterning...")
+    microscope.patterning.pause()
+    time.sleep(2)
+    print("Resuming patterning...")
+    microscope.patterning.resume()
+    time.sleep(2)
+    print("Stopping patterning...")
+    microscope.patterning.stop()
+    print("Done.")
+</code></pre>
+
+<p>Run a patterning job and wait until it ends:</p>
+
+<pre><code class="language-python">
+    microscope.patterning.run()
+</code></pre>
+
+<p>Start a patterning job and process Real Time Monitor (RTM) data during patterning:</p>
+
+<pre><code class="language-python">
+    from matplotlib import pyplot as plot
+    from IPython.display import clear_output
+    import numpy
+
+    # Define a helper function to convert RTM data to an image
+    def get_images_from_rtm_data(rtm_data, rtm_positions):
+        result = []
+
+        for pattern in rtm_positions:
+            try:
+                # Find pattern in data list for the pattern in position list
+                data_set = next(x for x in rtm_data if x.pattern_id == pattern.pattern_id)
+            except Exception:
+                continue
+
+            # Prepare image for drawing
+            x_min = min(pattern.positions, key=lambda p: p[0])[0]
+            x_max = max(pattern.positions, key=lambda p: p[0])[0]
+            y_min = min(pattern.positions, key=lambda p: p[1])[1]
+            y_max = max(pattern.positions, key=lambda p: p[1])[1]
+
+            arr = numpy.full((y_max - y_min + 1, x_max - x_min + 1), -1, dtype=int)
+            for i in range(1, len(pattern.positions)):
+                arr[pattern.positions[i][1] - y_min, pattern.positions[i][0] - x_min] = data_set.values[i]
+
+            # Take only lines and rows, where at least one pixel is valid
+            arr = arr[numpy.any(arr &gt; -1, axis=1), :]
+            arr = arr[:, numpy.any(arr &gt; -1, axis=0)]
+            result.append(arr)
+
+        return result
+
+    position_settings = GetRtmPositionSettings(None, RtmCoordinateSystem.IMAGE_PIXELS)
+
+    print("Setting RTM mode to low resolution mode...")
+    microscope.patterning.real_time_monitor.mode = RtmMode.LOW_RESOLUTION
+
+    print("Starting RTM acquisition...")
+    microscope.patterning.real_time_monitor.restart()
+
+    print("Starting patterning...")
+    microscope.patterning.start()
+
+    rtm_positions = []
+    try:
+        while microscope.patterning.state != PatterningState.IDLE:
+
+            # Read pattern point intensities
+            rtm_data = microscope.patterning.real_time_monitor.get_data()
+
+            if len(rtm_positions) == 0:
+                # Read pattern point positions only once
+                rtm_positions = microscope.patterning.real_time_monitor.get_positions(position_settings)
+
+            # If both positions and intensities are present, process them
+            if len(rtm_positions) &gt; 0 and len(rtm_data) &gt; 0:
+                images = get_images_from_rtm_data(rtm_data, rtm_positions)
+                for image in images:
+                    # Plot the image
+                    clear_output(wait=True)
+                    plot.imshow(image, cmap='gray')
+                    plot.show()
+    finally:
+        microscope.patterning.stop()
+        microscope.patterning.real_time_monitor.stop()
+</code></pre>
+
+</body>
+</html>

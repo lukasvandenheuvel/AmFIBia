@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+<!-- Custom part - START -->
+    <h1><a class="header-path" href="#">blend_images</a></h1>
+    
+    <p>
+        Combines two images together, optionally resizing them to a specified target size.
+        This function is designed to merge a higher-resolution SEM image with a lower-resolution color map image,
+        which is a typical use case in EDS mapping scenarios.
+    </p>
+    
+    <h2>Syntax</h2>
+    
+    <pre><code class="language-python">
+        blend_images(first_image, second_image, target_width=-1, target_height=-1, blend_ratio=0.5, method="Quant")
+    </code></pre>
+    
+    <h2>Parameters</h2>
+    
+    <table>
+        <tr>
+            <td>first_image</td>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+            <td>The first image to be merged. In the EDS mapping scenario, this is typically the SEM image,
+             which usually has a higher resolution compared to the second (map) image.</td>
+        </tr>
+        <tr>
+            <td>second_image</td>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+            <td>The image to be blended with the first image. In the EDS mapping scenario,
+                this is typically the elemental or phase map image, which usually has a lower resolution compared to the SEM image.
+             </td>
+        </tr>
+        <tr>
+            <td>target_width</td>
+            <td>int</td>
+            <td>The desired width of the blended image, or -1 if the width of the larger of the two images should be used.</td>
+        </tr>
+        <tr>
+            <td>target_height</td>
+            <td>int</td>
+            <td>The desired height of the blended image, or -1 if the height of the larger of the two images should be used.</td>
+        </tr>
+        <tr>
+            <td>blend_ratio</td>
+            <td>float</td>
+            <td>Controls the influence of each image in the final composition.
+                A blend ratio of 0 means that only the first image is visible, while a blend ratio of 1 means that only the
+                second image is visible. A blend ratio of 0.5 results in an equal mix of both images.
+            </td>
+        </tr>
+        <tr>
+            <td>method</td>
+            <td>str</td>
+            <td>Specifies the type of blending algorithm to be used, either "Quant" or "GrossCount".</td>
+        </tr>
+    </table>
+    
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+            <td>The combined image in 24-bit RGB format.</td>
+        </tr>
+    </table>
+
+    
+    <h2>Remarks</h2>
+
+    <ul class="spaced-list">
+        <li>
+            Since the processing algorithm is located on the AutoScript server,
+            the function needs to transfer data to and from the server in the background using the microscope object.<br>
+            Before invoking this function, ensure that the vision toolkit is connected to the microscope by calling the <a href="connect.html">connect()</a> function.
+        </li>
+    
+        <li>
+            In the current version of AutoScript, the blending algorithm has the following limitations:
+            <ul class="not-spaced-list">
+                <li>
+                    The first (SEM) image must be in <strong>8-bit grayscale</strong> format.
+                </li>
+                <li>
+                    The second (map) image must be in <strong>24-bit RGB</strong> format.
+                </li>
+                <li>
+                    The maximum resolution of the combined image is <strong>6144x4096</strong> pixels.
+                </li>
+            </ul>
+        </li>
+        
+        <li>
+            The "Quant" blending algorithm is optimized for merging EDS maps generated by the 
+            <a href="../../autoscript_sdb_microscope_client/enumerations/EdsMappingEngineType/QUANT.html">Quant mapping engine</a>,
+            while the "GrossCount" method is more suitable for maps generated by the
+            <a href="../../autoscript_sdb_microscope_client/enumerations/EdsMappingEngineType/GROSS_COUNT.html">GrossCount engine</a>.
+            To avoid typos, you can utilize the
+            <a href="../../autoscript_sdb_microscope_client/enumerations/EdsMappingEngineType/EdsMappingEngineType.html">EdsMappingEngineType</a>
+            enumeration when specifying the blending method.
+        </li>
+    </ul>
+
+     
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        import autoscript_toolkit.vision as vision_toolkit
+        
+        # Drive SEM scanning to acquire relevant EDS data
+        # ...
+        
+        # Get EDS stream and close it to enable processing
+        eds_stream = microscope.analysis.eds.mapping.get_stream()
+        eds_stream.close()
+        
+        # Create a composite elemental map from the stream
+        result = eds_stream.run_elemental_analysis()
+        map_image = eds_stream.get_elemental_map(result.elements)
+        
+        # Take a SEM image
+        sem_image = microscope.imaging.grab_frame(GrabFrameSettings(bit_depth=8))
+        
+        # Connect vision toolkit to the microscope
+        vision_toolkit.connect(microscope)
+        
+        # Combine SEM and map images
+        blended_image = vision_toolkit.blend_images(sem_image, map_image)
+        blended_image.save("blended_image.tif")
+    </code></pre>
+
+    <h2>See also</h2>
+    <a href="connect.html">connect()</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

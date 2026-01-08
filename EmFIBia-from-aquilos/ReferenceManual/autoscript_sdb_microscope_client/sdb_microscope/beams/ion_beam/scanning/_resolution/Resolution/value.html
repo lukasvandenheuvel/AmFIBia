@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>beams.ion_beam.scanning.resolution.value</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../../../Resources/common.js"></script>
+    <script src="../../../../../../../Resources/page.js"></script>
+    <script src="../../../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../../../Resources/prism.js"></script>
+    <script src="../../../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../../../SdbMicroscopeClient/beams.html">beams</a>.<a class="header-path" href="../../../../../../sdb_microscope/_beams/Beams/ion_beam.html">ion_beam</a>.<a class="header-path" href="../../../../../../sdb_microscope/beams/_ion_beam/IonBeam/scanning.html">scanning</a>.<a class="header-path" href="../../../../../../sdb_microscope/beams/ion_beam/_scanning/Scanning/resolution.html">resolution</a>.<a class="header-path" href="../../../../../../sdb_microscope/beams/ion_beam/scanning/_resolution/Resolution/value.html">value</a></h1>
+    <p>Gets or sets the scanning resolution for the image acquisition.</p>
+    <h2>Data type</h2>
+    str
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    
+    This property accepts the "standard" resolution presets, which means it can only be set to values from the
+    <a href="../../../../../../enumerations/ScanningResolution/ScanningResolution.html">ScanningResolution</a>
+    enumeration.
+    It's designed to configure ion beam scanning specifically for live image acquisition,
+    which is restricted to "standard" resolutions.<br><br>
+    
+    However, when performing single image acquisitions with the function
+    <a href="../../../../../_imaging/Imaging/grab_frame.html">imaging.grab_frame()</a>,
+    you have the flexibility to choose arbitrary resolutions.
+    The resolution for each grab frame action is specified individually within the
+    <a href="../../../../../../structures/GrabFrameSettings/GrabFrameSettings.html">GrabFrameSettings</a> parameter.
+
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Change scanning resolution of the ion beam to 1536x1024
+        microscope.beams.ion_beam.scanning.resolution.value = ScanningResolution.PRESET_1536X1024
+    </code></pre>
+    
+    <h2>See also</h2>
+    <a href="available_values.html">beams.ion_beam.scanning.resolution.available_values</a><br>
+    <a href="width.html">beams.ion_beam.scanning.resolution.width</a><br>
+    <a href="height.html">beams.ion_beam.scanning.resolution.height</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

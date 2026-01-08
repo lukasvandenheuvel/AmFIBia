@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>analysis.eds.get_spectrum</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/analysis.html">analysis</a>.<a class="header-path" href="../../../../sdb_microscope/_analysis/Analysis/eds.html">eds</a>.<a class="header-path" href="../../../../sdb_microscope/analysis/_eds/Eds/get_spectrum.html">get_spectrum</a></h1>
+    <p>Returns the EDS spectrum collected since the last reset of the EDS spectrum buffer.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">get_spectrum()
+get_spectrum(scanning_mode)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>scanning_mode</td>
+            <td>int</td>
+            <td>Electron beam scan mode under which the EDS data were collected. If not provided, the current scan mode is assumed.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td><a href="../../../../_structures_adorned_spectrum/AdornedSpectrum/AdornedSpectrum.html">AdornedSpectrum</a></td>
+            <td>The spectrum object that holds both the characteristic X-ray counts and system metadata.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+
+    <ul class="spaced-list">
+        <li>
+            The returned spectrum has been collected since the last reset of the EDS spectrum buffer.<br>
+            
+            Resetting the buffer may have been explicitly triggered by calling <a href="reset_spectrum.html">analysis.eds.reset_spectrum()</a>.
+            Changing the scanned area, e.g. the position of reduced area or spot via
+            <a href="../../../beams/electron_beam/scanning/_mode/Mode/set_reduced_area.html">scanning.mode.set_reduced_area()</a>
+            or <a href="../../../beams/electron_beam/scanning/_mode/Mode/set_spot.html">scanning.mode.set_spot()</a>,
+            also automatically resets the buffer. 
+        </li>
+        
+        <li>
+            The system maintains a separate EDS data buffer for each beam scan mode (full-frame, line,
+            spot, reduced-area, and patterning).
+            You don't need to specify the <code>scanning_mode</code> parameter if the mode hasn't changed
+            since the data was collected.<br>
+            
+            When a patterning sequence is executed to generate an EDS signal,
+            the scan mode automatically reverts to full-frame after the sequence completes.
+            To access the correct buffer in this case, you must specify the
+            <a href="../../../../enumerations/ScanningMode/PATTERNING.html">ScanningMode.PATTERNING</a> parameter.
+            An example below demonstrates this scenario.
+        </li>
+    </ul>
+
+
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        import time
+        
+        # Reset EDS buffers
+        microscope.analysis.eds.reset_spectrum()
+        
+        # Scan the sample with electron beam in any of the supported scan modes,
+        # e.g., in the reduced-area mode
+        microscope.beams.electron_beam.scanning.mode.set_reduced_area(0, 0, 0.2, 0.2)
+        microscope.imaging.start_acquisition()
+        time.sleep(5)
+        microscope.imaging.stop_acquisition()
+    
+        # Read EDS spectrum collected from the scanned area
+        spectrum = microscope.analysis.eds.get_spectrum()
+    </code></pre>
+    
+    <pre><code class="language-python">
+        # Create patterns in the active view 
+        # ...
+        
+        # Reset EDS buffers
+        microscope.analysis.eds.reset_spectrum()
+        
+        # Run the patterning job synchronously
+        microscope.patterning.run()
+
+        # Read EDS spectrum from the scanned area
+        spectrum = microscope.analysis.eds.get_spectrum(ScanningMode.PATTERNING)
+    </code></pre>
+    
+    
+    <h2>See also</h2>
+    
+    <a href="acquire_spectrum.html">analysis.eds.acquire_spectrum()</a><br>
+    <a href="reset_spectrum.html">analysis.eds.reset_spectrum()</a><br>
+    <a href="../../../beams/electron_beam/scanning/_mode/Mode/set_full_frame.html">beams.electron_beam.scanning.mode.set_full_frame()</a><br>
+    <a href="../../../beams/electron_beam/scanning/_mode/Mode/set_reduced_area.html">beams.electron_beam.scanning.mode.set_reduced_area()</a><br>
+    <a href="../../../beams/electron_beam/scanning/_mode/Mode/set_spot.html">beams.electron_beam.scanning.mode.set_spot()</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

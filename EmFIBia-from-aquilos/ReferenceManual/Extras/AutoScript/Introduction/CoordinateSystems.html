@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Coordinate systems</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+
+<body>
+	<h1>Coordinate systems</h1>
+
+	<p>
+	    In this chapter, we explore the coordinate systems employed across various functional domains within the AutoScript API.
+	</p>
+
+	<h2>Stage coordinate system</h2>
+
+	<p>
+    	The picture below shows the orientation of stage axes X, Y, Z, R and T.
+    	The orientation of the Z axis is reversed when the "Link Z to FWD (free working distance)" function is activated.
+    	See <a href="../../../autoscript_sdb_microscope_client/sdb_microscope/specimen/_stage/Stage/link.html">specimen.stage.link()</a>
+    	and <a href="../../../autoscript_sdb_microscope_client/sdb_microscope/specimen/_stage/Stage/unlink.html">specimen.stage.unlink()</a> for details.
+	</p>
+
+	<img alt="Stage" src="../Resources\Stage.png" width="767" height="290">
+
+    <h2>Scanning reduced area coordinate system</h2>
+
+    <p>
+        "Reduced area" is one of the <a href="../../../autoscript_sdb_microscope_client/enumerations/ScanningMode/ScanningMode.html">supported scanning modes</a>.
+        In this mode, the beam scans a rectangular sub-region within the entire field of view.
+        The area is defined by the coordinates of its upper-left corner, as well as its width and height.
+        The field of view spans from [0, 0] at the upper-left corner to [1, 1] at the lower-right corner.
+    </p>
+
+    <img alt="Reduced Area" src="../Resources\ReducedArea.png" width="293" height="235">
+
+    <h2>Patterning coordinate system</h2>
+
+    <p>
+        Pattern shapes for patterning jobs are created within a special coordinate system that uses the center of the field
+        of view as its origin. The position and size of patterns are directly specified in distance units (meters),
+        within the bounds of the current scan field width and height.
+    </p>
+
+    <img alt="Patterns" src="../Resources\Patterning.png" width="326" height="230">
+
+    <h2>Imaging views numbering</h2>
+
+    <p>
+        AutoScript and the main microscope user interface application, "Microscope Control," share the concept of imaging views.
+        There are four views numbered from 1 to 4, which divide the screen area into equal-sized quadrants.
+        Each view can be configured with a specific beam type, referred to as the Imaging Device in AutoScript.
+        In the Microscope Control application, the views are positioned as follows:
+    </p>
+
+    <img alt="Views" src="../Resources\Views.png" width="279" height="189">
+
+
+    <h2>EDS Regions</h2>
+
+    <p>
+        <a href="../../../autoscript_sdb_microscope_client/_structures_eds/Region/Region.html">Regions</a> in AutoScript unify the coordinate
+        systems of various imaging and patterning objects, such as reduced area, spot and patterns, into a common unit of measurement: pixels.
+        When coordinates are specified in pixels, they are relative to the current scanning resolution of the electron beam,
+        which is can be determined by reading <a href="../../../autoscript_sdb_microscope_client/sdb_microscope/beams/electron_beam/scanning/_resolution/Resolution/value.html">beams.electron_beam.scanning.resolution.value</a>.
+        The upper-left corner of the field of view has the coordinate [0, 0], and the lower-right corner is represented by [Resolution X, Resolution Y].
+    </p>
+
+    <img alt="Views" src="../Resources\Regions.png" width="293" height="196">
+
+</body>
+</html>

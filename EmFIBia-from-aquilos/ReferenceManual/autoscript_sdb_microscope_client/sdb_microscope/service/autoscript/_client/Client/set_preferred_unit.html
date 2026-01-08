@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>service.autoscript.client.set_preferred_unit</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../../Resources/common.js"></script>
+    <script src="../../../../../../Resources/page.js"></script>
+    <script src="../../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../../Resources/prism.js"></script>
+    <script src="../../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../../SdbMicroscopeClient/service.html">service</a>.<a class="header-path" href="../../../../../sdb_microscope/_service/Service/autoscript.html">autoscript</a>.<a class="header-path" href="../../../../../sdb_microscope/service/_autoscript/AutoScript/client.html">client</a>.<a class="header-path" href="../../../../../sdb_microscope/service/autoscript/_client/Client/set_preferred_unit.html">set_preferred_unit</a></h1>
+    <p>Sets the preferred unit for a specified quantity.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">set_preferred_unit(quantity, unit)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>quantity</td>
+            <td>str</td>
+            <td>The quantity for which you want to change your preferred unit. You can use <a href="../../../../../enumerations/Quantity/Quantity.html">Quantity</a> enumeration.</td>
+        </tr>
+        <tr>
+            <td>unit</td>
+            <td>str</td>
+            <td>The unit you want to set as preferred. Maps to <a href="../../../../../enumerations/Unit/Unit.html">Unit</a> enumeration.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    <ul class="spaced-list">
+        <li>
+            By default all AutoScript API functions return physical quantities in base SI units. There are rare exceptions from this rule documented in this manual, e.g. some of the pattern properties may be 
+            expressed in derived SI units.
+        </li>
+        <li>
+            You can configure a preferred unit for certain quantities. AutoScript API functions will then accept and return values in the preferred unit.
+        </li>
+        <li>
+            The preference is stored for current client session, not globally.
+            <!-- Language Python - START -->
+            That means each executed script configures the preferred unit only for itself.
+            <!-- Language Python - END -->
+        </li>
+    </ul>
+  
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Set Celsius as the preferred unit for temperature
+        microscope.service.autoscript.client.set_preferred_unit(Quantity.TEMPERATURE, Unit.CELSIUS)
+        print(microscope.service.autoscript.client.get_preferred_unit(Quantity.TEMPERATURE))
+
+        # Set stage temperature to 200&deg;C
+        microscope.specimen.temperature_stage.temperature.target_value = 200
+    </code></pre>
+
+    <h2>See also</h2>
+    <a href="get_preferred_unit.html">service.autoscript.client.get_preferred_unit()</a>
+<!-- Custom part - END -->
+</body>
+</html>
+&nbsp;<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

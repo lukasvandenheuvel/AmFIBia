@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VacuumSettings</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../structures/VacuumSettings/VacuumSettings.html">VacuumSettings</a></h1>
+    <p>Contains settings for the function <a href="../../sdb_microscope/_vacuum/Vacuum/pump.html">pump()</a>.</p>
+    <h2>Items</h2>
+    <table>
+        <tr>
+            <td><a href="../../structures/VacuumSettings/mode.html">mode</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>The mode of specimen chamber vacuum. Accepts values from the <a href="../../enumerations/VacuumMode/VacuumMode.html">VacuumMode</a> enumeration.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/VacuumSettings/gas.html">gas</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>The type of gas to be used for the Low Vacuum or ESEM modes. Accepts values from the <a href="../../enumerations/VacuumGasType/VacuumGasType.html">VacuumGasType</a> enumeration.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/VacuumSettings/pressure.html">pressure</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The target chamber pressure.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/VacuumSettings/pressure_limiting_aperture.html">pressure_limiting_aperture</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>The name of the pressure-limiting aperture (PLA) that is mounted on the column. The <a href="../../sdb_microscope/vacuum/_pressure_limiting_aperture/PressureLimitingAperture/available_values.html">available_values</a> property can be used to read out apertures that are known to the system and applicable in the current state of the microscope.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

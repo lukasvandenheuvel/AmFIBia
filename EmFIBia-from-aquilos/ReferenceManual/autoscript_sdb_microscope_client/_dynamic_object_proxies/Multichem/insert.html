@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multichem.insert</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_dynamic_object_proxies/Multichem/Multichem.html">Multichem</a>.<a class="header-path" href="../../_dynamic_object_proxies/Multichem/insert.html">insert</a></h1>
+    <p>Inserts the MultiChem needle into one of the predefined positions.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">insert()
+insert(position)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>position</td>
+            <td>str</td>
+            <td>The name of a MultiChem insert position.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            Enumeration <a href="../../enumerations/MultiChemInsertPosition/MultiChemInsertPosition.html">MultiChemInsertPosition</a>
+            lists standard insert positions. Note that not all positions may be available on a particular system.
+        </li>
+
+        <li>
+            The parameterless function inserts the needle into a default position.
+            On systems equipped with a bulk stage the default position is determined by the current stage tilt
+            (<a href="../../enumerations/MultiChemInsertPosition/ELECTRON_DEFAULT.html">MultiChemInsertPosition.ELECTRON_DEFAULT</a> for tilt angle 0&#176;,
+            <a href="../../enumerations/MultiChemInsertPosition/ION_DEFAULT.html">MultiChemInsertPosition.ION_DEFAULT</a> for tilt angle 52&#176;).<br>
+            When Compustage is present and active, the default position is determined differently - please refer to XT User Manual for details.
+        </li>
+    
+        <li>
+            If the MultiChem needle is already inserted in any position, calling the insert function with the position parameter will move the needle to the desired position.
+        </li>
+    </ul>
+
+    
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        print("Linking bulk stage Z coordinate to working distance...")
+        microscope.specimen.stage.link()
+        multichem = microscope.gas.get_multichem()
+        
+        print("Inserting MultiChem...")
+        multichem.insert()
+        print(multichem.state)
+        
+        print("Retracting MultiChem...")
+        multichem.retract()
+        print(multichem.state)
+    </code></pre>
+
+    <pre><code class="language-python">
+        multichem = microscope.gas.get_multichem()
+        multichem.insert(MultiChemInsertPosition.COMPUSTAGE0_DEFAULT)
+        
+        # Move the needle to MultiChemInsertPosition.COMPUSTAGE90_DEFAULT
+        multichem.insert(MultiChemInsertPosition.COMPUSTAGE90_DEFAULT)
+    </code></pre>
+
+    
+    <h2>See also</h2>
+    
+    <a href="../../enumerations/MultiChemInsertPosition/MultiChemInsertPosition.html">MultiChemInsertPosition</a><br>
+    <a href="retract.html">Multichem.retract()</a><br>
+    <a href="needle_position.html">Multichem.needle_position</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

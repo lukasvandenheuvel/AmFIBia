@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ScanningResolution</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../enumerations/ScanningResolution/ScanningResolution.html">ScanningResolution</a></h1>
+    <p>
+        Specifies the standard scan resolutions.
+    </p>
+    <h2>Values</h2>
+    <table>
+        <tr>
+            <td><a href="../../enumerations/ScanningResolution/PRESET_1024X884.html">PRESET_1024X884</a></td>
+            <td>"1024x884"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/ScanningResolution/PRESET_1536X1024.html">PRESET_1536X1024</a></td>
+            <td>"1536x1024"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/ScanningResolution/PRESET_2048X1768.html">PRESET_2048X1768</a></td>
+            <td>"2048x1768"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/ScanningResolution/PRESET_3072X2048.html">PRESET_3072X2048</a></td>
+            <td>"3072x2048"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/ScanningResolution/PRESET_4096X3536.html">PRESET_4096X3536</a></td>
+            <td>"4096x3536"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/ScanningResolution/PRESET_512X442.html">PRESET_512X442</a></td>
+            <td>"512x442"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/ScanningResolution/PRESET_6144X4096.html">PRESET_6144X4096</a></td>
+            <td>"6144x4096"</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/ScanningResolution/PRESET_768X512.html">PRESET_768X512</a></td>
+            <td>"768x512"</td>
+            <td></td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+
+    <ul class="spaced-list">
+        <li>
+            This enumeration can be passed as a function parameter where a scan resolution is expected in the format "WIDTHxHEIGHT".
+        </li>
+        <li>
+            Image acquisition in resolutions from this enumeration result in more efficient "standard" imaging technique, in contrast to the 
+            "large image acquisition" technique, which works with any resolutions up to 65536x65536, but is less efficient and limited in applicable scan settings.
+
+            <!-- Language Python - START -->
+            For more information, see <a href="../../../Extras/UserGuide/Imaging.html">User guide: Imaging</a> and <a href="../../../Extras/UserGuide/LargeImageAcquisition.html">User guide: Large image acquisition</a>.
+            <!-- Language Python - END -->
+        </li>
+    </ul>
+    
+    <!--<h2>Examples</h2>-->
+    
+    <h2>See also</h2>
+    
+    <a href="../../structures/GrabFrameSettings/GrabFrameSettings.html">GrabFrameSettings</a><br>
+    <a href="../../sdb_microscope/_imaging/Imaging/grab_frame.html">imaging.grab_frame()</a><br>
+    <a href="../../sdb_microscope/_imaging/Imaging/grab_frame_to_disk.html">imaging.grab_frame_to_disk()</a><br>
+    <a href="../../sdb_microscope/_imaging/Imaging/grab_multiple_frames.html">imaging.grab_multiple_frames()</a><br>
+    <a href="../../sdb_microscope/beams/electron_beam/scanning/_resolution/Resolution/value.html">beams.electron_beam.scanning.resolution.value</a><br>
+    <!-- Language Python - START -->    
+    <a href="../../sdb_microscope/beams/ion_beam/scanning/_resolution/Resolution/value.html">beams.ion_beam.scanning.resolution.value</a><br>
+    <!-- Language Python - END -->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

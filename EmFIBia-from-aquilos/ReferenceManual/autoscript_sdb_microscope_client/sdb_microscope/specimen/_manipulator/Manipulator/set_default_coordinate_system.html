@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>specimen.manipulator.set_default_coordinate_system</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/specimen.html">specimen</a>.<a class="header-path" href="../../../../sdb_microscope/_specimen/Specimen/manipulator.html">manipulator</a>.<a class="header-path" href="../../../../sdb_microscope/specimen/_manipulator/Manipulator/set_default_coordinate_system.html">set_default_coordinate_system</a></h1>
+    <p>Establishes the default coordinate system for the manipulator. If no system is explicitly specified by the position, any subsequent calls to <a href="../../../../sdb_microscope/specimen/_manipulator/Manipulator/absolute_move.html">absolute_move()</a>, <a href="../../../../sdb_microscope/specimen/_manipulator/Manipulator/relative_move.html">relative_move()</a> and <a href="../../../../sdb_microscope/specimen/_manipulator/Manipulator/insert.html">insert()</a> will utilize this default system.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">set_default_coordinate_system(coordinate_system)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>coordinate_system</td>
+            <td>str</td>
+            <td>The new default manipulator coordinate system. You can provide values from the <a href="../../../../enumerations/ManipulatorCoordinateSystem/ManipulatorCoordinateSystem.html">ManipulatorCoordinateSystem</a> enumeration.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+
+    <a href="../../../../enumerations/ManipulatorCoordinateSystem/STAGE.html">Stage</a> is the default coordinate system before this function is called.
+
+
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        microscope.specimen.manipulator.set_default_coordinate_system(ManipulatorCoordinateSystem.RAW)
+    
+        # Move to a position using the Raw coordinate system
+        position = ManipulatorPosition(x=0.0001, y=0.0001)
+        microscope.specimen.manipulator.absolute_move(position)
+    </code></pre>
+
+    <h2>See also</h2>
+
+    <a href="absolute_move.html">specimen.manipulator.absolute_move()</a><br>
+    <a href="relative_move.html">specimen.manipulator.relative_move()</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>imaging.get_available_devices</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/imaging.html">imaging</a>.<a class="header-path" href="../../../sdb_microscope/_imaging/Imaging/get_available_devices.html">get_available_devices</a></h1>
+    <p>Returns a list of imaging devices installed on the microscope.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">get_available_devices()</code></pre>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td>List[int]</td>
+            <td>The list of numerical IDs for the imaging devices installed on the microscope.         To convert these IDs into a readable format, use the <a href="../../../enumerations/ImagingDevice/ImagingDevice.html">ImagingDevice</a> enumeration.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <h2>Examples</h2>
+
+    <pre><code class="language-python">
+        # Read installed imaging devices
+        devices = microscope.imaging.get_available_devices()
+        
+        # Returned list: [1, 2, 4, 6]
+        
+        # Print the list in readable format
+        for device in devices:
+            print(ImagingDevice.explain(device))    
+    </code></pre>
+
+    <h2>See also</h2>
+    
+    <a href="../../../sdb_microscope/_imaging/Imaging/get_active_device.html">imaging.get_active_device()</a><br>
+
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

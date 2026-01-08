@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+
+<body>
+<h1><a class="header-path" href="UserGuide.html">User guide: </a> <a class="header-path" href="#">Specimen</a></h1>
+
+<p>
+    This chapter explains how to navigate the sample using different mechanisms, such as the bulk stage or compustage.
+    The provided code snippets are based on the bulk stage, but most can also be used with the compustage by replacing
+    the API branch <code>specimen.stage</code> with <code>specimen.compustage</code>.
+</p>
+
+<p>
+    Before proceeding with the code snippets below, initialize AutoScript with the following code. Set the server address according to your environment.
+</p>
+
+<pre><code class="language-python">
+    from autoscript_sdb_microscope_client import SdbMicroscopeClient
+    from autoscript_sdb_microscope_client.enumerations import *
+    from autoscript_sdb_microscope_client.structures import *
+    
+    microscope = SdbMicroscopeClient()
+    microscope.connect("localhost")
+</code></pre>
+
+<p>
+    Home the stage. This procedure calibrates stage absolute position.
+    It needs to be performed once after microscope control software (XT) is started up.
+</p>
+
+<pre><code class="language-python">
+    microscope.specimen.stage.home()
+</code></pre>
+
+<p>Move stage to absolute position of 2 mm in X axis and 4 mm in Y axis:</p>
+
+<pre><code class="language-python">
+    p = StagePosition(x=0.002, y=0.004)
+    microscope.specimen.stage.absolute_move(p)
+</code></pre>
+
+<p>Read current stage position and inspect it:</p>
+
+<pre><code class="language-python">
+    p = microscope.specimen.stage.current_position
+    print(p)
+</code></pre>
+
+<p>Perform relative move by -2 mm in X axis and -2 mm in Y axis:</p>
+
+<pre><code class="language-python">
+    p = StagePosition(x=-0.002, y=-0.002)
+    microscope.specimen.stage.relative_move(p)
+</code></pre>
+
+<p>Perform compucentric rotation by 45 degrees clockwise:</p>
+
+<pre><code class="language-python">
+    s = MoveSettings(rotate_compucentric=True)
+    p = StagePosition(r=0.785)
+    microscope.specimen.stage.relative_move(p, s)
+</code></pre>
+
+<p>Please note that <code class="language-python">MoveSettings</code> containing the compucentric rotation flag (<code class="language-python">rotate_compucentric</code>) may be used for both absolute and relative movements.</p>
+
+<p>
+    Link stage Z axis to the free working distance.
+    For this call to be successful, a number of conditions must be met.
+    The beam must be switched on and the electron beam scanning must be unpaused in the active view.
+</p>
+
+<pre><code class="language-python">
+    microscope.beams.electron_beam.turn_on()
+    microscope.imaging.start_acquisition()
+
+    microscope.specimen.stage.link()
+    
+    microscope.imaging.stop_acquisition()
+</code></pre>
+
+<p>Unlink Z axis from the free working distance:</p>
+
+<pre><code class="language-python">
+    microscope.specimen.stage.unlink()
+</code></pre>
+
+</body>
+</html>

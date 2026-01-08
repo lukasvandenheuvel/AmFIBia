@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AutoScript server</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+
+<body>
+
+<h1>AutoScript server</h1>
+
+The AutoScript server is a service running on the microscope computer, responsible for executing scripting
+commands received over the TCP/IP network from Python scripts.
+It is configured to start automatically with the operating system. Its status is indicated by an icon in the system tray,
+displaying the letters "AS".
+
+
+<p><img alt="" src="../Resources/Intro_ASIconInTray.png" style="width: 214px; height: 40px"></p>
+
+A blue icon signifies that the server is ready to accept scripting commands, while a gray icon indicates potential
+issues such as a lack of proper licensing, inactive microscope server software, or a manually stopped AutoScript server.
+<br><br>
+
+The <strong>AutoScript Server Control Panel</strong> provides insights into the server's internal state.
+You can open this panel by either double-clicking the "AS" icon or navigating to
+<em>Start &gt; Thermo Scientific AutoScript &gt; AutoScript Server</em>.
+<br>
+
+<br>
+On the <strong>Overview</strong> page, a summary of the server's state is displayed, featuring three sections marked with green check marks
+under normal conditions. In the event of an error, a red cross mark appears along with an error description.<br><br>
+
+<p>
+    <img alt="" src="../Resources/ControlPanel_Overview.png" height="32" width="32">
+    &nbsp;&nbsp;&nbsp;
+    <img alt="" src="../Resources/ControlPanel_Licensing.png" style="width: 536px; height: 418px">
+</p>
+
+The <strong>Licensing</strong> page presents a list of active product licenses and tools for managing them.<br>
+To apply a license key, it must first be registered for use on the microscope computer by clicking the <strong>Register</strong> button
+and entering the key. Subsequently, the key must be activated by pressing the <strong>Activate</strong> button,
+which opens a popup window requiring user details. Activation data need to be submitted to the online licensing server,
+which requires access to a computer connected to the internet, like a personal laptop.<br><br>
+
+Before uninstalling the product, the key should be deactivated using the <strong>Deactivate </strong>button.<br>
+Additionally, AutoScript can be activated for a 90-day trial period by clicking the <strong>Activate Trial License</strong> button.
+<br><br>
+
+For more detailed information on licensing procedures, refer to the AutoScript installation manual or
+contact Thermo Fisher Scientific service team.<br><br>
+
+The <strong>Networking</strong> page allows configuration of the TCP/IP port on which the AutoScript server listens
+for incoming scripting commands. While typically unnecessary to change the port under normal circumstances,
+it can be useful in resolving conflicts with other software using the same TCP/IP port on the computer where the AutoScript
+client is installed.
+
+<p><img src="../Resources/ControlPanel_Networking.png" style="width: 536px; height: 418px"></p>
+
+To change the port, first, stop the server by pressing <strong>Stop</strong>, enter the new port number,
+and then resume the server by pressing <strong>Start</strong>.
+
+<br><br>
+
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>imaging.stop_acquisition</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/imaging.html">imaging</a>.<a class="header-path" href="../../../sdb_microscope/_imaging/Imaging/stop_acquisition.html">stop_acquisition</a></h1>
+    <p>Stops live image acquisition in the active view.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">stop_acquisition()
+stop_acquisition(stop_acquisition_method)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>stop_acquisition_method</td>
+            <td>int</td>
+            <td>Specifies how the stop operation should be performed. You can provide values from the <a href="../../../enumerations/StopAcquisitionMethod/StopAcquisitionMethod.html">StopAcquisitionMethod</a> enumeration.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    <ul>
+        <li>
+            The parameterless version of the function stops imaging immediately
+            (equivalent to <a href="../../../enumerations/StopAcquisitionMethod/ABORT.html">StopAcquisitionMethod.ABORT</a>).
+        </li>
+        <li>
+            If image acquisition is already stopped, the function does nothing.
+        </li>
+        <li>
+            The <code>stop_acquisition_method</code> parameter is applicable only to scanning imaging devices,
+            that is <a href="../../../enumerations/ImagingDevice/ELECTRON_BEAM.html">electron</a> and 
+            <a href="../../../enumerations/ImagingDevice/ION_BEAM.html">ion</a> beams. For camera-type devices it is ignored.
+        </li>
+    </ul>
+    
+    <h2>Examples</h2>
+    <pre><code class="language-python">
+        # Prepare view 1 for imaging with electron beam
+        microscope.imaging.set_active_view(1)
+        microscope.imaging.set_active_device(ImagingDevice.ELECTRON_BEAM)
+        
+        # Initialize scanning conditions
+        microscope.beams.electron_beam.scanning.resolution.value = ScanningResolution.PRESET_1536X1024
+        microscope.beams.electron_beam.scanning.dwell_time.value = 10e-6
+        
+        # Scan one frame
+        microscope.imaging.start_acquisition()
+        microscope.imaging.stop_acquisition(StopAcquisitionMethod.END_OF_FRAME)
+    </code></pre>
+
+    <h2>See also</h2>
+    <a href="start_acquisition.html">imaging.start_acquisition()</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

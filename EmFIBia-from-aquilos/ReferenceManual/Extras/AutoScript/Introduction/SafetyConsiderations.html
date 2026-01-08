@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Safety considerations</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+
+<body>
+
+<h1>Safety considerations</h1>
+
+AutoScript doesn't add an extra safety layer on top of the microscope hardware and software platform. This implies that any actions available and permitted at a given time in the manual user interface application
+("Microscope Control") are permissible for automation tasks through AutoScript. While this grants automation maximum flexibility and performance by allowing low-level system operations,
+it also places the responsibility of ensuring safety on the automation script authors.<br><br>
+Outlined below are several safety features of the Thermo Fisher SEM systems to contemplate when building safe automation
+solutions with AutoScript.
+
+
+<h2>Link stage to free working distance</h2>
+
+The specimen stage provides a
+"<a href="../../../autoscript_sdb_microscope_client/sdb_microscope/specimen/_stage/Stage/link.html">link</a>" functionality, enabling the system to determine the otherwise unknown
+specimen height for subsequent stage manipulations. When the stage is linked, system safety is enhanced to mitigate
+potential collisions between the moving stage and mechanical parts in the specimen chamber.<br><br>
+
+However, even in the linked state, certain collisions cannot be entirely prevented, such as those involving insertable
+devices like detectors, gas needles, or the manipulator.<br>
+It's crucial to exercise caution when manipulating the stage with devices inserted or when inserting these devices.
+For detailed guidelines on the conditions required for device insertion, refer to the SEM user manual,
+which provides specific recommendations based on the type and mechanical properties of the devices.
+
+
+<h2>Z-Tilt safety map and Stage safe moves</h2>
+
+The "Z-Tilt safety map" and "Safe stage moves" configuration options are available on most of the supported SEM systems
+to enhance the safety of stage movements. These options can be accessed from the "Stage" menu in the Microscope Control application.
+Activating or deactivating these options controls the system-wide behavior,
+affecting both manual operations in Microscope Control and automation tasks executed via AutoScript.
+
+<p><img alt="" src="../Resources/StageSafety.png" style="width: 385px; height: 228px"></p>
+
+Checking the <strong>"Enable Z-Tilt Safety Map"</strong> item imposes additional pre-configured restrictions on stage movement at high tilt angles
+to avoid collision with the final lens.<br><br>
+
+When <strong>"Enable Safe Stage Moves"</strong> is checked, the stage will be lowered in the Z coordinate before executing larger movements
+in any axis at high tilt angles. This precaution helps prevent collisions with the final lens.<br><br>
+
+Both options are specifically designed only for <strong>flat</strong> samples. Also, both functions
+require the stage to be <strong>linked to free working distance</strong>.<br>
+
+In the current version of AutoScript, controlling the two aforementioned safety features cannot be done directly from script.
+
+
+<h2>Emergency stop</h2>
+
+Pressing the <strong>ESC</strong> key in the Microscope Control application immediately halts all ongoing stage or compustage movements.<br>
+<br>
+
+There isn't a direct equivalent function within the AutoScript product. Aborting the script after
+it has initiated a stage movement won't stop that movement, as the command is already being executed or
+scheduled for execution on the server side. Similarly, pressing the
+<a href="../../UserGuide/PauseStopScriptExecution.html">Stop button in AutoScript Runner or PyCharm</a> does not terminate any ongoing commands.
+<br><br>
+
+Nevertheless, <strong>pressing ESC in Microscope Control does terminate a stage movement initiated by AutoScript</strong>
+if it's currently in progress, causing the calling function
+(<a href="../../../autoscript_sdb_microscope_client/sdb_microscope/specimen/_stage/Stage/absolute_move.html">absolute_move()</a>,
+<a href="../../../autoscript_sdb_microscope_client/sdb_microscope/specimen/_stage/Stage/relative_move.html">relative_move()</a> or
+<a href="../../../autoscript_sdb_microscope_client/sdb_microscope/specimen/_stage/Stage/move_to_device.html">move_to_device()</a>)
+
+to finish with an exception. If this exception is not caught and ignored in the client code, the script execution will be interrupted.
+The same behavior applies to compustage movements.
+
+<br>
+</body>
+</html>

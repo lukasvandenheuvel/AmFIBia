@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+
+<h1><a class="header-path" href="UserGuide.html">User guide: </a> <a class="header-path" href="#">Beams</a></h1>
+
+<p>
+    This chapter shows how to control electron and ion beam.
+    The code snippets presented here always refer to the electron beam, but most of them will work for the ion beam as well,
+    if 
+    <a href="../../autoscript_sdb_microscope_client/sdb_microscope/_beams/Beams/ion_beam.html"><code>beams.ion_beam</code></a>
+    API branch is used instead of
+    <a href="../../autoscript_sdb_microscope_client/sdb_microscope/_beams/Beams/electron_beam.html"><code>beams.electron_beam</code></a> branch.
+</p>
+
+<p>
+    Before proceeding with the code snippets below, initialize AutoScript with the following code.
+    Set the server address according to your environment.
+</p>
+
+<pre><code class="language-python">
+    from autoscript_sdb_microscope_client import SdbMicroscopeClient
+    from autoscript_sdb_microscope_client.enumerations import *
+    from autoscript_sdb_microscope_client.structures import *
+    
+    microscope = SdbMicroscopeClient()
+    microscope.connect("localhost")
+</code></pre>
+
+<p>Turn the beam on:</p>
+
+<pre><code class="language-python">
+    microscope.beams.electron_beam.turn_on()
+</code></pre>
+
+<p>Turn the beam off:</p>
+
+<pre><code class="language-python">
+    microscope.beams.electron_beam.turn_off()
+</code></pre>
+
+<p>Inspect beam activity:</p>
+
+<pre><code class="language-python">
+    is_on = microscope.beams.electron_beam.is_on
+    print(is_on)
+</code></pre>
+
+<p>Set beam acceleration voltage to 3 kV:</p>
+
+<pre><code class="language-python">
+    microscope.beams.electron_beam.high_voltage.value = 3000
+</code></pre>
+
+<p>Read beam acceleration voltage and inspect it:</p>
+
+<pre><code class="language-python">
+    high_voltage = microscope.beams.electron_beam.high_voltage.value
+    print(high_voltage)
+</code></pre>
+
+<p>Read high voltage limits and inspect them:</p>
+
+<pre><code class="language-python">
+    limits = microscope.beams.electron_beam.high_voltage.limits
+    print(limits)
+</code></pre>
+
+<p>Other scalar values, such as beam current or working distance, function similarly to high voltage.</p>
+
+<p>Set stigmator value to <code>[0.5, 0.5]</code>:</p>
+
+<pre><code class="language-python">
+    microscope.beams.electron_beam.stigmator.value = Point(0.5, 0.5)
+</code></pre>
+
+<p>Read stigmator value and inspect it:</p>
+
+<pre><code class="language-python">
+    stigmator = microscope.beams.electron_beam.stigmator.value
+    print(stigmator)
+</code></pre>
+
+<p>Read stigmator limits and inspect them:</p>
+
+<pre><code class="language-python">
+    limits = microscope.beams.electron_beam.stigmator.limits
+    print(limits)
+</code></pre>
+
+<p>Other two-dimensional values, such as beam shift, work similarly to stigmator.</p>
+
+<p>Set scanning resolution to 1536x1024, possibly using enumeration to avoid typo:</p>
+
+<pre><code class="language-python">
+    microscope.beams.electron_beam.scanning.resolution.value = "1536x1024"
+    microscope.beams.electron_beam.scanning.resolution.value = ScanningResolution.PRESET_1536X1024
+</code></pre>
+
+<p>Get and check the list of available scan resolutions:</p>
+
+<pre><code class="language-python">
+    resolutions = microscope.beams.electron_beam.scanning.resolution.available_values
+    print(resolutions)
+</code></pre>
+
+<p>Activate the reduced area scan mode in the upper left quarter of the active view:</p>
+
+<pre><code class="language-python">
+    microscope.beams.electron_beam.scanning.mode.set_reduced_area(0.0, 0.0, 0.5, 0.5)
+</code></pre>
+
+<p>Activate the reduced area scan mode in the center of the active view:</p>
+
+<pre><code class="language-python">
+    microscope.beams.electron_beam.scanning.mode.set_reduced_area(0.40, 0.40, 0.20, 0.20)
+</code></pre>
+
+<p>
+    The coordinates of the reduced area are relative to the size of the view (from 0.0 to 1.0), with the origin in the upper left corner.
+    The 3rd and 4th parameter of the function 
+    <a href="../../autoscript_sdb_microscope_client/sdb_microscope/beams/electron_beam/scanning/_mode/Mode/set_reduced_area.html">set_reduced_area()</a>
+    refer to the width and height, respectively.
+</p>
+
+<p>Activate the reduced area in the same place where it was activated last time:</p>
+
+<pre><code class="language-python">
+    microscope.beams.electron_beam.scanning.mode.set_reduced_area()
+</code></pre>
+
+<p>Activate the full-frame scan mode:</p>
+
+<pre><code class="language-python">
+    microscope.beams.electron_beam.scanning.mode.set_full_frame()
+</code></pre>
+
+<p>Determine if the reduced area is active:</p>
+
+<pre><code class="language-python">
+    is_reduced_area = microscope.beams.electron_beam.scanning.mode.value == ScanningMode.REDUCED_AREA
+    print(is_reduced_area)
+</code></pre>
+
+<p>Other scan modes, such as spot, line and external mode, work similarly.</p>
+
+<p>Activate the crossover mode and adjust source tilt:</p>
+
+<pre><code class="language-python">
+    microscope.beams.electron_beam.scanning.mode.set_crossover()
+    microscope.beams.electron_beam.source_tilt.value = Point(0.5, -0.5)
+</code></pre>
+
+<p>Switch optical mode of the electron beam to "Immersion", possibly using enumeration to avoid typo:</p>
+
+<pre><code class="language-python">
+    microscope.beams.electron_beam.optical_mode.value = "Immersion"
+    microscope.beams.electron_beam.optical_mode.value = OpticalMode.IMMERSION
+</code></pre>
+
+<p>Activate beam deceleration and set stage bias to 2 kV:</p>
+
+<pre><code class="language-python">
+    microscope.beams.electron_beam.beam_deceleration.turn_on()
+    microscope.beams.electron_beam.beam_deceleration.stage_bias.value = 2000
+</code></pre>
+
+<p>
+    Use the <a href="../../autoscript_sdb_microscope_client/SdbMicroscopeClient/imaging.html"><code>imaging</code></a>
+    API section to perform image acquisition tasks with scanning beams.
+    See the <a href="Imaging.html">Imaging</a> chapter for more information.
+</p>
+
+</body>
+</html>

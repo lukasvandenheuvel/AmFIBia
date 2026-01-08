@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Color</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_structures_primitives/Color/Color.html">Color</a></h1>
+    <p>Represents the RGBA color model. The alpha channel controls the transparency of the color, while the other channels determine the color intensity. Values are in the range of [0, 1] corresponding to 0% - 100%.</p>
+    <h2>Items</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_primitives/Color/red.html">red</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_primitives/Color/green.html">green</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_primitives/Color/blue.html">blue</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_primitives/Color/alpha.html">alpha</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td></td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_primitives/Color/create_from_hex_color.html">create_from_hex_color()</a></td>
+            <td>Creates an instance of the Color class and initializes it using RGB values encoded within a single integer value.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_primitives/Color/create_from_rgb256.html">create_from_rgb256()</a></td>
+            <td>Creates an instance of the Color class and initializes it using RGB values.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_primitives/Color/get_as_hex_color.html">get_as_hex_color()</a></td>
+            <td>Encodes the color into a single integer value in 0xRRGGBB format where RR, GG, and BB are bytes representing red, green, and blue color components in the range 0 to 255.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

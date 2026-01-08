@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RectanglePattern.gas_type</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_dynamic_object_proxies/RectanglePattern/RectanglePattern.html">RectanglePattern</a>.<a class="header-path" href="../../_dynamic_object_proxies/RectanglePattern/gas_type.html">gas_type</a></h1>
+    <p>The name of the gas required to pattern this shape, or an empty string if no gas should be used.</p>
+    <h2>Data type</h2>
+    str
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    
+    To ensure proper formatting of the gas type, you can utilize the <a href="../Multichem/format_gas_type.html">Multichem.format_gas_type()</a> function.
+    
+    <h2>Examples</h2>
+
+    Single MultiChem situation:
+
+    <pre><code class="language-python">
+        rectangle_pattern = microscope.patterning.create_rectangle(0, 0, 1e-6, 1e-6, 1e-6)
+        
+        # Assign a single gas with a MultiChem
+        rectangle_pattern.gas_type = "XeF2"
+        
+        # Set gas duty cycle to 10%
+        rectangle_pattern.gas_flow = [10]
+        
+        # Assign a mixed gas with a MultiChem
+        rectangle_pattern.gas_type = "C+Dx"
+        
+        # Set gas duty cycle to 10, 90%
+        rectangle_pattern.gas_flow = [10, 90]
+    </code></pre>
+
+    Multiple MultiChems situation:
+
+    <pre><code class="language-python">
+        # Create a rectangular pattern 
+        rectangle_pattern = microscope.patterning.create_rectangle(0, 0, 1e-6, 1e-6, 1e-6)
+        
+        # Assign it a single gas with a single MultiChem 
+        multichem = microscope.gas.get_multichem("1")
+        rectangle_pattern.gas_type = multichem.format_gas_type("C")
+        
+        # Set gas duty cycle to 15% 
+        rectangle_pattern.gas_flow = [15]
+        
+        # Assign it a mixed gas with a single MultiChem 
+        multichem = microscope.gas.get_multichem("4")
+        rectangle_pattern.gas_type = multichem.format_gas_type("XeF2+Dx")
+        
+        # Set gas duty cycle to 15.5%, 84.5% 
+        rectangle_pattern.gas_flow = [15.5, 84.5]
+        
+        # Assign it a single gas with two MultiChems 
+        multichem1 = microscope.gas.get_multichem("1")
+        multichem2 = microscope.gas.get_multichem("4")
+        rectangle_pattern.gas_type = multichem1.format_gas_type("C") + multichem2.format_gas_type("C")
+        
+        # Set gas duty cycle to 10%, 90% 
+        rectangle_pattern.gas_flow = [10, 90]
+    </code></pre>
+
+    Situation when PID gas flow control is enabled:
+    
+    <pre><code class="language-python">
+        rectangle_pattern = microscope.patterning.create_rectangle(0, 0, 1e-6, 1e-6, 1e-6)
+        
+        # Assign a single gas with MultiChem
+        multichem = microscope.gas.get_multichem()
+        rectangle_pattern.gas_type = multichem.format_gas_type("W")
+        
+        # Set gas pressure to 2.5e-3 Pa
+        rectangle_pattern.gas_flow = [2.5e-3]
+    </code></pre>
+
+    <pre><code class="language-python">
+        rectangle_pattern = microscope.patterning.create_rectangle(0, 0, 1e-6, 1e-6, 1e-6)
+        
+        # Assign multiple gases with MultiChem
+        multichem = microscope.gas.get_multichem()
+        rectangle_pattern.gas_type = multichem.format_gas_type("C+W")
+        
+        # Set gas pressure to 2.8e-3 Pa
+        rectangle_pattern.gas_flow = [2.8e-3]
+    </code></pre>
+
+    <h2>See also</h2>
+    
+    <a href="../../_dynamic_object_proxies/Multichem/format_gas_type.html">Formatting a gas type</a>
+
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

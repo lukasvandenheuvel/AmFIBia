@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BitmapPatternDefinition</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_structures_bitmap_pattern/BitmapPatternDefinition/BitmapPatternDefinition.html">BitmapPatternDefinition</a></h1>
+    <p>Contains the definition of a bitmap pattern.</p>
+    <h2>Items</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_bitmap_pattern/BitmapPatternDefinition/raw_points.html">raw_points</a></td>
+            <td>bytes</td>
+            <td>Pattern points in a raw form. Do not access this property directly in your code, it may be removed in future versions of AutoScript.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_bitmap_pattern/BitmapPatternDefinition/width.html">width</a></td>
+            <td>int</td>
+            <td>The width of the bitmap in pixels.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_bitmap_pattern/BitmapPatternDefinition/height.html">height</a></td>
+            <td>int</td>
+            <td>The height of the bitmap in pixels.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_bitmap_pattern/BitmapPatternDefinition/points.html">points</a></td>
+            <td>Numpy.ndarray</td>
+            <td>Pattern points in form of 3D array. See the Remarks section in <a href="../../_structures_bitmap_pattern/BitmapPatternDefinition/BitmapPatternDefinition.html">BitmapPatternDefinition</a> for a description of the array structure.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_bitmap_pattern/BitmapPatternDefinition/load.html">load()</a></td>
+            <td>Loads a bitmap pattern definition from a BMP file.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            The bitmap pattern definition can be initialized in two ways:
+            <ol class="not-spaced-list">
+                <li><strong>Loaded from an image file</strong>. Use the <a href="load.html">load()</a> function.</li>
+                <li><strong>Created from a numpy array.</strong> Set the <a href="points.html">points</a> property.</li>
+            </ol>
+            
+            The above options can also be combined. 
+                        
+            <!-- Language Python - START -->
+            You can load the definition from a bitmap file and then adjust it in the script.
+            <!-- Language Python - END -->            
+        </li>
+    
+        <li>
+            The <a href="points.html">points </a>property allows you to manipulate pattern point parameters.
+            The first two dimensions represent pattern point coordinates, in pixels,
+            while the third dimension contains parameters [dwell_time, flags]. Their values have the following meaning:
+        
+            <ul>
+                <li>
+                    <code>dwell_time</code> is the dwell time setting for the point, in the range from 0 to 1.
+                    Specifying 0 means that the pixel will be skipped.
+                    1 means the pixel will use the dwell time of the entire pattern (see the <a href="../../_dynamic_object_proxies/BitmapPattern/dwell_time.html">dwell time</a> property).
+                    Values between 0 and 1 are linearly interpolated.</li>
+                <li><code>flags</code> is 1 if the beam should be blanked when over the point, otherwise 0.</li>
+            </ul>
+        </li>
+    </ul>
+   
+    
+    <h2>Examples</h2>
+    
+    <p>The following example shows how to create a bitmap pattern definition directly in the script:</p>
+    
+    <pre><code class="language-python">
+        import numpy
+        
+        bpd = BitmapPatternDefinition()
+        bpd.points = numpy.array([[[0.1, 0], [0.2, 0], [0.3, 0]],
+                                  [[0.4, 0], [0.5, 0], [0.6, 0]],
+                                  [[0.7, 0], [0.8, 0], [0.9, 0]]])
+        pattern = microscope.patterning.create_bitmap(0, 0, 3e-6, 3e-6, 1e-6, bpd)
+    </code></pre>
+    
+    <p>The following example shows how to load a bitmap pattern definition from a BMP file:</p>
+    
+    <pre><code class="language-python">
+        bpd = BitmapPatternDefinition.load(r"c:\ProgramData\Thermo Scientific AutoScript\UserGuide\Resources\Puzzle.bmp")
+        pattern = microscope.patterning.create_bitmap(0, 0, 3e-6, 3e-6, 1e-6, bpd)
+    </code></pre>
+    
+    <!--<h2>See also</h2>-->
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>beams.ion_beam.scanning.mode.set_spot</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../../../Resources/common.js"></script>
+    <script src="../../../../../../../Resources/page.js"></script>
+    <script src="../../../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../../../Resources/prism.js"></script>
+    <script src="../../../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../../../SdbMicroscopeClient/beams.html">beams</a>.<a class="header-path" href="../../../../../../sdb_microscope/_beams/Beams/ion_beam.html">ion_beam</a>.<a class="header-path" href="../../../../../../sdb_microscope/beams/_ion_beam/IonBeam/scanning.html">scanning</a>.<a class="header-path" href="../../../../../../sdb_microscope/beams/ion_beam/_scanning/Scanning/mode.html">mode</a>.<a class="header-path" href="../../../../../../sdb_microscope/beams/ion_beam/scanning/_mode/Mode/set_spot.html">set_spot</a></h1>
+    <p>Activates the spot scanning mode.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">set_spot()
+set_spot(x, y)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>x</td>
+            <td>float</td>
+            <td>The X coordinate of the spot. The valid range of the coordinate is [0, 1].</td>
+        </tr>
+        <tr>
+            <td>y</td>
+            <td>float</td>
+            <td>The Y coordinate of the spot. The valid range of the coordinate is [0, 1].</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    
+    <p>
+        Once this scanning mode is active, use methods <a href="../../../../../../sdb_microscope/beams/_ion_beam/IonBeam/blank.html">blank()</a> 
+        and <a href="../../../../../../sdb_microscope/beams/_ion_beam/IonBeam/unblank.html">unblank()</a> to control the acquisition.
+    </p>
+    <p>To set the spot position, pass position definition as the method parameters. If no parameters are passed, the last spot position is used.</p>
+    
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        microscope.beams.ion_beam.scanning.mode.set_spot(0.6, 0.34)
+        microscope.beams.ion_beam.unblank()
+        # ...
+        # Do desired operations here
+        # ...
+        microscope.beams.ion_beam.blank()
+    </code></pre>
+    
+    <h2>See also</h2>
+    <a href="set_full_frame.html">beams.ion_beam.scanning.mode.set_full_frame()</a><br>
+    <a href="set_line.html">beams.ion_beam.scanning.mode.set_line()</a><br>
+    <a href="set_external.html">beams.ion_beam.scanning.mode.set_external</a><br>
+    <a href="set_reduced_area.html">beams.ion_beam.scanning.mode.set_reduced_area()</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

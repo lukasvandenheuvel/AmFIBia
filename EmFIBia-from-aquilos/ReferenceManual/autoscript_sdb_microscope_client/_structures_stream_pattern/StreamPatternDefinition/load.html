@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>StreamPatternDefinition.load</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_structures_stream_pattern/StreamPatternDefinition/StreamPatternDefinition.html">StreamPatternDefinition</a>.<a class="header-path" href="../../_structures_stream_pattern/StreamPatternDefinition/load.html">load</a></h1>
+    <p>Loads the stream pattern definition from a stream (*.str) file.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">load(path)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>path</td>
+            <td></td>
+            <td>The path to the stream file from which to load the stream pattern definition.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_stream_pattern/StreamPatternDefinition/StreamPatternDefinition.html">StreamPatternDefinition</a></td>
+            <td>The loaded stream pattern definition.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    
+    The file must be in the proprietary "stream file" format from Thermo Fisher Scientific. The file specifies mill point positions,
+    beam dwell time, and blanking flags in a simple text file.
+    This format is also supported by the primary user interface application, <em>Microscope Control</em>.
+        
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

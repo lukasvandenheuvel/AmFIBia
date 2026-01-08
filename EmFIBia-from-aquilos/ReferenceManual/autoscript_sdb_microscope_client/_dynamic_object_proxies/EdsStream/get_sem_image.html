@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EdsStream.get_sem_image</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_dynamic_object_proxies/EdsStream/EdsStream.html">EdsStream</a>.<a class="header-path" href="../../_dynamic_object_proxies/EdsStream/get_sem_image.html">get_sem_image</a></h1>
+    <p>Returns the SEM image that captures the scene at the moment the EDS stream was closed.     This image, stored within the EdsStream object, serves a role in mapping applications. Mapping engines leverage the topological data     extracted from this image to refine the distinction between chemically coherent regions, thereby enhancing boundary delineation accuracy.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">get_sem_image()</code></pre>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+            <td>The SEM image as <a href="../../_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a> object.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+           The returned image represents the "raw" data acquired by the active detector in the active view.
+           It has not undergone any digital processing such as frame averaging, contrast enhancement etc. The image always has a bit depth of 8.        
+        </li>
+        <!-- Language Python - START -->
+        <li>
+            The blending of SEM images with generated elemental or phase maps is a common operation facilitated
+            by the <a href="../../../autoscript_toolkit/vision/blend_images.html">blend_images()</a> function
+            in the <a href="../../../autoscript_toolkit/vision/index.html">AutoScript Vision Toolkit</a>.
+        </li>
+        <!-- Language Python - END -->
+    </ul>
+
+    
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Acquire EDS data by scanning (not shown here) 
+        # ... 
+        
+        # Get the active EDS stream and close it to enable processing 
+        eds_stream = microscope.analysis.eds.mapping.get_stream()
+        eds_stream.close()
+        
+        # Get the raw SEM image associated with the EDS stream and save it
+        sem_image = eds_stream.get_sem_image()
+        sem_image.save("c:\\sem_image.tif")
+    </code></pre>
+
+    
+    <!-- Language Python - START -->
+    <h2>See also</h2>
+    <a href="../../../autoscript_toolkit/vision/blend_images.html">blend_images()</a>
+    <!-- Language Python - END -->    
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

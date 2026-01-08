@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EdsPhaseAnalysisSettings</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_structures_eds/EdsPhaseAnalysisSettings/EdsPhaseAnalysisSettings.html">EdsPhaseAnalysisSettings</a></h1>
+    <p>Contains settings for the EDS phase analysis, which is conducted by the function <a href="../../_dynamic_object_proxies/EdsStream/run_phase_analysis.html">run_phase_analysis()</a>.</p>
+    <h2>Items</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_eds/EdsPhaseAnalysisSettings/component_count.html">component_count</a></td>
+            <td><em>[Optional]</em> int</td>
+            <td>The number of components (and therefore phases) to search for in the input EDS stream during the phase analysis. If not provided or set to 0, the analysis will determine the number of components automatically.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_eds/EdsPhaseAnalysisSettings/segmentation_resolution.html">segmentation_resolution</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>The resolution of the image segmentation layers inside the phase mapping engine. The segmentation algorithm processes component maps and generates binary phase maps. The resolution does not affect the size of the resulting map, which is always either 768x512 or 512x442 depending on the scanning resolution aspect ratio.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_eds/EdsPhaseAnalysisSettings/filter_type.html">filter_type</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>The type of image filter used internally by the phase mapping engine to process component maps into binary phase maps.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_eds/EdsPhaseAnalysisSettings/filter_mask.html">filter_mask</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>The strength of the image filter used internally by the phase mapping engine to process component maps into binary phase maps.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

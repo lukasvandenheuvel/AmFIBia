@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>service.autoscript.client.is_pause_requested</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../../Resources/common.js"></script>
+    <script src="../../../../../../Resources/page.js"></script>
+    <script src="../../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../../Resources/prism.js"></script>
+    <script src="../../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../../SdbMicroscopeClient/service.html">service</a>.<a class="header-path" href="../../../../../sdb_microscope/_service/Service/autoscript.html">autoscript</a>.<a class="header-path" href="../../../../../sdb_microscope/service/_autoscript/AutoScript/client.html">client</a>.<a class="header-path" href="../../../../../sdb_microscope/service/autoscript/_client/Client/is_pause_requested.html">is_pause_requested</a></h1>
+    <p>Returns True if a pause of the running script has been requested.</p>
+    <h2>Data type</h2>
+    <em>[Read only]</em> bool
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    
+    <!-- Language Python - START -->
+    The request for an execution pause can be made from the
+    <a href="../../../../../../Extras/AutoScript/ProductComponents/AutoScriptTools/AutoScriptRunner.html">AutoScript Runner</a> application or from the
+    <a href="../../../../../../Extras/AutoScript/ProductComponents/PyCharmEditor.html">PyCharm editor</a> where AutoScript extensions are installed.<br><br>
+    
+    The call to <code>is_pause_requested</code> is non-blocking, unlike the call to <a href="check_pause_requested.html">check_pause_requested()</a>,
+    which blocks until the pause signal is cleared by pressing the Resume button in AutoScript Runner or PyCharm.
+    
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        for i in range(100):
+            # Acquire an image
+            image = microscope.imaging.grab_frame()
+            print(f"Acquisition number: {i}")
+        
+            # Check if execution pause is requested
+            if microscope.service.autoscript.client.is_pause_requested:
+                # Do some action before actually pausing the script
+                # ...
+                
+                # Pause script execution until Resume is pressed
+                microscope.service.autoscript.client.check_pause_requested()
+    </code></pre>
+    
+    <h2>See also</h2>
+    
+    <a href="check_pause_requested.html">service.autoscript.client.check_pause_requested()</a>
+    <!-- Language Python - END -->
+    
+    <p class="visibility-vendor">
+        Not applicable and therefore implemented for C++/.NET API clients.
+    </p>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

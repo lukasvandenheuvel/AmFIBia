@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AutoScript Snippets</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+
+        function ScrollTo(elementId) {
+            document.getElementById(elementId).scrollIntoView();
+        }
+    </script>
+    <style>
+        hr { height:2px; visibility:hidden; }
+    </style>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+
+<body>
+
+<h1>AutoScript Snippets</h1>
+
+AutoScript Snippets is a useful browser that provides access to a database of simple Python code samples,
+showcasing various AutoScript API calls. One of its notable features is the ability to perform full-text searches,
+allowing users to quickly find relevant code snippets based on specific keywords.
+
+<br><br>
+
+<img src="../../Resources/Snippets.png" alt="" height="504" width="861">
+<br><br>
+
+In the left pane <strong>(1)</strong>, the code snippets are arranged in a tree structure.
+When you enter text in the search box <strong>(2)</strong>, the set of snippets is filtered to show only those that contain
+the entered text either in the name of the snippet or anywhere in the code of the snippet.
+<br><br>
+
+Use the Copy button <strong>(3)</strong> to copy the snippet to the clipboard.
+<br><br>
+
+Default snippets are stored in a text file at <em>c:\ProgramData\Thermo Scientific AutoScript\CodeSnippets\SdbSnippets.py</em>.
+To add custom snippets, you can either edit the file or create a new one. The tool can display snippets from multiple source files
+if you use the <em>File/Append Snippets</em> menu function.
+</body>
+</html>

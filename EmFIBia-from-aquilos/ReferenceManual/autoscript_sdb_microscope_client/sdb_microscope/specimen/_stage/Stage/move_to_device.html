@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>specimen.stage.move_to_device</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/specimen.html">specimen</a>.<a class="header-path" href="../../../../sdb_microscope/_specimen/Specimen/stage.html">stage</a>.<a class="header-path" href="../../../../sdb_microscope/specimen/_stage/Stage/move_to_device.html">move_to_device</a></h1>
+    <p>Moves the stage to a position under an imaging device. In that position imaging with the device is allowed.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">move_to_device(imaging_device)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>imaging_device</td>
+            <td>int</td>
+            <td>The imaging device to move under. You can use the <a href="../../../../enumerations/ImagingDevice/ImagingDevice.html">ImagingDevice</a> enumeration to select the device.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    <ul class="spaced-list">
+        <li>
+            Not all imaging devices have assigned positions for imaging.
+            You can move to
+            <a href="../../../../enumerations/ImagingDevice/OPTICAL_MICROSCOPE.html">optical microscope</a>,
+            <a href="../../../../enumerations/ImagingDevice/NAV_CAM.html">navigation camera</a>,
+            <a href="../../../../enumerations/ImagingDevice/IR_CAMERA.html">IR camera</a>,
+            <a href="../../../../enumerations/ImagingDevice/ELECTRON_BEAM.html">electron</a> and
+            <a href="../../../../enumerations/ImagingDevice/ION_BEAM.html">ion beam</a>
+            devices.
+        </li>
+        <li>
+            To move back from under navigation camera, IR camera or optical microscope to the original location, move either to <a href="../../../../enumerations/ImagingDevice/ELECTRON_BEAM.html">ImagingDevice.ELECTRON_BEAM</a> or <a href="../../../../enumerations/ImagingDevice/ION_BEAM.html">ImagingDevice.ION_BEAM</a>. These two options are equivalent.
+        </li>
+        <li>
+            Additional conditions must be met before the stage can move to optical microscope. The stage must be tilted to 52&deg; and the OM alignment procedure must have been completed.
+        </li>
+    </ul>
+
+    <h2>Examples</h2>
+    
+    Take one image with the Optical Microscope camera:
+    
+    <pre><code class="language-python">
+        # Configure view 4 with optical microscope.
+        microscope.imaging.set_active_view(4)
+        microscope.imaging.set_active_device(ImagingDevice.OPTICAL_MICROSCOPE)
+        
+        # Assuming the stage is tilted to 52&deg;.
+        # Move the stage under the optical microscope to enable imaging.
+        microscope.specimen.stage.move_to_device(ImagingDevice.OPTICAL_MICROSCOPE)
+        
+        # Take one image by integrating 8 consecutive frames.
+        settings = GrabFrameSettings(frame_integration=8)
+        image = microscope.imaging.grab_frame(settings)
+        
+        # Move the stage back to the primary beam position.
+        # Note that this will not tilt the stage to 0 degrees.
+        microscope.specimen.stage.move_to_device(ImagingDevice.ELECTRON_BEAM)
+    </code></pre>
+    
+    Take one image with the navigation camera:
+    
+    <pre><code class="language-python">
+        # Activate NavCam imaging device in view 3 
+        microscope.imaging.set_active_view(3)
+        microscope.imaging.set_active_device(ImagingDevice.NAV_CAM)
+        
+        # Move the stage under NavCam to enable imaging 
+        microscope.specimen.stage.move_to_device(ImagingDevice.NAV_CAM)
+        
+        # Acquire one image in 3k resolution, integrating 2 image frames 
+        settings = GrabFrameSettings(resolution=ScanningResolution.PRESET_3072X2048, frame_integration=2)
+        image = microscope.imaging.grab_frame(settings)
+        
+        # Move the stage back to the electron beam position 
+        microscope.specimen.stage.move_to_device(ImagingDevice.ELECTRON_BEAM)
+    </code></pre>
+
+
+    <h2>See also</h2>
+    
+    <a href="../../../../enumerations/ImagingDevice/ImagingDevice.html">ImagingDevice</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

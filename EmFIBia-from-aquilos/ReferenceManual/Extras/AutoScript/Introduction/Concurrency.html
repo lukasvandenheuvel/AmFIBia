@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Concurency</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+
+<body>
+
+<h1>Concurency</h1>
+
+<h2>Support for multiple clients</h2>
+
+AutoScript facilitates the simultaneous execution of multiple scripts.
+Technically speaking, the AutoScript server can handle concurrent access from multiple AutoScript clients.<br><br>
+
+The server employs an <strong>input command queue</strong> mechanism. When a scripting command is received by the server,
+it is placed in an input queue for processing. All connected clients share this queue,
+effectively serializing their requests on the microscope hardware and preventing potential collisions
+or unwanted interference with executed operations.<br><br>
+
+While this architecture offers clear advantages, there are also potential complications to consider.
+For example, a long-lasting synchronous command, such as executing a lengthy patterning job,
+can block the input queue for a significant period. <br>
+During this time, the AutoScript server will only queue up additional commands without processing them.
+If the calling script needs to maintain control over the microscope while such a lengthy action is in progress,
+it must opt for <strong>asynchronous control</strong>. With such approach, the script initiates the long-lasting action asynchronously,
+immediately freeing the input queue for other commands.<br><br>
+
+The majority of long-lasting synchronous API functions in the AutoScript API have an asynchronous alternative.
+You can easily identify asynchronous functions by the presence of the word "start" in their names.<br><br>
+
+Below are examples illustrating synchronous and asynchronous approach to executing a patterning job:
+
+<pre><code class="language-python">
+    # Create and configure pattern(s) in the active view
+    # ...
+
+    # Execute the patterning job synchronously
+    microscope.patterning.run()
+</code></pre>
+
+<pre><code class="language-python">
+    # Create and configure pattern(s) in the active view
+    # ...
+
+    # Start the patterning job asynchronously
+    microscope.patterning.start()
+
+    # Continuously monitor the chamber pressure while the patterning job is active, checking it every 1 second
+    while microscope.patterning.state == PatterningState.RUNNING:
+        pressure = microscope.vacuum.chamber_pressure.value
+        time.sleep(1)
+</code></pre>
+
+
+<h2>Support for multithreading</h2>
+
+The AutoScript client class is designed to be thread-safe, allowing it to be accessed simultaneously
+from multiple threads without the need for any locking mechanism.<br>
+However, as described in the previous chapter, invoking the client object from multiple threads does
+not lead to parallel processing of the commands. Instead, they are still placed in the input queue
+on the server side and effectively serialized.
+
+<br><br>
+
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Support</title>
+
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1>Support</h1>
+
+    <h2>How to report a bug</h2>
+    
+    <p>To ensure efficient bug resolution, please follow these steps:</p>
+    
+    <ol class="spaced-list">
+        <li>
+            Open the AutoScript Diagnostic Report application from the Start menu and use it to create a zip file
+            containing diagnostic information.
+            If you are working in a two-computer setup (the <a href="InstallationConfigurations.html">remote scripting configuration</a>),
+            it is beneficial to create the diagnostic report on both computers.
+        </li>
+        <li>
+            During the zip creation, you will be prompted to describe the problem you are experiencing.
+            Include details such as error messages, unexpected behavior of the microscope, and the frequency of the issue.</li>
+        <li>
+            Include relevant parts of the script you are using to better illustrate the problem.
+            Add screenshots if they help explain the issue visually.
+        </li>
+        <li>
+            Attach the files to an e-mail and send it to the support contact e-mail listed below.
+        </li>
+    </ol>
+    
+    <h2>Support contacts</h2>
+    
+    <p>
+        If you would like to contact the AutoScript software development team directly for technical support,
+        you can use the following e-mail address: <a href="mailto:autoscriptsupport@thermofisher.com">autoscriptsupport@thermofisher.com</a>.
+    </p>
+    
+</body>
+</html>

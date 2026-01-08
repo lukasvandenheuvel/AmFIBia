@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+
+<h1><a class="header-path" href="UserGuide.html">User guide: </a> <a class="header-path" href="#">Computer vision</a></h1>
+
+<p>In this chapter, you will learn how to use the computer vision features of the <em>AutoScript toolkit</em> <a href="../../autoscript_toolkit/vision/index.html">Vision</a>
+ and <a href="../../autoscript_toolkit/user_interface/index.html">User interface</a> packages.</p>
+
+<p>
+    Before proceeding with the code snippets below, initialize AutoScript with the following code.
+    Set the server address according to your environment.
+</p>
+
+<pre><code class="language-python">
+    from autoscript_sdb_microscope_client import SdbMicroscopeClient
+    from autoscript_sdb_microscope_client.enumerations import *
+    from autoscript_sdb_microscope_client.structures import *
+    
+    microscope = SdbMicroscopeClient()
+    microscope.connect("localhost")
+</code></pre>
+
+<p>Import Vision and User interface packages with handy aliases:</p>
+
+<pre><code class="language-python">
+    import autoscript_toolkit.vision as vision_toolkit
+    import autoscript_toolkit.user_interface as ui_toolkit
+</code></pre>
+
+<p>Prepare a function to plot images:</p>
+
+<pre><code class="language-python">
+    from matplotlib import pyplot as plot
+    
+    def quick_plot(image):
+        plot.imshow(image.data, cmap='gray')
+        plot.show()
+</code></pre>
+
+<p>Cut out image region using <em>relative coordinates</em>, plot the original image and the template image:</p>
+
+<pre><code class="language-python">
+    settings = GrabFrameSettings(resolution="1536x1024", dwell_time=1e-6)
+    original_image = microscope.imaging.grab_frame(settings)
+    
+    template_image = vision_toolkit.cut_image(original_image, relative_center=[0.40, 0.40], relative_size=[0.20, 0.20])
+    
+    quick_plot(original_image)
+    quick_plot(template_image)
+</code></pre>
+
+<p>Cut out image region using <em>pixel coordinates</em>, plot the original image and the template images:</p>
+
+<pre><code class="language-python">
+    settings = GrabFrameSettings(resolution="1536x1024", dwell_time=1e-6)
+    original_image = microscope.imaging.grab_frame(settings)
+    
+    template_image_1 = vision_toolkit.cut_image(original_image, center=[140, 96], size=[120, 120])
+    template_image_2 = vision_toolkit.cut_image(original_image, top_left=[80, 36], bottom_right=[200, 156])
+    
+    quick_plot(original_image)
+    quick_plot(template_image_1)
+    quick_plot(template_image_2)
+</code></pre>
+
+<p>Locate a template in the image using <em>default template matcher</em> and inspect the result:</p>
+
+<pre><code class="language-python">
+    # Take a full-frame image and cut out a template image from it
+    settings = GrabFrameSettings(resolution="1536x1024", dwell_time=1e-6)
+    image = microscope.imaging.grab_frame(settings)
+    template = vision_toolkit.cut_image(image, relative_center=[0.40, 0.40], relative_size=[0.20, 0.20])
+    
+    # Locate the template in the original image
+    location = vision_toolkit.locate_feature(image, template)
+    ui_toolkit.plot_match(image, template, location.center_in_pixels)
+</code></pre>
+
+<p>Locate a template in the image using <em>Histogram of gradients template matcher</em> and inspect the result:</p>
+
+<pre><code class="language-python">
+    from autoscript_toolkit.template_matchers import *
+    
+    # Acquire one full-frame image
+    settings = GrabFrameSettings(resolution="1536x1024", dwell_time=1e-6)
+    image = microscope.imaging.grab_frame(settings)
+    
+    # Acquire one reduced area image to serve as a template
+    settings.reduced_area = Rectangle(0.05, 0.05, 0.10, 0.10)
+    template = microscope.imaging.grab_frame(settings)
+    
+    # Locate the template in the original image
+    hog_matcher = HogMatcher(microscope)
+    location = vision_toolkit.locate_feature(image, template, hog_matcher)
+    ui_toolkit.plot_match(image, template, location.center_in_pixels)
+</code></pre>
+
+</body>
+</html>

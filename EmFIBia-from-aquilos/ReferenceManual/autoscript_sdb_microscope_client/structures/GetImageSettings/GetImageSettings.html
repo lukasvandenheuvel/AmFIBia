@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GetImageSettings</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../structures/GetImageSettings/GetImageSettings.html">GetImageSettings</a></h1>
+    <p>Contains additional settings for the <a href="../../sdb_microscope/_imaging/Imaging/get_image.html">get_image()</a> function.</p>
+    <h2>Items</h2>
+    <table>
+        <tr>
+            <td><a href="../../structures/GetImageSettings/wait_for_frame.html">wait_for_frame</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>If True, the <a href="../../sdb_microscope/_imaging/Imaging/get_image.html">get_image()</a> function blocks until acquisition reaches the end of the frame and then returns the image.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/GetImageSettings/view.html">view</a></td>
+            <td><em>[Optional]</em> int</td>
+            <td>The 1-based index of the view from which the image will be copied. If not specified, the active view is used.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/GetImageSettings/timeout.html">timeout</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The maximum wait time, in seconds, for the completion of one frame. Applicable only when <a href="../../structures/GetImageSettings/wait_for_frame.html">wait_for_frame</a> is set to True.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

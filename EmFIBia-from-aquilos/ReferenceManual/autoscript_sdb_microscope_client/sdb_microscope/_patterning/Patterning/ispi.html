@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>patterning.ispi</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/patterning.html">patterning</a>.<a class="header-path" href="../../../sdb_microscope/_patterning/Patterning/ispi.html">ispi</a></h1>
+    <p>Enables control over the intermittent simultaneous patterning and imaging (iSPI) process.</p>
+    <h2>Classes</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/patterning/_ispi/Ispi/ccs_line_interval.html">ccs_line_interval</a></td>
+            <td>Decides how many cleaning cross-section lines are patterned between SEM images.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/patterning/_ispi/Ispi/time_interval.html">time_interval</a></td>
+            <td>Determines the number of seconds of patterning between SEM image acquisitions.</td>
+        </tr>
+    </table>
+    <h2>Properties</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/patterning/_ispi/Ispi/is_available.html">is_available</a></td>
+            <td><em>[Read only]</em> Returns True if the intermittent simultaneous patterning and imaging (iSPI) mode is supported on this microscope.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/patterning/_ispi/Ispi/is_on.html">is_on</a></td>
+            <td><em>[Read only]</em> Returns True if the intermittent simultaneous patterning and imaging (iSPI) mode is turned on.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/patterning/_ispi/Ispi/pause_after_frame.html">pause_after_frame</a></td>
+            <td>If set to True, patterning pauses after each SEM image is acquired.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/patterning/_ispi/Ispi/turn_off.html">turn_off()</a></td>
+            <td>Deactivates the intermittent simultaneous patterning and imaging mode.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/patterning/_ispi/Ispi/turn_on.html">turn_on()</a></td>
+            <td>Activates the intermittent simultaneous patterning and imaging mode.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            Unlike other functions in the patterning API section, the iSPI process is configured globally instead of just for the active view.
+        </li>
+        <li>
+            For the iSPI process involving cleaning cross section patterns,
+            set the SEM acquisition time period using the <a href="../../../sdb_microscope/patterning/_ispi/ISPI/ccs_line_interval.html">ccs_line_interval</a>
+            property. For other pattern types, use the
+            <a href="../../../sdb_microscope/patterning/_ispi/ISPI/time_interval.html">time_interval</a> property.
+        </li>
+    </ul>
+
+    <h2>Examples</h2>
+    
+    Take SEM image every 10 seconds while patterning a rectangle pattern:
+    
+    <pre><code class="language-python">
+        # Prepare view 2 for patterning with ions
+        microscope.imaging.set_active_view(2)
+        microscope.imaging.set_active_device(imaging_device=ImagingDevice.ION_BEAM)
+        microscope.patterning.clear_patterns()
+        microscope.patterning.create_rectangle(0, 0, 2e-6, 2e-6, 1e-6)
+        
+        # Configure the iSPI process
+        ispi_time_interval = 2
+        microscope.patterning.ispi.pause_after_frame = False
+        microscope.patterning.ispi.time_interval.value = ispi_time_interval
+        microscope.patterning.ispi.turn_on()
+        
+        # Prepare view 1 for imaging with electrons
+        microscope.imaging.set_active_view(1)
+        microscope.imaging.set_active_device(ImagingDevice.ELECTRON_BEAM)
+        microscope.beams.electron_beam.scanning.resolution.value = ScanningResolution.PRESET_768X512
+        microscope.beams.electron_beam.scanning.mode.set_full_frame()
+        microscope.beams.electron_beam.scanning.dwell_time.value = 1e-6
+        
+        # Start imaging in view 1
+        microscope.imaging.start_acquisition()
+        
+        # Start patterning in view 2
+        microscope.imaging.set_active_view(2)
+        microscope.patterning.start()
+        
+        # Save each SEM image to disk as it is acquired during patterning
+        image_index = 1
+        while microscope.patterning.state == PatterningState.RUNNING:
+            # Wait for one electron image frame to be completed, then save the image
+            settings = GetImageSettings(wait_for_frame=True, view=1, timeout=ispi_time_interval * 1.5)
+            image = microscope.imaging.get_image(settings)
+            print("Image frame completed, index", image_index)
+            image.save(f"c:\\sem_image_{image_index}")
+            image_index += 1
+            
+        # Stop electron imaging and deactivate iSPI
+        microscope.imaging.set_active_view(1)
+        microscope.imaging.stop_acquisition()
+        microscope.patterning.ispi.turn_off()
+    </code></pre>
+    
+    Note that we needed to specify a timeout value for the
+    <a href="../../_imaging/Imaging/get_image.html">imaging.get_image()</a> function because it couldn't use the
+    default method of calculating the timeout based on frame time.
+    The ideal timeout should cover both the iSPI time interval and the SEM image frame time. 
+    In the example above, we simplified this by setting the timeout to 1.5 times the interval.
+    
+    
+    <h2>See also</h2>
+    
+    <a href="../../../structures/GetImageSettings/timeout.html">GetImageSettings.timeout</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

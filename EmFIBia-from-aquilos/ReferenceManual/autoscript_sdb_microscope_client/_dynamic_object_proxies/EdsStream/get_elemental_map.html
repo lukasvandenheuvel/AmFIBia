@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EdsStream.get_elemental_map</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_dynamic_object_proxies/EdsStream/EdsStream.html">EdsStream</a>.<a class="header-path" href="../../_dynamic_object_proxies/EdsStream/get_elemental_map.html">get_elemental_map</a></h1>
+    <p>Generates an elemental map image from the EDS stream for specified chemical elements. Before calling this function, it&#39;s necessary to prepare the mapping engine by executing <a href="../../_dynamic_object_proxies/EdsStream/run_elemental_analysis.html">run_elemental_analysis()</a>.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">get_elemental_map(elements)
+get_elemental_map(elements, colors)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>elements</td>
+            <td>List[<a href="../../_structures_eds/ChemicalElement/ChemicalElement.html">ChemicalElement</a>]</td>
+            <td>The list of chemical elements to be represented in the generated map image. You can choose elements from the <a href="../../_structures_eds/PeriodicTable/PeriodicTable.html">PeriodicTable</a> class or provide a result obtained from the call to the <a href="../../_dynamic_object_proxies/EdsStream/run_elemental_analysis.html">run_elemental_analysis()</a>.</td>
+        </tr>
+        <tr>
+            <td>colors</td>
+            <td>List[<a href="../../_structures_primitives/Color/Color.html">Color</a>]</td>
+            <td>An optional list of colors corresponding to the elements specified. If not provided at all, or not provided for each element, default colors are used.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+            <td>The map image for the specified chemical elements.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        
+        <li>
+            In the current version of AutoScript, the size of the resulting map image cannot be controlled directly.
+            The image is generated using the lowest standard resolution preset that matches the aspect ratio of the
+            stream's resolution. This is either <strong>768x512</strong> (aspect ratio 3:2) or <strong>512x442</strong> (legacy semi-square resolutions).
+        </li>
+       
+        <li>
+            AutoScript features a built-in color table consisting of 18 predefined colors that are synchronized
+            with the main user interface for EDS mapping purposes.
+            When the <code>colors</code> parameter is omitted, AutoScript defaults to a color from the predefined table.
+            You can access this table from client code using the
+            <a href="../../_structures_primitives/ColorTable/ColorTable.html">ColorTable</a> class.
+        </li>
+        
+        <li>
+            The returned image is encoded in 24-bit RGB format and includes standard metadata capturing the system state.
+        </li>
+        
+        <li>
+            The function takes into account the spectral line family of the <a href="../../_structures_eds/ChemicalElement/ChemicalElement.html">chemical element</a>.
+            If the line family is set to None, a default value is used, which may vary depending on the system state,
+            mainly the beam energy. In one of the examples below, you can find out how to specify a line family for a chemical element.
+        </li>
+        
+        <li>
+            The maximum number of chemical elements in the input array is 32.
+        </li>
+        
+        <li>
+            In this version of AutoScript, mapping metadata is not stored in the image metadata structures
+            (objects under the <a href="../../_structures_adorned_image/AdornedImage/metadata.html">AdornedImage.metadata</a> property).
+            The information is only saved into the INI metadata string 
+            (<a href="../../_structures_adorned_image/AdornedImageMetadata/metadata_as_ini.html">AdornedImageMetadata.metadata_as_ini</a>)
+            in the following format:
+            
+            <pre>
+[EdsMap]
+EngineType=         # <em>The type of the mapping engine, either "Quant" or "GrossCount"</em>
+SegmentationMethod= # <em>The segmentation method, either "None", "Regular, or "ObjectBased"</em>
+ElementNames=       # <em>Comma-separated names of chemical elements this map shows</em>
+ElementColors=      # <em>Comma-separated colors used for the elements, represented as HEX-encoded integers, for example 0xFFAA33</em>
+</pre>
+
+            See the code snippet provided in the example section below for how to parse this metadata section to read the mapping results.
+        </li>
+    </ul>
+
+    <h2>Examples</h2>
+    
+    Acquire EDS data and generate a map image for the element <strong>silicon</strong> using the <strong>Quant</strong> mapping engine
+    and the <strong>object-based</strong> segmentation method:
+    
+    <pre><code class="language-python">
+        import time
+    
+        # Create a new empty EDS stream and activate it 
+        microscope.analysis.eds.mapping.reset_stream()
+        
+        # Scan the entire field of view for 10 seconds; the EDS stream will register X-rays generated by the scanning
+        microscope.beams.electron_beam.scanning.mode.set_full_frame()
+        microscope.imaging.start_acquisition()
+        time.sleep(10)
+        microscope.imaging.stop_acquisition()
+        
+        # Get the active stream and close it to enable data processing
+        eds_stream = microscope.analysis.eds.mapping.get_stream()
+        eds_stream.close()
+        
+        # Analyze the stream for chemical elements and prepare the mapping engine
+        settings = EdsElementalAnalysisSettings(
+            engine_type=EdsMappingEngineType.QUANT,
+            segmentation_method=EdsSegmentationMethod.OBJECT_BASED)
+        result = eds_stream.run_elemental_analysis(settings)
+        
+        # Generate a color map image for the element silicon with all settings left as defaults
+        silicon_map = eds_stream.get_elemental_map([PeriodicTable.SILICON])
+        silicon_map.save("silicon_map.tif")
+    </code></pre>
+    
+    Generate the map once more, but use the <strong>light green</strong> color for silicon:
+        
+    <pre><code class="language-python">
+        silicon_map = eds_stream.get_elemental_map([PeriodicTable.SILICON], [ColorTable.LIGHT_GREEN])
+    </code></pre>
+    
+    Generate another map, now for titanium with <strong>"L"</strong> spectral line family:
+        
+    <pre><code class="language-python">
+        titanium_map = eds_stream.get_elemental_map(PeriodicTable.TITANIUM.L)
+    </code></pre>
+    
+    Generate a composite map for all elements found in the stream:
+    
+    <pre><code class="language-python">
+        composite_map = eds_stream.get_elemental_map(result.elements)
+        composite_map.save("c:\\composite_map.tif")
+    </code></pre>
+
+    Generate and save a separate map for each element found:
+    
+    <pre><code class="language-python">
+        for element in result.elements:
+            map_image = eds_stream.get_elemental_map([element])
+            map_image.save(f"c:\\map_{element.name.lower()}.tif")
+    </code></pre>
+
+    Using the same data, create a composite map with the <strong>GrossCount </strong>mapping engine:
+
+    <pre><code class="language-python">
+        settings = EdsElementalAnalysisSettings(engine_type=EdsMappingEngineType.GROSS_COUNT)
+        result = eds_stream.run_elemental_analysis(settings)
+        
+        composite_map = eds_stream.get_elemental_map(result.elements)
+        composite_map.save("c:\\composite_map.tif")
+    </code></pre>
+    
+    Read map metadata from the generated image:
+    
+    <pre><code class="language-python">
+        from autoscript_sdb_microscope_client.serialization.ini_metadata_reader import IniMetadataReader
+        
+        def get_eds_map_metadata(image) -&gt; AdornedImageMetadataEdsMap:
+            """
+            Converts metadata stored in the image metadata INI block into a map metadata object.
+            """
+            metadata_reader = IniMetadataReader()
+            ini_metadata = metadata_reader.read_from_string(image.metadata.metadata_as_ini)
+            map_metadata = AdornedImageMetadataEdsMap()
+            map_metadata.engine_type = ini_metadata["EdsMap.EngineType"]
+            map_metadata.segmentation_method = ini_metadata["EdsMap.SegmentationMethod"]
+            map_metadata.segmentation_resolution = ini_metadata["EdsMap.SegmentationResolution"]
+            map_metadata.filter_type = ini_metadata["EdsMap.FilterType"]
+            map_metadata.filter_mask = ini_metadata["EdsMap.FilterMask"]
+            element_names = ini_metadata["EdsMap.ElementNames"]
+            map_metadata.element_names = element_names.split(', ') if element_names else []
+            element_colors = ini_metadata["EdsMap.ElementColors"]
+            map_metadata.element_colors = [int(color, 16) for color in element_colors.split(', ')] if element_colors else []
+            phase_indices = ini_metadata["EdsMap.PhaseIndices"]
+            map_metadata.phase_indices = [int(index) for index in str(phase_indices).split(", ")] if phase_indices else []
+            phase_colors = ini_metadata["EdsMap.PhaseColors"]
+            map_metadata.phase_colors = [int(color, 16) for color in phase_colors.split(', ')] if phase_colors else []
+            return map_metadata                
+            
+        metadata = get_eds_map_metadata(composite_map)
+        
+        print(metadata.engine_type)
+        print(metadata.segmentation_method)
+        print(metadata.element_names)
+        print(metadata.element_colors)
+    </code></pre>
+    
+    
+    Free all server-side resources associated with the EDS stream:
+        
+    <pre><code class="language-python">
+        eds_stream.dispose()
+    </code></pre>
+
+    <h2>See also</h2>
+    <a href="run_elemental_analysis.html">EdsStream.run_elemental_analysis()</a><br>
+    <a href="dispose.html">EdsStream.dispose()</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

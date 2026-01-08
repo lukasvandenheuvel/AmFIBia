@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VacuumSettings.pressure_limiting_aperture</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../structures/VacuumSettings/VacuumSettings.html">VacuumSettings</a>.<a class="header-path" href="../../structures/VacuumSettings/pressure_limiting_aperture.html">pressure_limiting_aperture</a></h1>
+    <p>The name of the pressure-limiting aperture (PLA) that is mounted on the column. The <a href="../../sdb_microscope/vacuum/_pressure_limiting_aperture/PressureLimitingAperture/available_values.html">available_values</a> property can be used to read out apertures that are known to the system and applicable in the current state of the microscope.</p>
+    <h2>Data type</h2>
+    <em>[Optional]</em> str
+<!-- Custom part - START -->
+
+    <h2>Examples</h2>
+
+    <pre><code class="language-python">
+		# Switch to low vacuum mode and select "XRayCone" PLA
+		settings = VacuumSettings(mode=VacuumMode.LOW_VACUUM, pressure=10, pressure_limiting_aperture="XRayCone")
+		microscope.vacuum.pump(settings)
+    </code></pre>
+
+    <h2>See also</h2>
+
+    <a href="../../sdb_microscope/vacuum/_pressure_limiting_aperture/PressureLimitingAperture/available_values.html">vacuum.pressure_limiting_aperture.available_values</a><br>
+    <a href="../../sdb_microscope/vacuum/_pressure_limiting_aperture/PressureLimitingAperture/value.html">vacuum.pressure_limiting_aperture.value</a>
+
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

@@ -1,0 +1,172 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+
+<h1><a class="header-path" href="UserGuide.html">User guide: </a> <a class="header-path" href="#">Pause/Stop script execution</a></h1>
+
+<p>
+AutoScript allows a running script to be paused or stopped at a predefined script line.
+This gives you the ability to pause the script to check the state of the microscope and ensure that
+the experiment is running as expected, and possibly intervene with a manual action.
+In addition, script execution can be stopped in a controlled manner if it is safe to do so for reasons
+of data or microscope state consistency.
+
+</p>
+
+<h3>Basic requirements</h3>
+
+<p>Two actions are required for the pause/stop functionality to work:</p>
+
+<h4>1. Periodically call an API function to detect the pause/stop request.</h4>
+
+<p>
+    There are two functions that check if a pause or stop request has been made and if so, act accordingly. Place the calls in scripts where stopping or pausing is appropriate.
+</p>
+<ul>
+    <li><a href="../../autoscript_sdb_microscope_client/sdb_microscope/service/autoscript/_client/Client/check_pause_requested.html">service.autoscript.client.check_pause_requested()</a></li>
+    <li><a href="../../autoscript_sdb_microscope_client/sdb_microscope/service/autoscript/_client/Client/check_stop_requested.html">service.autoscript.client.check_stop_requested()</a></li> 
+</ul>
+
+<pre><code class="language-python">
+    # Check if a pause has been requested and if so, pause the script
+    microscope.service.autoscript.client.check_pause_requested()
+	
+    # Check if a stop has been requested and if so, stop the script execution with an exception
+    microscope.service.autoscript.client.check_stop_requested()
+</code></pre>
+
+<h4>2. Request Pause/Stop.</h4>
+
+<p>
+    The second action to take is to request a pause or stop for the running script through the AutoScript tooling.
+    The request can be made by clicking the appropriate button in either the
+    <a href="../AutoScript/ProductComponents/AutoScriptTools/AutoScriptRunner.html">AutoScript Runner</a> or the
+    <a href="../AutoScript/ProductComponents/PyCharmEditor.html">PyCharm editor</a>.
+</p>
+
+<h3>Example of usage</h3>
+
+<p>
+We want to perform an experiment on the microscope, run the first part, and then allow pausing the script for a possible state check.
+In the second part of the experiment, we run an infinite loop of image captures, allowing the user to stop the process
+at any time after the complete image has been captured and saved to disk.
+</p>
+
+<pre><code class="language-python">
+    import time
+    from autoscript_sdb_microscope_client import SdbMicroscopeClient
+    
+    microscope = SdbMicroscopeClient()
+    microscope.connect("localhost")
+    
+    print("Running the experiment...")
+    # Perform the first half of the experiment, we just sleep here
+    time.sleep(10)
+    
+    # Pause the script if desired to review the intermediate results of the experiment
+    microscope.service.autoscript.client.check_pause_requested()
+    
+    print("Running the infinite acquisition loop...")
+    i = 1
+    while True:
+        # Abort the loop with an exception if the user presses Stop
+        microscope.service.autoscript.client.check_stop_requested()
+    
+        print(f"Acquisition number: {i}")
+        image = microscope.imaging.grab_frame()
+        image.save(rf"c:\Temp\image_{i}.tif")
+        i += 1
+</code></pre>
+
+<p>
+    We can choose either the <a href="../AutoScript/ProductComponents/AutoScriptTools/AutoScriptRunner.html">AutoScript Runner</a> or
+    <a href="../AutoScript/ProductComponents/PyCharmEditor.html">PyCharm editor</a> to run the script so we can create the pause/stop requests.
+    In our example, we use the <a href="../AutoScript/ProductComponents/AutoScriptTools/AutoScriptRunner.html">Runner</a> and click the Pause button there.
+    If you don't see the Pause button, make it visible by selecting <em>View/Show Stop Pause Buttons</em> from the main menu.
+    
+    Once the script execution encounters the <a href="../../autoscript_sdb_microscope_client/sdb_microscope/service/autoscript/_client/Client/check_pause_requested.html">check_pause_requested()</a> line,  the script will be paused as shown in the screenshot below.
+</p>
+
+<img src="../../Extras/AutoScript/Resources/RunnerPaused.png" alt="AutoScript Runner - script execution is paused" height="413" width="738">
+
+<p>
+    Once the script is paused, we can resume it by clicking the Resume button or stop it by clicking the Abort button. We resume the script and then click the Stop button to terminate the script before the next image acquisition.
+</p> 
+
+<img src="../../Extras/AutoScript/Resources/RunnerStopped.png" alt="AutoScript Runner - script execution is stopped" height="566" width="738">
+
+<h3>Additional API functions</h3>
+
+<p>
+    There are two helper functions that provide information about whether a particular action is currently requested. The following functions return a boolean value and have no effect on script execution:
+</p>
+
+<ul>
+    <li><a href="../../autoscript_sdb_microscope_client/sdb_microscope/service/autoscript/_client/Client/is_pause_requested.html">service.autoscript.client.is_pause_requested()</a></li>
+    <li><a href="../../autoscript_sdb_microscope_client/sdb_microscope/service/autoscript/_client/Client/is_stop_requested.html">service.autoscript.client.is_stop_requested()</a></li> 
+</ul>
+
+<pre><code class="language-python">
+    # Returns True if pause is requested, False otherwise
+    microscope.service.autoscript.client.is_pause_requested
+	
+    # Returns True if stop is requested, False otherwise
+    microscope.service.autoscript.client.is_stop_requested
+</code></pre>
+
+<p>
+    These additional functions can be used, for example, to perform cleanup tasks before the script is actually paused or stopped.
+</p>
+
+<pre><code class="language-python">
+    print("Running the infinite acquisition loop...")
+    i = 1
+    while True:
+        # Abort the loop with an exception if the user presses Stop
+        if microscope.service.autoscript.client.is_stop_requested:
+            print("Turning beam off and stopping the script...")
+            microscope.beams.electron_beam.turn_off();
+            microscope.service.autoscript.client.check_stop_requested()
+    
+        print(f"Acquisition number: {i}")
+        image = microscope.imaging.grab_frame()
+        image.save(rf"c:\Temp\image_{i}.tif")
+        i += 1
+</code></pre>
+
+</body>
+</html>

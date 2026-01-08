@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>auto_functions.run_auto_focus</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/auto_functions.html">auto_functions</a>.<a class="header-path" href="../../../sdb_microscope/_auto_functions/AutoFunctions/run_auto_focus.html">run_auto_focus</a></h1>
+    <p>Runs the automatic focus routine in the active view.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">run_auto_focus()
+run_auto_focus(settings)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>settings</td>
+            <td><a href="../../../structures/RunAutoFocusSettings/RunAutoFocusSettings.html">RunAutoFocusSettings</a></td>
+            <td>Settings for the automatic focus routine.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            Two algorithm variants ("methods") are available for the routine: <code>Standard</code> and <code>Volumescope</code>.
+            You can select the desired variant using the <code>method</code> property in the 
+            <a href="../../../structures/RunAutoFocusSettings/RunAutoFocusSettings.html">RunAutoFocusSettings</a> structure. If not specified, the <code>Standard</code> algorithm variant is executed.
+        </li>
+        <li>
+            The standard method performs the same algorithm that you can run manually from the main microscope user interface.
+        </li>
+    </ul>
+    
+    <p>
+        The following table lists the applicable settings for each of the available methods.
+        Note that the "Standard" method has a different set of applicable settings depending on the system.
+    </p>
+    
+    <table class="small-table">
+        <tr>
+            <th></th>
+            <th style="width: 20%;"><code>Standard</code><span style="font-weight: normal"> on Systems 1)</span></th>
+            <th style="width: 20%;"><code>Standard</code><span style="font-weight: normal"> on Systems 2)</span></th>
+            <th style="width: 20%;"><code>Standard</code><span style="font-weight: normal"> on Systems 3)</span></th>
+            <th style="width: 20%;"><code>Volumescope</code></th>
+        </tr>
+        <tr>
+            <td><code>dwell_time</code></td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+        </tr>
+        <tr>
+            <td><code>horizontal_field_width</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+        </tr>
+        <tr>
+            <td><code>line_integration</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+        </tr>
+        <tr>
+            <td><code>number_of_frames</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+        </tr>
+        <tr>
+            <td><code>reduced_area</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+        </tr>
+        <tr>
+            <td><code>resolution</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+        </tr>
+        <tr>
+            <td><code>working_distance_step</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+        </tr>
+        <tr>
+            <td><code>display_point</code></td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>maximum_iteratons</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+        </tr>
+    </table>
+    
+    <br>
+    Systems 1) ... <strong>Apreo ChemiSEM</strong> (37.x) <br>
+    Systems 2) ... <strong>Axia ChemiSEM</strong> (platform software version 27.x), <strong>Quattro </strong>(35.x) <br>
+    Systems 3) ... All other systems <br>
+	<br>
+
+    <h2>Examples</h2>
+   
+    <pre><code class="language-python">
+        # Run the standard auto focus routine
+        microscope.auto_functions.run_auto_focus()
+        
+        # Run the standard auto focus routine, specifying the reduced area location
+        settings = RunAutoFocusSettings(reduced_area=Rectangle(0.1, 0.1, 0.3, 0.3))
+        microscope.auto_functions.run_auto_focus(settings)
+        
+        # Run the standard auto focus routine, specifying the display point
+        settings = RunAutoFocusSettings(display_point=Point(0.4, 0.5))
+        microscope.auto_functions.run_auto_focus(settings)
+
+        # Run the auto focus routine in "Volumescope" algorithm variant
+        settings = RunAutoFocusSettings(method="Volumescope")
+        microscope.auto_functions.run_auto_focus(settings)
+        
+        # Run the auto focus routine in "Volumescope" algorithm variant, providing additional parameters
+        settings = RunAutoFocusSettings(method="Volumescope", resolution="1536x1024",
+                                        dwell_time=500e-9, reduced_area=Rectangle(0.1, 0.1, 0.8, 0.02))
+        microscope.auto_functions.run_auto_focus(settings)
+    </code></pre>
+
+    <h2>See also</h2>
+    <a href="run_auto_cb.html">auto_functions.run_auto_cb()</a><br>
+    <a href="run_auto_lens_alignment.html">auto_functions.run_auto_lens_alignment()</a><br>
+    <a href="run_auto_source_tilt.html">auto_functions.run_auto_source_tilt()</a><br>
+    <a href="run_auto_stigmator.html">auto_functions.run_auto_stigmator()</a><br>
+    <a href="run_auto_stigmator_centering.html">auto_functions.run_auto_stigmator_centering()</a>
+
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

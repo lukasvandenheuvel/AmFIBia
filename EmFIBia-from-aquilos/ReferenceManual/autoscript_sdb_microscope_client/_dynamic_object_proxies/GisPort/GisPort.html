@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GisPort</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_dynamic_object_proxies/GisPort/GisPort.html">GisPort</a></h1>
+    <p>Represents a single Gas Injection System (GIS) port.</p>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/GisPort/close.html">close()</a></td>
+            <td>Closes the GIS port.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/GisPort/get_temperature.html">get_temperature()</a></td>
+            <td>Gets the GIS port gas temperature. The default unit is Kelvin, but you can configure a preferred unit by calling <a href="../../sdb_microscope/service/autoscript/_client/Client/set_preferred_unit.html">set_preferred_unit()</a>.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/GisPort/insert.html">insert()</a></td>
+            <td>Inserts the GIS needle if it is retracted.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/GisPort/open.html">open()</a></td>
+            <td>Opens the GIS port.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/GisPort/retract.html">retract()</a></td>
+            <td>Retracts the GIS needle if it is inserted.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/GisPort/turn_heater_off.html">turn_heater_off()</a></td>
+            <td>Turns the GIS heater off.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/GisPort/turn_heater_on.html">turn_heater_on()</a></td>
+            <td>Turns the GIS heater on.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

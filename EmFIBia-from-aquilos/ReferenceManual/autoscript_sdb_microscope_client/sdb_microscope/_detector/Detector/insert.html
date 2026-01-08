@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>detector.insert</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/detector.html">detector</a>.<a class="header-path" href="../../../sdb_microscope/_detector/Detector/insert.html">insert</a></h1>
+    <p>Inserts the active detector unless a specific detector type is provided in settings.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">insert()
+insert(settings)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>settings</td>
+            <td><a href="../../../structures/DetectorInsertSettings/DetectorInsertSettings.html">DetectorInsertSettings</a></td>
+            <td>The additional settings for the insert operation.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            Inserting a detector that is already inserted will have no effect.
+        </li>
+        <li>
+            Attempting to insert a non-retractable detector will throw an exception.
+            You can check if a detector is retractable by calling <a href="get_info.html">detector.get_info()</a>.
+        </li>
+        <li>
+            The parameterless version of the function operates on the active detector in the active view.
+            If a detector type is specified in the settings, the function will insert it without needing
+            to activate it in the view.
+        </li>
+        <li>
+            In the current version, AutoScript does not support image acquisition with the "T-PIX" detector
+            or the ability to change its insertion state.
+        </li>
+    </ul>
+
+   
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Insert the active detector
+        microscope.detector.insert()    
+    </code></pre>
+    
+    <pre><code class="language-python">
+        # Assuming STEM4 is the active detector, insert it into the standard position
+        settings = DetectorInsertSettings(insert_position=Stem4Positions.STANDARD)
+        microscope.detector.insert(insert_settings)    
+    </code></pre>
+    
+    <pre><code class="language-python">
+        # Insert STEM3 detector
+        insert_settings = DetectorInsertSettings(type=DetectorType.STEM3)
+        microscope.detector.insert(insert_settings)
+    </code></pre>
+
+    <pre><code class="language-python">
+	# Insert EDS detector to standard position
+	insert_settings = DetectorInsertSettings(type=DetectorType.EDS, insert_position=EdsDetectorPositions.STANDARD_INSERTED)
+	microscope.detector.insert(insert_settings)       
+    </code></pre>
+
+    <pre><code class="language-python">
+	# Insert EDS detector to semi retracted position
+	insert_settings = DetectorInsertSettings(type=DetectorType.EDS, insert_position=EdsDetectorPositions.SEMI_RETRACTED)
+	microscope.detector.insert(insert_settings)       
+    </code></pre>
+
+    
+    <h2>See also</h2>
+    
+    <a href="retract.html">detector.retract()</a><br>
+    <a href="state.html">detector.state</a><br>
+    <a href="get_info.html">detector.get_info()</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

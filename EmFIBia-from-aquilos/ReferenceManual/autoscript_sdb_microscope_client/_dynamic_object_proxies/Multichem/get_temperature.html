@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multichem.get_temperature</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_dynamic_object_proxies/Multichem/Multichem.html">Multichem</a>.<a class="header-path" href="../../_dynamic_object_proxies/Multichem/get_temperature.html">get_temperature</a></h1>
+    <p>Determines the temperature of the active gas, unless a specific gas is provided. The default unit is Kelvin, but you can configure a preferred unit by calling <a href="../../sdb_microscope/service/autoscript/_client/Client/set_preferred_unit.html">set_preferred_unit()</a>.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">get_temperature()
+get_temperature(gas_name)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>gas_name</td>
+            <td>str</td>
+            <td>The name of the gas.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td>float</td>
+            <td>The gas temperature.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        microscope.service.autoscript.client.set_preferred_unit(Quantity.TEMPERATURE, Unit.CELSIUS)
+    
+        multichem = microscope.gas.get_multichem()
+        temperature = multichem.get_temperature("XeF2")
+        print(temperature)
+    </code></pre>
+    
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

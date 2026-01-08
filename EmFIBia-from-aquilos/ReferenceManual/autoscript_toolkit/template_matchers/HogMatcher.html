@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+<!-- Custom part - START -->
+	<h1><a class="header-path" href="#">HogMatcher</a></h1>
+	<p>This class represents an image template matcher based on the "histogram of oriented gradients" algorithm.</p>
+	<h2>Methods</h2>
+	<table>
+		<tr>
+			<td><a href="HogMatcher/__init__.html">__init__()</a></td>
+			<td>This method creates a new <code class="language-python">HogMatcher</code>.</td>
+		</tr>
+		<tr>
+			<td><a href="TemplateMatcher/match.html">match()</a></td>
+			<td>This method matches the given template image within the given image.</td>
+		</tr>
+	</table>
+    
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            The histogram of oriented gradients (HOG) is a feature descriptor used in computer vision and image processing
+            for the purpose of object detection. The technique counts occurrences of gradient orientation in localized
+            portions of an image.
+            The AutoScript product provides access to this algorithm through the HogMatcher class.
+        </li>
+        
+        <li>
+            The algorithm is particularly effective for sub-pixel localization of fiducial marks in SEM/FIB images,
+            which often feature "X" or "+" shapes, showing gradients in predominant angles.
+        </li>
+        
+        <li>
+            The HOG algorithm is implemented on the server side of AutoScript,
+            so images must be transferred from the client to the server, which introduces some overhead. 
+        </li>
+    </ul>
+
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        import autoscript_toolkit.vision as vision_toolkit
+        import autoscript_toolkit.user_interface as ui_toolkit
+        from autoscript_toolkit.template_matchers import *
+    
+        # Acquire one full-frame image in the active view
+        settings = GrabFrameSettings(resolution="1536x1024", dwell_time=1e-6)
+        image = microscope.imaging.grab_frame(settings)
+        
+        # Acquire one reduced area image to serve as a template
+        settings.reduced_area = Rectangle(0.05, 0.05, 0.10, 0.10)
+        template = microscope.imaging.grab_frame(settings)
+        
+        # Locate the template in the original image
+        hog_matcher = HogMatcher(microscope)
+        location = vision_toolkit.locate_feature(image, template, hog_matcher)
+        ui_toolkit.plot_match(image, template, location.center_in_pixels)
+    </code></pre>
+
+    
+    <h2>See also</h2>
+    <a href="OpencvTemplateMatcher.html">OpencvTemplateMatcher</a><br>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>detector.custom_settings</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/detector.html">detector</a>.<a class="header-path" href="../../../sdb_microscope/_detector/Detector/custom_settings.html">custom_settings</a></h1>
+    <p>Additional detectors settings.</p>
+    <h2>Classes</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_custom_settings/CustomSettings/converter_voltage.html">converter_voltage</a></td>
+            <td>Enables control and provides the status of the active detector converter voltage.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_custom_settings/CustomSettings/grid_voltage.html">grid_voltage</a></td>
+            <td>Enables control and provides the status of the grid voltage for the active detector.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_custom_settings/CustomSettings/md_shutter.html">md_shutter</a></td>
+            <td>Represents the Mirror Detector Shutter.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_custom_settings/CustomSettings/mirror_voltage.html">mirror_voltage</a></td>
+            <td>Enables control and provides the status of the active detector mirror voltage.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_custom_settings/CustomSettings/scintillator_voltage.html">scintillator_voltage</a></td>
+            <td>Enables control and provides the status of the active detector scintillator voltage.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_custom_settings/CustomSettings/suction_tube_voltage.html">suction_tube_voltage</a></td>
+            <td>Enables control and provides the status of the suction tube voltage for the active detector.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_custom_settings/CustomSettings/get_segment_polarity.html">get_segment_polarity()</a></td>
+            <td>Gets the polarity of a detector segment.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_custom_settings/CustomSettings/list_all_segments.html">list_all_segments()</a></td>
+            <td>Returns all segments available on the active detector.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_custom_settings/CustomSettings/reset_segments.html">reset_segments()</a></td>
+            <td>Resets all eligible segments of the active detector while it is switched to custom mode.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/detector/_custom_settings/CustomSettings/set_segment_polarity.html">set_segment_polarity()</a></td>
+            <td>Sets the polarity of a detector segment.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    
+    Similar to other API items within the detector API group,
+    the properties listed above affect an <strong>active detector</strong> within the <strong>active view</strong>.
+    However, not all settings are relevant to all detector types.
+    The following table provides a summary of which settings are applicable to specific detector types.
+    <br>
+    <br>
+    
+    <table class="small-table">
+        <tr>
+            <td>&nbsp;</td>
+            <td><strong><a href="../../../enumerations/DetectorType/ETD.html">ETD</a></strong></td>
+            <td><strong><a href="../../../enumerations/DetectorType/TLD.html">TLD</a></strong></td>
+            <td><strong><a href="../../../enumerations/DetectorType/ICE.html">ICE</a></strong></td>
+            <td><strong><a href="../../../enumerations/DetectorType/MD.html">MD</a></strong></td>
+            <td><strong><a href="../../../enumerations/DetectorType/STEM3.html">STEM3</a></strong></td>
+            <td><strong><a href="../../../enumerations/DetectorType/STEM3_PLUS.html">STEM3+</a></strong></td>
+            <td><strong><a href="../../../enumerations/DetectorType/STEM4.html">STEM4</a></strong></td>
+            <td><strong><a href="../../../enumerations/DetectorType/ABS.html">ABS</a></strong></td>
+            <td><strong><a href="../../../enumerations/DetectorType/CBS.html">CBS</a></strong></td>
+            <td><strong>Other</strong></td>
+        </tr>
+
+        <tr>
+            <td><code>converter_voltage</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>grid_voltage</code></td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>md_shutter</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>mirror_voltage</code></td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>scintillator_voltage</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>suction_tube_voltage</code></td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>get_segment_polarity()</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>list_all_segments()</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>reset_segments()</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>set_segment_polarity()</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+        </tr>
+    </table>
+
+    
+    
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>detector</title>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../SdbMicroscopeClient/detector.html">detector</a></h1>
+    <p>Enables control and provides the status of the active detector, i.e. the detector currently set in the active view.</p>
+    <h2>Classes</h2>
+    <table>
+        <tr>
+            <td><a href="../sdb_microscope/_detector/Detector/brightness.html">brightness</a></td>
+            <td>Enables control of the voltage offset for the active detector.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_detector/Detector/camera_settings.html">camera_settings</a></td>
+            <td>Contains settings of several camera detectors - Optical microscope (HiResOptical), Fluorescence light microscope (FLM) and others.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_detector/Detector/contrast.html">contrast</a></td>
+            <td>Enables control of the electronic gain for the active detector.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_detector/Detector/custom_settings.html">custom_settings</a></td>
+            <td>Additional detectors settings.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_detector/Detector/mode.html">mode</a></td>
+            <td>Enables control of the active detector mode.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_detector/Detector/type.html">type</a></td>
+            <td>Enables control of the active detector type.</td>
+        </tr>
+    </table>
+    <h2>Properties</h2>
+    <table>
+        <tr>
+            <td><a href="../sdb_microscope/_detector/Detector/is_homed.html">is_homed</a></td>
+            <td><em>[Read only]</em> Returns True if the active detector is homed. The homing procedure is only applicable for some of the camera detectors, e.g. for the fluorescence light microscope.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_detector/Detector/state.html">state</a></td>
+            <td><em>[Read only]</em> Returns the current state of a retractable detector. Possible values are defined in the <a href="../enumerations/RetractableDeviceState/RetractableDeviceState.html">RetractableDeviceState</a> enumeration.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../sdb_microscope/_detector/Detector/get_info.html">get_info()</a></td>
+            <td>Provides details on the detector&#39;s physical properties and current state.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_detector/Detector/home.html">home()</a></td>
+            <td>Homes the active detector. The homing procedure is only applicable for some of the camera detectors, e.g. for the fluorescence light microscope.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_detector/Detector/insert.html">insert()</a></td>
+            <td>Inserts the active detector unless a specific detector type is provided in settings.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_detector/Detector/retract.html">retract()</a></td>
+            <td>Retracts the active detector unless a specific detector type is provided in settings.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_detector/Detector/set_type_mode.html">set_type_mode()</a></td>
+            <td>Sets both the active detector type and mode.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    <p>
+        Active detector can be set using property <a href="../sdb_microscope/detector/_type/Type/value.html">detector.type.value</a> 
+        or method <ahref="../sdb_microscope/_detector/Detector/set_type_mode.html">set_type_mode()</a>.
+    </p>
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>specimen.temperature_stage.turn_on</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/specimen.html">specimen</a>.<a class="header-path" href="../../../../sdb_microscope/_specimen/Specimen/temperature_stage.html">temperature_stage</a>.<a class="header-path" href="../../../../sdb_microscope/specimen/_temperature_stage/TemperatureStage/turn_on.html">turn_on</a></h1>
+    <p>Turns the temperature stage on.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">turn_on()</code></pre>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+
+    <ul class="spaced-list">
+        <li>
+            The behavior of the function differs for older and newer SEM systems:
+            <ul class="not-spaced-list">
+                <li>
+                    On older systems with a microscope software version <strong>below 10.0</strong> (<em>Quanta, Quanta FEG and Versa 3D</em>):<br>
+                    Turning on the stage has no immediate effect on the stage temperature. The stage does not start heating until the target temperature value is set to <a href="../../temperature_stage/_temperature/Temperature/target_value.html">specimen.temperature_stage.temperature.target_value</a> 
+                    or the function <a href="ramp.html">specimen.temperature_stage.ramp()</a> is called.
+                </li>
+                <li>
+                    On newer systems with a microscope software version <strong>greater than or equal to 10.0</strong> (<em>Quattro, Apreo, Helios etc.</em>):<br>
+                    When you turn on the stage, it immediately enters temperature control mode - i.e. it 
+                    begins to regulate the temperature to the target value previously set in the system.
+                </li>
+            </ul>
+        <li>
+            If the stage is already on, the function has no effect.
+        </li>
+    </ul>
+
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Turn on the heating stage and start heating to 400K.
+        # Example for an older system, e.g. Quanta with software version 6.x.
+        
+        microscope.specimen.temperature_stage.turn_on()
+        microscope.specimen.temperature_stage.temperature.target_value = 400
+    </code></pre>
+    
+    <pre><code class="language-python">
+        # Turn on the heating stage and start heating to 400K.
+        # Example for a newer system, e.g. Quattro with software version 15.x.
+
+        microscope.specimen.temperature_stage.temperature.target_value = 400
+        microscope.specimen.temperature_stage.turn_on()
+    </code></pre>
+
+    <h2>See also</h2>
+    
+    <a href="turn_off.html">specimen.temperature_stage.turn_off()</a><br>
+    <a href="is_on.html">specimen.temperature_stage.is_on</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

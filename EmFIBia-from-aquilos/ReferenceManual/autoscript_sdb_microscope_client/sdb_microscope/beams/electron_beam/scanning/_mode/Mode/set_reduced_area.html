@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>beams.electron_beam.scanning.mode.set_reduced_area</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../../../Resources/common.js"></script>
+    <script src="../../../../../../../Resources/page.js"></script>
+    <script src="../../../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../../../Resources/prism.js"></script>
+    <script src="../../../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../../../SdbMicroscopeClient/beams.html">beams</a>.<a class="header-path" href="../../../../../../sdb_microscope/_beams/Beams/electron_beam.html">electron_beam</a>.<a class="header-path" href="../../../../../../sdb_microscope/beams/_electron_beam/ElectronBeam/scanning.html">scanning</a>.<a class="header-path" href="../../../../../../sdb_microscope/beams/electron_beam/_scanning/Scanning/mode.html">mode</a>.<a class="header-path" href="../../../../../../sdb_microscope/beams/electron_beam/scanning/_mode/Mode/set_reduced_area.html">set_reduced_area</a></h1>
+    <p>Activates the reduced area scanning mode.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">set_reduced_area()
+set_reduced_area(left, top, width, height)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>left</td>
+            <td>float</td>
+            <td>Left side of the rectangular area. The coordinate is in the range [0, 1].</td>
+        </tr>
+        <tr>
+            <td>top</td>
+            <td>float</td>
+            <td>Top side of the rectangular area. The coordinate is in the range [0, 1].</td>
+        </tr>
+        <tr>
+            <td>width</td>
+            <td>float</td>
+            <td>Width of the rectangular area. The valid range is [0, 1], where 1 means the full width of the view.</td>
+        </tr>
+        <tr>
+            <td>height</td>
+            <td>float</td>
+            <td>Height of the rectangular area. The valid range is [0, 1], where 1 means the full height of the view.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    <p>
+        In this scan mode, image acquisition is performed only in the rectangular subregion of the field of view.<br>
+        If a rectangle definition is specified, the function sets the position and size of the reduced area in addition to activating the mode.<br>
+        If no parameters are passed, the area remains at the last used position.
+    </p>
+
+    <h2>Examples</h2>
+    <pre><code class="language-python">
+        # Position and activate the reduced area, then start scanning in it
+        microscope.beams.electron_beam.scanning.mode.set_reduced_area(0.25, 0.25, 0.75, 0.75)
+        microscope.imaging.start_acquisition()
+    </code></pre>
+    
+    <h2>See also</h2>
+    <a href="set_full_frame.html">beams.electron_beam.scanning.mode.set_full_frame()</a><br>
+    <a href="set_line.html">beams.electron_beam.scanning.mode.set_line()</a><br>
+    <a href="set_spot.html">beams.electron_beam.scanning.mode.set_spot()</a><br>
+    <a href="set_crossover.html">beams.electron_beam.scanning.mode.set_crossover()</a><br>
+    <a href="set_external.html">beams.electron_beam.scanning.mode.set_external()</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

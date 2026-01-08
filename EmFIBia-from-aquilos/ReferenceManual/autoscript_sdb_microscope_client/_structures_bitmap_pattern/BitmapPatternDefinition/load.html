@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BitmapPatternDefinition.load</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_structures_bitmap_pattern/BitmapPatternDefinition/BitmapPatternDefinition.html">BitmapPatternDefinition</a>.<a class="header-path" href="../../_structures_bitmap_pattern/BitmapPatternDefinition/load.html">load</a></h1>
+    <p>Loads a bitmap pattern definition from a BMP file.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">load(path)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>path</td>
+            <td></td>
+            <td>The path to the BMP file from which to load the bitmap pattern definition.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_bitmap_pattern/BitmapPatternDefinition/BitmapPatternDefinition.html">BitmapPatternDefinition</a></td>
+            <td>The loaded bitmap pattern definition.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    
+    <h2>Remarks</h2>
+    
+    The bitmap must be in 24-bit uncompressed RGB format.
+    
+    <h2>Examples</h2>
+    
+    <p>The following example shows how to load a bitmap pattern definition from a BMP file:</p>
+    
+    <pre><code class="language-python">
+        bpd = BitmapPatternDefinition.load(r"c:\ProgramData\Thermo Scientific AutoScript\UserGuide\Resources\Puzzle.bmp")
+        pattern = microscope.patterning.create_bitmap(0, 0, 3e-6, 3e-6, 1e-6, bpd)
+    </code></pre>
+
+    <!--<h2>See also</h2>-->
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

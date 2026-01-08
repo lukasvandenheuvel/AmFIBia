@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>specimen.stage.relative_move</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/specimen.html">specimen</a>.<a class="header-path" href="../../../../sdb_microscope/_specimen/Specimen/stage.html">stage</a>.<a class="header-path" href="../../../../sdb_microscope/specimen/_stage/Stage/relative_move.html">relative_move</a></h1>
+    <p>Moves the stage by the specified delta position.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">relative_move(position_delta)
+relative_move(position_delta, settings)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>position_delta</td>
+            <td><a href="../../../../_structures_positions/StagePosition/StagePosition.html">StagePosition</a></td>
+            <td>The position by which the manipulator should move.</td>
+        </tr>
+        <tr>
+            <td>settings</td>
+            <td><a href="../../../../structures/MoveSettings/MoveSettings.html">MoveSettings</a></td>
+            <td>Additional move settings.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    <ul class="spaced-list">
+        <li>
+            The function uses coordinate system specified by function
+            <a href="../../../../sdb_microscope/specimen/_stage/Stage/set_default_coordinate_system.html">set_default_coordinate_system()</a>, with "Specimen" being the default coordinate system.
+        </li>
+        <li>
+            Navigating with the stage is mutually exclusive with using the compustage device (if installed).
+            Only one of these two sample navigation devices can be active at a time.
+            If the compustage is active, any movement with the stage will deactivate Compustage and activate the stage.
+            And the other way around.
+        </li>
+        <li>
+            The behavior of the function is independent of the positioning settings configured in the main user interface
+            of the microscope, such as the state of the "Compucentric rotation" or "Link Z-Y" check boxes on the Navigation page.
+        </li>
+        <li>
+            If some of the move settings are not explicitly specified in <code>settings</code>, they will default to the values configured by 
+            a previous call to <a href="set_default_move_settings.html">specimen.stage.set_default_move_settings()</a> or to False
+            if the function was not called to set the default settings.
+        </li>
+    </ul>
+    
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+    # Move stage in X axis by 2 mm in positive direction 
+    delta_position = StagePosition(x=0.002)
+    microscope.specimen.stage.relative_move(delta_position)
+    </code></pre>
+    
+    <h2>See also</h2>
+    <a href="../../../../enumerations/CoordinateSystem/CoordinateSystem.html">CoordinateSystem</a><br>
+    <a href="absolute_move.html">specimen.stage.absolute_move()</a><br>
+    <a href="set_default_move_settings.html">specimen.stage.set_default_move_settings()</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

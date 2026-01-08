@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>specimen.sputter_coater</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/specimen.html">specimen</a>.<a class="header-path" href="../../../sdb_microscope/_specimen/Specimen/sputter_coater.html">sputter_coater</a></h1>
+    <p>Allows monitoring and control of the sputter coater device, commonly referred to as &quot;MicroSputter&quot;.</p>
+    <h2>Classes</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_sputter_coater/SputterCoater/current.html">current</a></td>
+            <td>Enables control and provides the status of the sputter coater current.</td>
+        </tr>
+    </table>
+    <h2>Properties</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_sputter_coater/SputterCoater/is_homed.html">is_homed</a></td>
+            <td><em>[Read only]</em> Returns True if the sputter coater device has been homed.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_sputter_coater/SputterCoater/is_inserted.html">is_inserted</a></td>
+            <td><em>[Read only]</em> Returns True if the sputter coater is inserted.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_sputter_coater/SputterCoater/is_installed.html">is_installed</a></td>
+            <td><em>[Read only]</em> Returns True if the sputter coater device is present on the microscope.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_sputter_coater/SputterCoater/home.html">home()</a></td>
+            <td>Runs the home procedure, which calibrates the position of the sputter coater device.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_sputter_coater/SputterCoater/prepare.html">prepare()</a></td>
+            <td>Prepares the microscope for the sputtering process.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_sputter_coater/SputterCoater/recover.html">recover()</a></td>
+            <td>Returns the system to the state before the <a href="../../../sdb_microscope/specimen/_sputter_coater/SputterCoater/prepare.html">prepare()</a> function was called.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_sputter_coater/SputterCoater/run.html">run()</a></td>
+            <td>Executes the sputtering procedure.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

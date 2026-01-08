@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>imaging.grab_frame_to_disk</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/imaging.html">imaging</a>.<a class="header-path" href="../../../sdb_microscope/_imaging/Imaging/grab_frame_to_disk.html">grab_frame_to_disk</a></h1>
+    <p>Scans a completely new frame in the active view, saves the image to disk and provides the preview image.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">grab_frame_to_disk(file_path)
+grab_frame_to_disk(file_path, file_format)
+grab_frame_to_disk(file_path, file_format, settings)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>file_path</td>
+            <td>str</td>
+            <td>The path where the image should be saved. The extension specified in this parameter does not affect the file format.</td>
+        </tr>
+        <tr>
+            <td>file_format</td>
+            <td>str</td>
+            <td>The format of the file. <a href="../../../enumerations/ImageFileFormat/ImageFileFormat.html">ImageFileFormat</a> enumeration can be used to select the format.</td>
+        </tr>
+        <tr>
+            <td>settings</td>
+            <td><a href="../../../structures/GrabFrameSettings/GrabFrameSettings.html">GrabFrameSettings</a></td>
+            <td>The custom scan settings to be used instead of default values.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td><a href="../../../_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+            <td>A preview of a microscope image that corresponds to the acquired frame.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            The function initiates the scanning of a new frame and waits until it is completed.
+            The resulting image is saved at the specified location on disk.
+        </li>
+        
+        <li>
+            Custom scan settings can be provided by the <code>settings</code> parameter.
+            If not specified, the actual scan settings are determined as follows:
+            
+            <ul class="not-spaced-list">
+                <li><code>resolution</code>, <code>dwell_time</code> and <code>reduced_area</code> will default to the current settings in the active view.</li>
+                <li>Other settings will fallback to predefined constant default values:
+                    <ul>
+                        <li><code>bit_depth</code> will be 8.</li>
+                        <li><code>line_integration</code> will be 1.</li>
+                        <li><code>scan_interlacing</code> will be 1.</li>
+                        <li><code>frame_integration</code> will be 1.</li>
+                        <li><code>drift_correction</code> will be False.</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        
+        <li>
+            Maximum resolution accepted in <code>settings</code> is <strong>65536x65536</strong>.
+        </li>
+        
+        <li>
+            It is recommended to use one of the standard resolutions for common imaging tasks, that is a resolution from the <a href="../../../enumerations/ScanningResolution/ScanningResolution.html">ScanningResolution</a> enumeration.
+            
+            If a non-standard resolution is specified in <code>settings</code>, the function will use a less effective method of imaging and
+            some of the scan parameters will not be applicable.
+            <!-- Language Python - START -->
+            See <a href="../../../../Extras/UserGuide/Imaging.html">User guide: Imaging</a>
+            and <a href="../../../../Extras/UserGuide/LargeImageAcquisition.html">User guide: Large image acquisition</a> for more information.
+            <!-- Language Python - END -->
+        </li>
+     
+        <li>
+            If the preview resolution is not specified in <code>settings</code>, it is automatically calculated by an algorithm described in the
+            "Examples" section on this page (function <code>get_default_preview_resolution</code>).
+            The preview image has the same bit depth as the original image.
+        </li>
+        
+        <li>
+           The <code>views</code> parameter, if specified in <code>settings</code>, is ignored by this function. 
+        </li>
+        
+        <li>
+            If no file format is specified, TIFF is used.
+        </li>
+        
+        <li>
+            Saving images in non-standard resolutions in the TIFF format causes additional overhead with converting the image file from 
+            the native RAW format to TIFF.
+        </li>
+    </ul>
+    
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Take one image in active view with resolution 4096x3556 by integrating two consecutive frames, save the result to a disk file
+        settings = GrabFrameSettings(ScanningResolution.PRESET_4096X3536, dwell_time=1e-6, frame_integration=2)
+        microscope.imaging.grab_frame_to_disk("C:\\image.tif", ImageFileFormat.TIFF, settings)
+    </code></pre>
+    
+    <pre><code class="language-python">
+        # Take a 16k image, integrate each line twice to reduce noise, save the result to a disk file in the RAW format
+        settings = GrabFrameSettings("16384x16384", bit_depth=16, line_integration=2)
+        microscope.imaging.grab_frame_to_disk("C:\\image.raw", ImageFileFormat.RAW, settings)
+    </code></pre>
+    
+    <pre><code class="language-python">
+        from matplotlib import pyplot as plot
+        
+        # Take an 8k image, save it to disk and display its preview on a pop-up window
+        settings = GrabFrameSettings("8192x8192", dwell_time=50e-9, preview_resolution="512x512")
+        preview = microscope.imaging.grab_frame_to_disk("C:\\image.tif", ImageFileFormat.TIFF, settings)
+        
+        plot.imshow(preview.data, cmap='gray')
+        plot.show()
+    </code></pre>
+    
+    <pre><code class="language-python">
+        def get_default_preview_resolution(width, height) -&gt; (int, int):
+            if max(width, height) &lt;= 6144:
+                return width, height
+        
+            return (width * 768 // height, 768) if width &lt; height else (768, height * 768 // width)
+    </code></pre>
+
+    <h2>See also</h2>
+    <a href="../../../enumerations/ScanningResolution/ScanningResolution.html">ScanningResolution</a><br><a href="../../../enumerations/ImageFileFormat/ImageFileFormat.html">ImageFileFormat</a><br>
+    <a href="grab_frame.html">imaging.grab_frame()</a><br>
+    <!-- Language Python - START -->
+    <a href="../../../../Extras/UserGuide/LargeImageAcquisition.html">User guide: Large image acquisition</a>
+    <!-- Language Python - END -->
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

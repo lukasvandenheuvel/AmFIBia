@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+<!-- Custom part - START -->
+    <h1><a class="header-path" href="#">cut_image</a></h1>
+    
+    <p>
+        Cuts out a portion of an image according to the specified target area definition.
+    </p>
+    
+    <h2>Syntax</h2>
+    
+    <pre><code class="language-python">
+        cut_image(image, top_left, bottom_right, center, size, relative_center, relative_size)
+    </code></pre>
+    
+    <h2>Parameters</h2>
+    
+    <table>
+        <tr>
+            <td>image</td>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a> | numpy.ndarray</td>
+            <td>The image from which a part will be cut out.</td>
+        </tr>
+        <tr>
+            <td>top_left</td>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>The top-left coordinate of the area to be cut out, specified in pixels.</td>
+        </tr>
+        <tr>
+            <td>bottom_right</td>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>The bottom-right coordinate of the area to be cut out, in pixels.</td>
+        </tr>
+        <tr>
+            <td>center</td>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>The center of the cut area, in pixels.</td>
+        </tr>
+        <tr>
+            <td>size</td>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>The size of the cut area, in pixels.</td>
+        </tr>
+        <tr>
+            <td>relative_center</td>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>The center of the cut area, in relative coordinates in the range [0, 1].</td>
+        </tr>
+        <tr>
+            <td>relative_size</td>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>The size of the cut area, in relative coordinates in the range [0, 1].</td>
+        </tr>
+    </table>
+    
+    <h2>Return value</h2>
+    
+    <table>
+        <tr>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a> | numpy.ndarray</td>
+            <td>The image region extracted from the input image, provided in the same format as the input image.</td>
+        </tr>
+    </table>
+    
+    <h2>Remarks</h2>
+    <ul>
+        <li>
+            Only the following combinations of parameters are valid:
+            (<code>top_left</code> and <code>bottom_right</code>) OR (<code>center</code> and <code>size</code>) OR
+            (<code>relative_center</code> and <code>relative_size</code>).
+        </li>
+        <li>
+            The function accepts both <code class="language-python">AdornedImage</code> and
+            <code class="language-python">numpy.ndarray</code> for the <code class="language-python">image</code> parameter.
+            The resulting cut-out image is provided in the same form.
+        </li>
+    </ul>
+
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        import autoscript_toolkit.vision as vision_toolkit
+    
+        # Acquire a FIB image
+        microscope.imaging.set_active_device(ImagingDevice.ION_BEAM)
+        fib_image = microscope.imaging.grab_frame(GrabFrameSettings(resolution=ScanningResolution.PRESET_1536X1024))
+        
+        # Extract a fiducial image as a rectangular region, providing coordinates of the top-left and bottom-right corners
+        fiducial_image = vision_toolkit.cut_image(fib_image, top_left=[100, 100], bottom_right=[200, 200])
+        
+        # Perform the same operation by specifying the center point and size of the region
+        fiducial_image = vision_toolkit.cut_image(fib_image, center=[150, 150], size=[100, 100])    
+    </code></pre>
+
+    
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

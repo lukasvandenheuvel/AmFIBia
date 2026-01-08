@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+<!-- Custom part - START -->
+    <h1><a class="header-path" href="#">DcPatterningEngine</a></h1>
+    <p>
+    Represents an engine capable of executing patterning jobs while simultaneously performing drift correction.
+   
+	The engine operates on the intermittent patterning technique, where it periodically pauses the patterning process
+	to measure and correct for sample drift using beam shift.<br><br>
+	</p>
+    
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="DcPatterningEngine.__init__.html">__init__()</a></td>
+            <td>Initializes a new instance of DcPatterningEngine. The constructor optionally accepts a parameter specifying the template matcher for drift measurement.</td>
+        </tr>
+        <tr>
+            <td><a href="DcPatterningEngine/define_fiducial.html">define_fiducial()</a></td>
+            <td>Configures the drift correction engine with a fiducial image to be used for measuring drift during patterning execution.</td>
+        </tr>
+        <tr>
+            <td><a href="DcPatterningEngine/run.html">run()</a></td>
+            <td>Starts the patterning job in the active view and waits for its completion, conducting drift correction throughout the job execution.</td>
+        </tr>
+    </table>
+    
+    <h2>Remarks</h2>
+    <ul class="spaced-list">
+        <li>
+            During each pause in the patterning process, the engine captures a full-frame image and locates the fiducial mark
+            to measure the drift. The change in the fiducial's position between consecutive measurements corresponds
+            to the drift that needs to be compensated.<br>
+        </li>        
+        <li>
+            The engine maintains the same beam conditions throughout both the milling and measurement phases.           
+            <br>
+        </li>    
+        <li>
+            For the image processing task, the engine must be configured with either one of the predefined template matching
+            algorithms available in the AutoScript toolkit or with a custom matching algorithm.<br>
+        </li>
+        <li>
+        	Currently, the engine is limited to controlling <strong>ion beam</strong> patterning jobs.            
+        </li>
+    </ul>
+
+    
+    <h2>Examples</h2>
+    
+        The following example illustrates the application of the drift-corrected patterning engine in a scenario
+        involving a single pattern job. It does not cover the logic for determining the initial
+        fiducial position.
+        
+    <pre><code class="language-python">
+        import autoscript_toolkit.drift_correction as dc_toolkit
+
+        # Prepare beam and view conditions
+        microscope.imaging.set_active_device(ImagingDevice.ION_BEAM)
+        microscope.patterning.clear_patterns()
+        microscope.beams.ion_beam.scanning.resolution.value = ScanningResolution.PRESET_768X512
+        microscope.beams.ion_beam.scanning.dwell_time.value = 500e-9  # 500ns
+        microscope.beams.ion_beam.horizontal_field_width.value = 20e-6  # 20um
+        microscope.beams.ion_beam.beam_current.value = 10e-9  # 10nA
+        
+        # Create the drift corrected patterning engine with the default (OpenCV-based) template matching algorithm
+        dcp_engine = dc_toolkit.DcPatterningEngine(microscope)
+        
+        # Take an overview image of the scene; the scene is supposed to contain the fiducial mark
+        overview_image = microscope.imaging.grab_frame()
+        
+        # Determine the initial position of the fiducial, either with manual assistance from the user
+        # or by employing image processing. The steps are not detailed here.
+        # ...
+        fiducial_center_position = [-3e-6, -3e-6]
+        fiducial_size = 0.1e-6
+        
+        # Configure the engine with the fiducial template and its initial position, in meters
+        dcp_engine.define_fiducial(overview_image, center=fiducial_center_position, size=fiducial_size)
+        
+        # Create a rectangular pattern that will be milled while employing drift correction
+        pattern = microscope.patterning.create_rectangle(0, 0, 2e-6, 2e-6, 20e-6)
+        
+        # Execute the patterning process with drift correction performed every 5 seconds
+        dcp_engine.run(correction_interval=5)
+    </code></pre>
+    
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

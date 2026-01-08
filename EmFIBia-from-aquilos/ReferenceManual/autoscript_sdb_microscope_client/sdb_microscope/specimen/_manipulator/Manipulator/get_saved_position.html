@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>specimen.manipulator.get_saved_position</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/specimen.html">specimen</a>.<a class="header-path" href="../../../../sdb_microscope/_specimen/Specimen/manipulator.html">manipulator</a>.<a class="header-path" href="../../../../sdb_microscope/specimen/_manipulator/Manipulator/get_saved_position.html">get_saved_position</a></h1>
+    <p>Returns a saved (named) manipulator position. There are four default named positions. The user can save more using the main user interface, but these positions are inaccessible to AutoScript.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">get_saved_position(position_name)
+get_saved_position(position_name, coordinate_system)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>position_name</td>
+            <td>str</td>
+            <td>The name of the saved position. You can use values from the <a href="../../../../enumerations/ManipulatorSavedPosition/ManipulatorSavedPosition.html">ManipulatorSavedPosition</a> enumeration.</td>
+        </tr>
+        <tr>
+            <td>coordinate_system</td>
+            <td>str</td>
+            <td>The manipulator coordinate system in which to retrieve the saved position. You can provide a value from the <a href="../../../../enumerations/ManipulatorCoordinateSystem/ManipulatorCoordinateSystem.html">ManipulatorCoordinateSystem</a> enumeration. If not provided, the function will use the default coordinate system.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td><a href="../../../../_structures_positions/ManipulatorPosition/ManipulatorPosition.html">ManipulatorPosition</a></td>
+            <td>The saved position in form of a <a href="../../../../_structures_positions/ManipulatorPosition/ManipulatorPosition.html">ManipulatorPosition</a> structure.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    Care must be taken when reading the saved position in <a href="../../../../enumerations/ManipulatorCoordinateSystem/RAW.html">Raw</a>
+    coordinate system. In this system the Z coordinate takes into account the insertion state of the manipulator.
+    Therefore, a saved position returned by this function when the manipulator is inserted
+    is different from the same call made when the manipulator is retracted.<br>
+    If you want to insert the manipulator into a saved position specified in Raw coordinate system, read its value while the manipulator is retracted.<br>
+    In the <a href="../../../../enumerations/ManipulatorCoordinateSystem/STAGE.html">Stage</a> coordinate system,
+    the position does not depend on insertion state, so you can read the saved positions at any time.
+    
+    <!--<h2>Examples</h2>-->
+    <h2>See also</h2>
+    <a href="set_default_coordinate_system.html">specimen.manipulator.set_default_coordinate_system()</a><br>
+    <a href="insert.html">specimen.manipulator.insert()</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

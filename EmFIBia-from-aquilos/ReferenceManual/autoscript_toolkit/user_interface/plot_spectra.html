@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+<!-- Custom part - START -->
+    <h1><a class="header-path" href="#">plot_spectra</a></h1>
+    
+    <p>
+        Opens a pop-up window displaying a plot where the provided spectra, given as AdornedSpectrum instances, are overlaid in a single figure.
+    </p>
+    
+    <h2>Syntax</h2>
+    <pre><code class="language-python">
+        plot_spectra(spectra, labels=None)
+    </code></pre>
+    
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>spectra</td>
+            <td>List[<a href="../../autoscript_sdb_microscope_client/_structures_adorned_spectrum/AdornedSpectrum/AdornedSpectrum.html">AdornedSpectrum</a>]</td>
+            <td>The list of spectra to be displayed in the combined plot. The minimum number of spectra is 1, the maximum is 10.</td>
+        </tr>
+        <tr>
+            <td>labels</td>
+            <td>List[str]</td>
+            <td>A list of labels for annotating each spectrum. If left unspecified, it will be automatically generated based on the <a href="../../autoscript_sdb_microscope_client/_structures_adorned_spectrum/AdornedSpectrumMetadataExperiment/title.html">experiment name in spectrum metadata</a>.</td>
+        </tr>
+    </table>
+
+
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        import autoscript_toolkit.user_interface as ui_toolkit
+        
+        # Acquire multiple spectra
+        region1 = Region(type=RegionType.RECTANGLE, rectangle=[0, 0, 0.5, 1], coordinate_system=RegionCoordinateSystem.REDUCED_AREA)
+        spectrum1 = microscope.analysis.eds.acquire_spectrum(region1, 5)
+
+        region2 = Region(type=RegionType.RECTANGLE, rectangle=[0.5, 0, 0.5, 1], coordinate_system=RegionCoordinateSystem.REDUCED_AREA)
+        spectrum2 = microscope.analysis.eds.acquire_spectrum(region2, 5)
+
+        spectra = [spectrum1, spectrum2]
+        
+        # Display the spectra in a combined plot
+        ui_toolkit.plot_spectra(spectra)
+    </code></pre>
+
+    <img src="../Resources/PlotSpectra.png" alt="">
+
+    <h2>See also</h2>
+    
+    <a href="plot_spectrum.html">plot_spectrum()</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

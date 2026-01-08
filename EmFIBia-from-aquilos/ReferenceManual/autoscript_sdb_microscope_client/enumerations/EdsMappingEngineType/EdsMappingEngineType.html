@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EdsMappingEngineType</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../enumerations/EdsMappingEngineType/EdsMappingEngineType.html">EdsMappingEngineType</a></h1>
+    <p>
+        Specifies the possible types of mapping engines for generating EDS elemental maps.
+    </p>
+    <h2>Values</h2>
+    <table>
+        <tr>
+            <td><a href="../../enumerations/EdsMappingEngineType/GROSS_COUNT.html">GROSS_COUNT</a></td>
+            <td>"GrossCount"</td>
+            <td>A basic elemental mapping engine that marks the presence of a chemical element in a pixel by altering the pixel&#39;s color. The only segmentation method applicable for this engine type is <a href="../../enumerations/EdsSegmentationMethod/NONE.html">NONE</a>.</td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/EdsMappingEngineType/PHASE.html">PHASE</a></td>
+            <td>"Phase"</td>
+            <td>A phase mapping engine, which targets identifying unique phases (pixels of the same composition).</td>
+        </tr>
+        <tr>
+            <td><a href="../../enumerations/EdsMappingEngineType/QUANT.html">QUANT</a></td>
+            <td>"Quant"</td>
+            <td>A sophisticated elemental mapping engine that correlates chemical information acquired from the EDS detector with sample topology information obtained from a standard SEM detector. The applicable segmentation methods for this engine are <a href="../../enumerations/EdsSegmentationMethod/REGULAR.html">REGULAR</a> and <a href="../../enumerations/EdsSegmentationMethod/OBJECT_BASED.html">OBJECT_BASED</a>.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

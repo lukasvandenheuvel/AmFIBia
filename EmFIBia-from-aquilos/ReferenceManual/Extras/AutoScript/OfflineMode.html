@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Offline mode</title>
+    
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+
+<body>
+    <h1>Offline mode</h1>
+    <p>
+        In offline mode, the AutoScript server operates disconnected from the microscope and forwards all API calls to the built-in SEM simulator. 
+    </p>
+    <p>
+        AutoScript in offline mode can be installed on any computer that meets the minimum hardware requirements specified
+        in the installation manual.
+        Offline mode supports both local and remote <a href="InstallationConfigurations.html">scripting configurations</a>,
+        although the local configuration is recommended. 
+    </p>
+
+    <h2>Simplistic modeling</h2>
+    <p>
+        The scanning electron microscope is a complex device.
+        The integrated microscope model does not attempt to accurately simulate all of this complexity.
+        Most API functions intended to control the state of the microscope function as a simple read/write cache.
+        A value written by the property setter is stored and returned when the getter is called.
+        This means, for example, that changing the value of beam shift has no effect on other optical properties. 
+    </p>
+    <p>
+        The state of the simulator is not persisted.
+        When AutoScript server is restarted, the simulator resets to its initial state and the current state is lost.
+    </p>
+    
+    <h2>Image acquisition</h2>
+    <p>
+        Images output from the detectors or cameras are not visually affected by the state of the microscope or acquisition settings. 
+        Static images are provided, but in the correct size and format.
+        AutoScript allows you to upload a custom simulation image using the
+        <a href="../../autoscript_sdb_microscope_client/sdb_microscope/_imaging/Imaging/set_image.html">imaging.set_image()</a>
+        function. This can be particularly useful for simulating parts of the workflow that involve image processing.     </p>
+    <p>
+        Image metadata simulation 
+        is limited. Images are created with static metadata structures that do not reflect the simulated system state.&nbsp;
+    </p>
+
+    <h2>Auto functions</h2>
+    <p>
+        Offline auto functions are not simulated, except for simple input parameter checks.
+    </p>
+
+    <h2>Offline system properties</h2>
+    <ul>
+        <li>Dual beam system, i.e. system that has both electron and ion beams.</li>
+        <li>System name is "Offline", its platform software version corresponds to the AutoScript server version.</li>
+        <li>Microscope serial number is "Offline-001".</li>
+        <li>Available detectors: ['BSD', 'CDEM', 'CRD', 'DualBSD', 'ETD', 'External', 'GAD', 'GBSD', 'GSED', 'HiResOptical', 'HiResOpticalLowMag', 'ICE', 'InColumnBSD', 'IR', 'IR2', 'IRCameraDetector', 'LFD', 'LVD', 'LVSED', 'Mix', 'PMT', 'QuadBSD', 'SED', 'SingleBSD', 'TLD', 'TLD2'].</li>
+        <li>Available GIS ports: ['Pt dep', 'W dep', 'Al dep', 'Au dep', 'C dep', 'W'] and MultiChem.</li>
+        <li>Available electron beam optical modes: ['FieldFree', 'Immersion'].</li>
+        <li>5-axes bulk stage and 5-axes retractable compustage.</li>
+        <li>Manipulator (EasyLift) in EX version.</li>
+        <li>Heating stage with temperature range 10..1000 &deg;C.</li>
+        <li>Real time monitor is not simulated, calls to RTM functions return exceptions.</li>
+        <li>Cap probe is not simulated, <a href="../../autoscript_sdb_microscope_client/sdb_microscope/specimen/_cap_probe/CapProbe/is_installed.html">specimen.cap_probe.is_installed</a> returns False.</li>
+        <li>LoadLock is not simulated, <a href="../../autoscript_sdb_microscope_client/sdb_microscope/specimen/_loadlock/LoadLock/is_installed.html">specimen.loadlock.is_installed</a> returns False.</li>
+        <li>Sample cleaning device is not simulated, <a href="../../autoscript_sdb_microscope_client/sdb_microscope/specimen/_sample_cleaning/SampleCleaning/is_installed.html">specimen.sample_cleaning.is_installed</a> returns False.</li>
+    </ul>
+
+    <h2>System initial state</h2>
+    <ul>
+        <li>
+            View <strong>1</strong> and <strong>3</strong> are configured with
+            <a href="../../autoscript_sdb_microscope_client/enumerations/ImagingDevice/ELECTRON_BEAM.html">electron beam</a>,
+            View <strong>2</strong> and <strong>4</strong> with
+            <a href="../../autoscript_sdb_microscope_client/enumerations/ImagingDevice/ION_BEAM.html">ion beam</a>.
+        </li> 
+        <li>Chamber is pumped to high vacuum.</li>
+        <li>All GIS needles retracted, MultiChem retracted.</li>
+        <li>All retractable detectors retracted.</li>
+        <li>Scanning conditions of both beams: full frame mode, resolution 768x512, dwell time 1 &#181;s.</li>
+        <li>Electron beam optical mode: FieldFree.</li>
+        <li>No patterns in any of the 4 views.</li>
+        <li>Horizontal field width: 10 &#181;m.</li>
+        <li>Stage homed, at position x=0, y=0, z=0, r=0, t=0, Z axis unlinked.
+        <li>Compustage homed, at position x=0, y=0, z=0, a=0, b=0, unlinked.</li>
+    </ul>
+</body>
+</html>

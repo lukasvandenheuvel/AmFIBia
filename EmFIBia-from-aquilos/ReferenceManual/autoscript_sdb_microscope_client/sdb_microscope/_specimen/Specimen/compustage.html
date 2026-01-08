@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>specimen.compustage</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/specimen.html">specimen</a>.<a class="header-path" href="../../../sdb_microscope/_specimen/Specimen/compustage.html">compustage</a></h1>
+    <p>Enables control and provides the status of the Compustage device.</p>
+    <h2>Classes</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_compustage/Compustage/neutral_mill_position.html">neutral_mill_position</a></td>
+            <td>Enables control and provides the status of the Compustage neutral mill position.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_compustage/Compustage/safety_settings.html">safety_settings</a></td>
+            <td>Provides access to the Compustage safety settings.</td>
+        </tr>
+    </table>
+    <h2>Properties</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_compustage/Compustage/current_position.html">current_position</a></td>
+            <td><em>[Read only]</em> Gets the current Compustage position.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_compustage/Compustage/is_homed.html">is_homed</a></td>
+            <td><em>[Read only]</em> Returns True if the Compustage is homed.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_compustage/Compustage/is_installed.html">is_installed</a></td>
+            <td><em>[Read only]</em> Tells whether the Compustage is installed on the system. This property does not indicate whether the Compustage rod is loaded or inserted.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_compustage/Compustage/is_linked.html">is_linked</a></td>
+            <td><em>[Read only]</em> Returns True if the sample Z is linked to the free working distance.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_compustage/Compustage/absolute_move.html">absolute_move()</a></td>
+            <td>Moves the Compustage to the specified position.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_compustage/Compustage/flip.html">flip()</a></td>
+            <td>Flips the Compustage by 180 degrees.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_compustage/Compustage/home.html">home()</a></td>
+            <td>Homes all axes of the compustage.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_compustage/Compustage/insert.html">insert()</a></td>
+            <td>Inserts the Compustage device.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_compustage/Compustage/link.html">link()</a></td>
+            <td>Links the sample Z to the free working distance.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_compustage/Compustage/relative_move.html">relative_move()</a></td>
+            <td>Moves the Compustage by the specified delta position.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_compustage/Compustage/retract.html">retract()</a></td>
+            <td>Retracts the Compustage device.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_compustage/Compustage/set_default_coordinate_system.html">set_default_coordinate_system()</a></td>
+            <td>Sets the default coordinate system of the Compustage.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

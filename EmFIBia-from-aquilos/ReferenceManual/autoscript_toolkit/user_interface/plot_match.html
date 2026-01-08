@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+<!-- Custom part - START -->
+    <h1><a class="header-path" href="#">plot_match</a></h1>
+    <p>
+        Displays a popup window with the result of a pattern matching task, showing the template image alongside the searched image with the position of the template marked.
+        The function often serves as a troubleshooting tool for debugging.
+    </p>
+    
+    <h2>Syntax</h2>
+    
+    <pre><code class="language-python">
+        plot_match(searched_image, template_image, match_center)
+    </code></pre>
+    
+    <h2>Parameters</h2>
+    
+    <table>
+        <tr>
+            <td>searched_image</td>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+            <td>The image in which the feature was located.</td>
+        </tr>
+        <tr>
+            <td>template_image</td>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+            <td>The template of the feature that was located.</td>
+        </tr>
+        <tr>
+            <td>match_center</td>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>The center of the feature, specified in pixels.</td>
+        </tr>
+    </table>
+    
+    <!--<h2>Remarks</h2>-->
+    
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        import autoscript_toolkit.user_interface as ui_toolkit
+        import autoscript_toolkit.vision as vision_toolkit
+        from autoscript_toolkit.template_matchers import HogMatcher
+
+        # Take a full-frame image
+        settings = GrabFrameSettings(resolution="1536x1024", dwell_time=1e-6)
+        searched_image = microscope.imaging.grab_frame(settings)
+        
+        # Take a reduced-area image to serve as a template
+        settings.reduced_area = [0.655, 0.4, 0.16, 0.26]
+        template_image = microscope.imaging.grab_frame(settings)
+        
+        # Locate the template with the histogram-of-gradients matcher
+        hog_matcher = HogMatcher(microscope)
+        feature_location = vision_toolkit.locate_feature(searched_image, template_image, hog_matcher)
+        
+        # Display the searched image with the template position marked
+        ui_toolkit.plot_match(searched_image, template_image, feature_location.center_in_pixels)
+    </code></pre>
+    
+    <img src="../Resources/PlotMatch.png" alt="">
+    
+    <h2>See also</h2>
+    
+    <a href="../vision/locate_feature.html">locate_feature()</a><br>
+    <a href="plot_image.html">plot_image()</a><br>
+    <a href="plot_images.html">plot_images()</a>
+    
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

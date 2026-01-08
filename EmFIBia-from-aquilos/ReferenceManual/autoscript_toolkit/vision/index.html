@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+<!-- Custom part - START -->
+    <h1>Vision</h1>
+
+    <p>
+        This module provides a range of functions tailored for computer vision tasks specific to electron microscopy.
+        These functions are designed to work directly with the AutoScript representation of microscope images
+        (the 
+        <a href="../../autoscript_sdb_microscope_client/_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a>
+        classes), eliminating the need for conversions in client code.<br><br>
+    
+        Image processing routines can be executed either within Python code on the client side of AutoScript,
+        as seen in the <a href="locate_feature.html">locate_feature()</a> function using the
+        <a href="../template_matchers/OpencvTemplateMatcher.html">OpenCV variant</a> of the pattern matcher.
+        Alternatively, some processing algorithms are implemented on the AutoScript server side,
+        requiring data transmission for processing. This applies to the <a href="locate_feature.html">locate_feature()</a>
+        function configured to use the <a href="../template_matchers/HogMatcher.html">histogram-of-gradients</a>
+        pattern matcher implementation, as well as the <a href="blend_images.html">blend_images()</a> function.
+    </p>
+    
+    <h2>Classes</h2>
+    <table>
+        <tr>
+            <td><a href="FeatureLocation.html">FeatureLocation</a></td>
+            <td>Contains information about a feature located within an image.</td>
+        </tr>
+    </table>
+    
+    <h2>Functions</h2>
+    <table>
+        <tr>
+            <td><a href="blend_images.html">blend_images()</a></td>
+            <td>Combines two images together, optionally resizing them to a target size.</td>
+        </tr>
+        <tr>
+            <td><a href="connect.html">connect()</a></td>
+            <td>Assigns a <a href="../../autoscript_sdb_microscope_client/SdbMicroscopeClient/SdbMicroscopeClient.html">SdbMicroscopeClient</a> object to the Vision Toolkit, enabling functions reliant on server-side image processing routines.</td>
+        </tr>
+        <tr>
+            <td><a href="cut_image.html">cut_image()</a></td>
+            <td>Cuts out a portion of an image according to the specified target area definition.</td>
+        </tr>
+        <tr>
+            <td><a href="locate_feature.html">locate_feature()</a></td>
+            <td>Finds the position of the specified template image in an image.</td>
+        </tr>
+    </table>
+
+    <!--<h2>Examples</h2>-->
+    <h2>See also</h2>
+    <a href="../user_interface/index.html">User interface</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

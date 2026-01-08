@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>specimen.temperature_stage</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/specimen.html">specimen</a>.<a class="header-path" href="../../../sdb_microscope/_specimen/Specimen/temperature_stage.html">temperature_stage</a></h1>
+    <p>Enables control and provides the status of the microscope temperature stage.</p>
+    <h2>Classes</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_temperature_stage/TemperatureStage/humidity.html">humidity</a></td>
+            <td>Enables control of humidity of wet samples.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_temperature_stage/TemperatureStage/ramping_speed.html">ramping_speed</a></td>
+            <td>Provides control and status of the temperature ramping speed.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_temperature_stage/TemperatureStage/temperature.html">temperature</a></td>
+            <td>Enables control and provides the status of the stage temperature.</td>
+        </tr>
+    </table>
+    <h2>Properties</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_temperature_stage/TemperatureStage/is_installed.html">is_installed</a></td>
+            <td><em>[Read only]</em> Tells whether the microscope support temperature stages. This property does not indicate whether a temperature stage is currently connected.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_temperature_stage/TemperatureStage/is_on.html">is_on</a></td>
+            <td><em>[Read only]</em> Returns the on/off state of the currently connected temperature stage.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_temperature_stage/TemperatureStage/type.html">type</a></td>
+            <td><em>[Read only]</em> Returns the type of the currently connected temperature stage. Maps to <a href="../../../enumerations/TemperatureStageType/TemperatureStageType.html">TemperatureStageType</a> enumeration.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_temperature_stage/TemperatureStage/ramp.html">ramp()</a></td>
+            <td>Ramps the stage temperature up or down according to the settings specified by the parameter.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_temperature_stage/TemperatureStage/select_heat_shield.html">select_heat_shield()</a></td>
+            <td>Selects the heat shield for the currently connected temperature stage.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_temperature_stage/TemperatureStage/turn_off.html">turn_off()</a></td>
+            <td>Turns the temperature stage off.</td>
+        </tr>
+        <tr>
+            <td><a href="../../../sdb_microscope/specimen/_temperature_stage/TemperatureStage/turn_on.html">turn_on()</a></td>
+            <td>Turns the temperature stage on.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

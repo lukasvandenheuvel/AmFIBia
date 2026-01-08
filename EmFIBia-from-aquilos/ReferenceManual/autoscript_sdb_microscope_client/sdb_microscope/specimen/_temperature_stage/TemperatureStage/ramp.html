@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>specimen.temperature_stage.ramp</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/specimen.html">specimen</a>.<a class="header-path" href="../../../../sdb_microscope/_specimen/Specimen/temperature_stage.html">temperature_stage</a>.<a class="header-path" href="../../../../sdb_microscope/specimen/_temperature_stage/TemperatureStage/ramp.html">ramp</a></h1>
+    <p>Ramps the stage temperature up or down according to the settings specified by the parameter.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">ramp(settings)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>settings</td>
+            <td><a href="../../../../structures/TemperatureSettings/TemperatureSettings.html">TemperatureSettings</a></td>
+            <td>Settings for the ramp method.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+ 
+    <p>
+        The ramp command is executed in 2 stages. First, the temperature is raised or lowered to the target value with ramping speed 
+        specified in the settings parameter. When the temperature is reached within given tolerance, 
+        the second stage is executed - the system remains at the target temperature for the time specified by the "soak time" parameter in settings.
+    </p>
+    <p>
+        <br>
+        <img alt="" src="../../../../../Extras/AutoScript/Resources/TemperatureProfile.png">
+    </p>   
+    
+    More remarks:
+    <ul>
+        <li>
+            The function fails with an exception if the target temperature is not reached within specified timeout.
+            If no timeout is provided and the temperature cannot be reached for some reason, the command never completes. 
+            
+            <!-- Language Python - START -->
+            See the comment about long synchronous calls abort mechanism below.
+            <!-- Language Python - END -->
+        </li>
+        <li>
+            If the tolerance value is not specified in the settings, a default value of <strong>0.5 K</strong> is used.
+        </li>
+        <li>
+            If the soak time value is not provided in the settings, the ramp() function will end immediately after the target temperature is reached.
+        </li>
+        <li>
+            If the ramping speed is not provided in the settings, the value currently set in microscope in used.
+        </li>
+        <li>
+            The function will turn the stage on if it is not already on.
+        </li>
+    </ul>
+    
+    
+    <!-- Language Python - START -->
+    Specifics of long synchronous calls on the AutoScript server:
+    <ul>
+        <li>
+        The AutoScript server can only process one incoming call at a time. At the same time, the ramp() function was designed to be fully 
+        synchronous, with call durations ranging from seconds to hours. 
+        During this period, no other scripting commands can be executed on the server.<br>
+        A special mechanism has been implemented in the AutoScript Server to detect if the client script has been forcibly stopped.
+        If so, it aborts the execution of the ramp() function to unblock the server for further processing of scripting commands.<br>
+        Due to infrastructure constraints, the abort mechanism takes effect with a 30s delay.
+        Therefore, if you decide to abort your script during execution of the ramp() function, allow a recovery time of 30 seconds
+        before executing the next script.
+        </li>
+    </ul>
+    <!-- Language Python - END -->
+   
+    
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Assuming the stage is at room temperature
+        
+        # Raise the temperature to 423 K (150&#730;C) with speed 2 K/s
+        settings = TemperatureSettings(target_temperature=423, ramping_speed=2, tolerance=0.1, timeout=10*60)
+        microscope.specimen.temperature_stage.ramp(settings)
+
+        print("Target temperature reached.")
+
+        # Lower the temperature to 413 K (140&#730;C) and stay on this temperature for 2 minutes.
+        # The ramping speed remains at 2 K/s.
+        settings = TemperatureSettings(target_temperature=413, tolerance=0.1, soak_time=2*60)
+        microscope.specimen.temperature_stage.ramp(settings)
+
+        print("Experiment finished.")
+    </code></pre>
+    
+    <!--<h2>See also</h2>-->
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

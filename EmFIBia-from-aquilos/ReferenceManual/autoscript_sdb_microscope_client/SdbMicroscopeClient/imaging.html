@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>imaging</title>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../SdbMicroscopeClient/imaging.html">imaging</a></h1>
+    <p>Enables control of the microscope imaging.</p>
+    <h2>Classes</h2>
+    <table>
+        <tr>
+            <td><a href="../sdb_microscope/_imaging/Imaging/lut.html">lut</a></td>
+            <td>Contains functions to control digital contrast and brightness in the active view.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_imaging/Imaging/scanning_filter.html">scanning_filter</a></td>
+            <td>Enables control of the microscope scanning filter.</td>
+        </tr>
+    </table>
+    <h2>Properties</h2>
+    <table>
+        <tr>
+            <td><a href="../sdb_microscope/_imaging/Imaging/state.html">state</a></td>
+            <td><em>[Read only]</em> Gets the current state of the imaging.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../sdb_microscope/_imaging/Imaging/get_active_device.html">get_active_device()</a></td>
+            <td>Returns the type of imaging device set in the active view.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_imaging/Imaging/get_active_view.html">get_active_view()</a></td>
+            <td>Returns the index of the active view.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_imaging/Imaging/get_available_devices.html">get_available_devices()</a></td>
+            <td>Returns a list of imaging devices installed on the microscope.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_imaging/Imaging/get_image.html">get_image()</a></td>
+            <td>Retrieves a microscope image currently present in the active view.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_imaging/Imaging/grab_frame.html">grab_frame()</a></td>
+            <td>Scans a new frame in the active view and returns the acquired image.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_imaging/Imaging/grab_frame_to_disk.html">grab_frame_to_disk()</a></td>
+            <td>Scans a completely new frame in the active view, saves the image to disk and provides the preview image.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_imaging/Imaging/grab_multiple_frames.html">grab_multiple_frames()</a></td>
+            <td>Scans new frames in all compatible views and returns the acquired images.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_imaging/Imaging/match_template.html">match_template()</a></td>
+            <td>Tries to locate a feature from the given template image in the given searched image.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_imaging/Imaging/set_active_device.html">set_active_device()</a></td>
+            <td>Changes the active imaging device in the active view.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_imaging/Imaging/set_active_view.html">set_active_view()</a></td>
+            <td>Changes the active view in the main user interface of the microscope (application &#39;Microscope Control&#39;).</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_imaging/Imaging/set_image.html">set_image()</a></td>
+            <td>Uploads an image into the active view, including its metadata.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_imaging/Imaging/start_acquisition.html">start_acquisition()</a></td>
+            <td>Starts live image acquisition with the active device in the active view.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_imaging/Imaging/stop_acquisition.html">stop_acquisition()</a></td>
+            <td>Stops live image acquisition in the active view.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

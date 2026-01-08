@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+
+<h1><a class="header-path" href="UserGuide.html">User guide: </a> <a class="header-path" href="#">Detectors</a></h1>
+
+<p>This chapter shows how to activate detectors and change their settings.</p>
+
+<p>
+    Before proceeding with the code snippets below, initialize AutoScript with the following code.
+    Set the server address according to your environment.
+</p>
+
+<pre><code class="language-python">
+    from autoscript_sdb_microscope_client import SdbMicroscopeClient
+    from autoscript_sdb_microscope_client.enumerations import *
+    from autoscript_sdb_microscope_client.structures import *
+    
+    microscope = SdbMicroscopeClient()
+    microscope.connect("localhost")
+</code></pre>
+
+<p>Retrieve and print the list of available detectors:</p>
+
+<pre><code class="language-python">
+    detectors = microscope.detector.type.available_values
+    print(detectors)
+</code></pre>
+
+<p>Activate ETD detector in the active view, possibly using enumeration to avoid typo:</p>
+
+<pre><code class="language-python">
+    microscope.detector.type.value = "ETD"
+    microscope.detector.type.value = DetectorType.ETD
+</code></pre>
+
+<p>For the active detector (now ETD), get the list of available modes and inspect it:</p>
+
+<pre><code class="language-python">
+    modes = microscope.detector.mode.available_values
+    print(modes)
+</code></pre>
+
+<p>Set the active detector to a specific mode, e.g. backscatter electrons, possibly using enumeration to avoid typo:</p>
+
+<pre><code class="language-python">
+    microscope.detector.mode.value = "BackscatterElectrons"
+    microscope.detector.mode.value = DetectorMode.BACKSCATTER_ELECTRONS
+</code></pre>
+
+<p>Set active detector type and mode at once:</p>
+
+<pre><code class="language-python">
+    microscope.detector.set_type_mode("ETD", "BackscatterElectrons")
+    microscope.detector.set_type_mode(DetectorType.ETD, DetectorMode.BACKSCATTER_ELECTRONS)
+</code></pre>
+
+<p>Set contrast and brightness to 80% and 30% respectively on the active detector:</p>
+
+<pre><code class="language-python">
+    microscope.detector.contrast.value = 0.80
+    microscope.detector.brightness.value = 0.30
+</code></pre>
+
+<p>Apply custom settings to ETD detector, e.g. set its grid voltage value to -100 V:</p>
+
+<pre><code class="language-python">
+    microscope.detector.set_type_mode(DetectorType.ETD, DetectorMode.CUSTOM)
+    microscope.detector.custom_settings.grid_voltage.value = -100
+</code></pre>
+    
+<p>Custom settings for other scintillation detectors (e.g. ICE, TLD) are managed in a similar way.</p>
+
+<p>Retrieve the list of available detector segments for the STEM3 detector and inspect them:</p>
+
+<pre><code class="language-python">
+    microscope.detector.set_type_mode(DetectorType.STEM3, DetectorMode.CUSTOM)
+    segments = microscope.detector.custom_settings.list_all_segments()
+    print(segments)
+</code></pre>
+
+<p>Configure polarity of the segments:</p>
+
+<pre><code class="language-python">
+    microscope.detector.set_type_mode(DetectorType.STEM3, DetectorMode.CUSTOM)
+    microscope.detector.custom_settings.set_segment_polarity("Angular1", SegmentPolarity.POSITIVE)
+    microscope.detector.custom_settings.set_segment_polarity("Angular4", SegmentPolarity.NEUTRAL)
+</code></pre>
+
+<p>Determine the current custom mode settings for the STEM3 detector:</p>
+
+<pre><code class="language-python">
+    microscope.detector.set_type_mode(DetectorType.STEM3, DetectorMode.CUSTOM)
+    segment_names = microscope.detector.custom_settings.list_all_segments()
+    for segment_name in segment_names:
+        segment_polarity = microscope.detector.custom_settings.get_segment_polarity(segment_name)
+        print("%s: %s" % (segment_name, SegmentPolarity.explain(segment_polarity)))
+</code></pre>
+
+<p>Custom settings for other segmented detectors (e.g. ABS, CBS, STEM4) are managed in a similar way.</p>
+
+<p>Reset all eligible segments on the STEM3 detector to default settings (neutral polarity):</p>
+
+<pre><code class="language-python">
+    microscope.detector.set_type_mode(DetectorType.STEM3, DetectorMode.CUSTOM)
+    microscope.detector.custom_settings.reset_segments()
+</code></pre>
+
+<p>Resetting segments on other segmented detectors (e.g. ABS, CBS, STEM3+) is done in the similar way.</p>
+
+</body>
+</html>
+

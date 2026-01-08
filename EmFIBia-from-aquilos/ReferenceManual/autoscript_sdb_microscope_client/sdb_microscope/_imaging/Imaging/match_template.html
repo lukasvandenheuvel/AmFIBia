@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>imaging.match_template</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/imaging.html">imaging</a>.<a class="header-path" href="../../../sdb_microscope/_imaging/Imaging/match_template.html">match_template</a></h1>
+    <p>Tries to locate a feature from the given template image in the given searched image.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">match_template(image, template_image)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>image</td>
+            <td><a href="../../../_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+            <td>An image to be searched for the feature defined by the provided template image.</td>
+        </tr>
+        <tr>
+            <td>template_image</td>
+            <td><a href="../../../_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+            <td>An image containing the template of the feature to be located.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td><a href="../../../structures/ImageMatch/ImageMatch.html">ImageMatch</a></td>
+            <td>The potential location of the feature along with a confidence score ranging from 0 to 1.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <!-- Language Python - START -->
+        <li>
+            The function relies on the <a href="../../../../autoscript_toolkit/template_matchers/HogMatcher.html">HOG (histogram of gradients)</a>
+            template matching algorithm to find the feature. The matching algorithm cannot be configured as with the
+            <a href="../../../../autoscript_toolkit/vision/locate_feature.html">locate_feature()</a> function from the
+            <a href="../../../../autoscript_toolkit/vision/index.html">AutoScript Vision Toolkit</a>.
+        </li>
+        <!-- Language Python - END -->
+        
+        <li>
+            The algorithm is size invariant - it requires that the template image has the same pixel size as the area
+            containing the feature in the target image.
+        </li>
+        
+        <li>
+            Only one possible position of the feature is returned as output, accompanied with a confidence
+            score in a range of [0, 1] corresponding to 0% - 100%.
+        </li>
+        
+        <!-- Language Python - START -->
+        <li>
+            <strong>This function is deprecated.</strong> For template matching from Python code, it is recommended to use the AutoScript
+            Vision toolkit, specifically the 
+            <a href="../../../../autoscript_toolkit/vision/locate_feature.html">locate_feature()</a> function.
+        </li>
+        <!-- Language Python - END -->
+    </ul>
+
+    <!--<h2>Examples</h2>-->
+    
+    <!-- Language Python - START -->
+    <h2>See also</h2>
+    <a href="../../../../autoscript_toolkit/vision/index.html">AutoScript Vision toolkit</a>
+    <!-- Language Python - END -->
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

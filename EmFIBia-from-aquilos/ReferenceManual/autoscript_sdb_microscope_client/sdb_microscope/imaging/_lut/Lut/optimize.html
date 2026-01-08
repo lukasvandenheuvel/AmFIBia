@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>imaging.lut.optimize</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/imaging.html">imaging</a>.<a class="header-path" href="../../../../sdb_microscope/_imaging/Imaging/lut.html">lut</a>.<a class="header-path" href="../../../../sdb_microscope/imaging/_lut/Lut/optimize.html">optimize</a></h1>
+    <p>Adjusts digital contrast, brightness, and gamma to achieve an ideal histogram stretch for the image in the active view.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">optimize()</code></pre>
+<!-- Custom part - START -->
+    
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+
+        <li>
+            The function calculates and sets an optimal LUT (Look-Up Table) based on the current image in the active view,
+            ensuring an ideal histogram distribution.
+            This setting is saved for the specific combination of the active view and imaging device.
+            The new LUT will be applied to all subsequent image acquisitions in that view until it is reset.
+        </li>
+        
+        <li>
+            If the image characteristics change, for instance, when the stage is moved to a new location,
+            it is advisable to re-run the function to adjust the LUT for the new image.
+        </li>
+        
+        <li>
+            In the Microscope Control application, this function is referred to as "Auto Levels".
+        </li>
+    </ul>
+    
+    <!--<h2>Examples</h2>-->
+    
+    <h2>See also</h2>
+    <a href="reset.html">imaging.lut.reset()</a>
+        
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

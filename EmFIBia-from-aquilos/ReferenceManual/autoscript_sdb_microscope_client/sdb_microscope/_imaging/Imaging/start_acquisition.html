@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>imaging.start_acquisition</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/imaging.html">imaging</a>.<a class="header-path" href="../../../sdb_microscope/_imaging/Imaging/start_acquisition.html">start_acquisition</a></h1>
+    <p>Starts live image acquisition with the active device in the active view.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">start_acquisition()</code></pre>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    <ul>
+        <li>
+            The function starts live imaging with the active imaging device in the active view.
+            The device continues image acquisition until <a href="stop_acquisition.html">imaging.stop_acquisition</a>() is called.
+        </li>
+        <li>
+            If imaging is already started, the function does nothing.
+        </li>
+    </ul>
+
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Prepare view 1 for imaging with electron beam
+        microscope.imaging.set_active_view(1)
+        microscope.imaging.set_active_device(ImagingDevice.ELECTRON_BEAM)
+        
+        # Initialize scanning conditions
+        microscope.beams.electron_beam.scanning.resolution.value = ScanningResolution.PRESET_1536X1024
+        microscope.beams.electron_beam.scanning.dwell_time.value = 10e-6
+        
+        # Start scanning with the electron beam
+        microscope.imaging.start_acquisition()
+    </code></pre>
+    
+    <h2>See also</h2>
+    
+    <a href="stop_acquisition.html">imaging.stop_acquisition()</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

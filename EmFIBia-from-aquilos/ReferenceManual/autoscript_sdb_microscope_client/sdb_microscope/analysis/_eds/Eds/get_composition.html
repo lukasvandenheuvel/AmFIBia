@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>analysis.eds.get_composition</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../../Resources/common.js"></script>
+    <script src="../../../../../Resources/page.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../../Resources/prism.js"></script>
+    <script src="../../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../../Resources/prism-c.js"></script>
+    <script src="../../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../../SdbMicroscopeClient/analysis.html">analysis</a>.<a class="header-path" href="../../../../sdb_microscope/_analysis/Analysis/eds.html">eds</a>.<a class="header-path" href="../../../../sdb_microscope/analysis/_eds/Eds/get_composition.html">get_composition</a></h1>
+    <p>Performs quantification of chemical elements in the specified EDS spectrum.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">get_composition(spectrum, selected_elements)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>spectrum</td>
+            <td><a href="../../../../_structures_adorned_spectrum/AdornedSpectrum/AdornedSpectrum.html">AdornedSpectrum</a></td>
+            <td>The spectrum object that holds both the characteristic X-ray counts and system metadata.</td>
+        </tr>
+        <tr>
+            <td>selected_elements</td>
+            <td>List[<a href="../../../../_structures_eds/ChemicalElement/ChemicalElement.html">ChemicalElement</a>]</td>
+            <td>The list of chemical elements to be quantified.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td>List[<a href="../../../../_structures_eds/ChemicalCompositionEntry/ChemicalCompositionEntry.html">ChemicalCompositionEntry</a>]</td>
+            <td>The chemical composition derived from the EDS spectrum in the form of a list of entries. Each entry gives the atomic %, weight % for a chemical element, along with additional information on the accuracy of the quantification.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            The elements to be quantified are usually first identified by a call to <a href="get_peak_id.html">analysis.eds.get_peak_id()</a>.
+        </li>
+        <li>
+            In offline mode, the function does not perform actual processing of the provided spectrum.
+            The composition is returned for the selected elements, but with constant simulated results.
+        </li>
+        <li>
+            Some chemical elements are not supported by the AutoScript EDS quantification engine. 
+            These elements cannot be marked as selected via the <code>selected_elements</code> parameter:
+            <em>Helium, Neon, Krypton, Xenon, Radon, Hydrogen, Lithium, Polonium, Astatine, Actinium, Protactinium, Curium, Berkelium, Californium, Einsteinium, Fermium, Mendelevium, Nobelium, Lawrencium, Francium, Radium, Rutherfordium, Dubnium, Seaborgium, Bohrium, Hassium, Meitnerium, Darmstadtium, Roentgenium, Copernicium, Nihonium, Flerovium, Moscovium, Livermorium, Tennessine, Oganesson</em>.
+        </li>
+    </ul>
+
+   
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Acquire spectrum from the entire field of view
+        region = Region(type=RegionType.FULL_FRAME)
+        spectrum = microscope.analysis.eds.acquire_spectrum(region, 3)
+        
+        # Identify chemical elements present in the spectrum
+        elements_found = microscope.analysis.eds.get_peak_id(spectrum)
+        
+        # Get quantitative chemical composition from the spectrum
+        composition = microscope.analysis.eds.get_composition(spectrum, elements_found)
+        
+        # Result:
+        # [ChemicalCompositionEntry(element=Boron, atomic_percentage=15.56, weight_percentage=4.442),
+        #  ChemicalCompositionEntry(element=Fluorine, atomic_percentage=50.11, weight_percentage=25.14),
+        #  ChemicalCompositionEntry(element=Silicon, atomic_percentage=0.5068, weight_percentage=0.3759),
+        #  ChemicalCompositionEntry(element=Gallium, atomic_percentage=31.64, weight_percentage=58.25)]
+    </code></pre>
+
+    
+    <h2>See also</h2>
+    <a href="get_peak_id.html">analysis.eds.get_peak_id()</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

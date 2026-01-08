@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ColorTable</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_structures_primitives/ColorTable/ColorTable.html">ColorTable</a></h1>
+    <p>An auxiliary class providing a selection of named colors that align with the color scheme used in the main microscope user interface for rendering EDS elemental and phase maps.</p>
+<!-- Custom part - START -->
+    
+    These colors are defined:<br><br>
+    
+    <table class="small-table">
+        <tr>
+            <td style="width: 150px">RED</td>
+            <td style="width: 150px">0xf20000</td>
+            <td style="background-color: #f20000; width: 150px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 150px">DARK_ORANGE</td>
+            <td style="width: 150px">0xf43100</td>
+            <td style="background-color: #f43100; width: 150px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 150px">LIGHT_ORANGE</td>
+            <td style="width: 150px">0xf5a500</td>
+            <td style="background-color: #f5a500; width: 150px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 150px">GOLD</td>
+            <td style="width: 150px">0xffdd00</td>
+            <td style="background-color: #ffdd00; width: 150px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 150px">YELLOW</td>
+            <td style="width: 150px">0xffff00</td>
+            <td style="background-color: #ffff00; width: 150px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 150px">LIME</td>
+            <td style="width: 150px">0xccff00</td>
+            <td style="background-color: #ccff00; width: 150px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 150px">LIGHT_GREEN</td>
+            <td style="width: 150px">0x82e000</td>
+            <td style="background-color: #82e000; width: 150px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 150px">DARK_GREEN</td>
+            <td style="width: 150px">0x40e20a</td>
+            <td style="background-color: #40e20a; width: 150px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 150px">TEAL</td>
+            <td style="width: 150px">0x00ff9d</td>
+            <td style="background-color: #00ff9d; width: 150px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 150px">CYAN</td>
+            <td style="width: 150px">0x3cf2e9</td>
+            <td style="background-color: #3cf2e9; width: 150px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 150px">LIGHT_BLUE</td>
+            <td style="width: 150px">0x00d4ff</td>
+            <td style="background-color: #00d4ff; width: 150px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 150px">ROYAL_BLUE</td>
+            <td style="width: 150px">0x0091f2</td>
+            <td style="background-color: #0091f2; width: 150px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 150px">DARK_BLUE</td>
+            <td style="width: 150px">0x0031e5</td>
+            <td style="background-color: #0031e5; width: 150px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 150px">PURPLE</td>
+            <td style="width: 150px">0x6a1fe2</td>
+            <td style="background-color: #6a1fe2; width: 150px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 150px">VIOLET</td>
+            <td style="width: 150px">0xaf00e5</td>
+            <td style="background-color: #af00e5; width: 150px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 150px">MAGENTA</td>
+            <td style="width: 150px">0xef00e3</td>
+            <td style="background-color: #ef00e3; width: 150px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 150px">PINK</td>
+            <td style="width: 150px">0xf4009f</td>
+            <td style="background-color: #f4009f; width: 150px;">&nbsp;</td>
+        </tr>
+        <tr>
+            <td style="width: 150px">BORDEAUX</td>
+            <td style="width: 150px">0xe51673</td>
+            <td style="background-color: #e51673; width: 150px;">&nbsp;</td>
+        </tr>
+    </table>
+    
+    
+    
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

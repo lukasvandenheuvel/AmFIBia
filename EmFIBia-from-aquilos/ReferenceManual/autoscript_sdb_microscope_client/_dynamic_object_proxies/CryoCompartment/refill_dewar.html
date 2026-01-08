@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CryoCompartment.refill_dewar</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_dynamic_object_proxies/CryoCompartment/CryoCompartment.html">CryoCompartment</a>.<a class="header-path" href="../../_dynamic_object_proxies/CryoCompartment/refill_dewar.html">refill_dewar</a></h1>
+    <p>Refills the Dewar for the compartment.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">refill_dewar()</code></pre>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    The <code>refill_dewar()</code> procedure is enabled on the Autoloader device when the Dewar level is below 70% and the compartment is at cryo temperature.
+    
+    <h2>Examples</h2>
+    <pre><code class="language-python">
+    # Refill Dewar if it is under 40% 
+    if compartment.dewar_level &lt; 0.40:
+        compartment.refill_dewar()
+    </code></pre>
+
+    <h2>See also</h2>
+    <a href="dewar_level.html">CryoCompartment.dewar_level</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GrabFrameSettings</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../structures/GrabFrameSettings/GrabFrameSettings.html">GrabFrameSettings</a></h1>
+    <p>Contains additional settings for the <a href="../../sdb_microscope/_imaging/Imaging/grab_frame.html">grab_frame()</a> function.</p>
+    <h2>Items</h2>
+    <table>
+        <tr>
+            <td><a href="../../structures/GrabFrameSettings/resolution.html">resolution</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>The image size in pixels. You can use <a href="../../enumerations/ScanningResolution/ScanningResolution.html">ScanningResolution</a> enumeration to access standard resolution presets.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/GrabFrameSettings/dwell_time.html">dwell_time</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The time the beam scans a single pixel.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/GrabFrameSettings/bit_depth.html">bit_depth</a></td>
+            <td><em>[Optional]</em> int</td>
+            <td>The number of bits representing one pixel. It can be either 8 or 16 bits for grayscale images or 24 for RGB images.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/GrabFrameSettings/reduced_area.html">reduced_area</a></td>
+            <td><strong>Get: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Rectangle/Rectangle.html">Rectangle</a><br><strong>Set: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Rectangle/Rectangle.html">Rectangle</a> | list | tuple</td>
+            <td>The rectangular area to be scanned specified in the reduced area coordinate system. In this system the point [0,0] corresponds to the upper-left corner of the image and point [1, 1] to the lower-right corner.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/GrabFrameSettings/line_integration.html">line_integration</a></td>
+            <td><em>[Optional]</em> int</td>
+            <td>If the number is &gt; 1, each line scan is repeated several times (from 2 to 255) before proceeding to the next line. Signal data collected from these passes are integrated and shown as an actual image line. The default is 1.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/GrabFrameSettings/scan_interlacing.html">scan_interlacing</a></td>
+            <td><em>[Optional]</em> int</td>
+            <td>If the number is &gt; 1, scanning splits an imaging area into blocks defined by the number of lines (from 2 to 8). In the first instance, the first line of each block is scanned, then the second one, etc. This imaging method significantly reduces sample charging. The default is 1.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/GrabFrameSettings/preview_resolution.html">preview_resolution</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>The resolution of a preview image. This property is only considered for the <a href="../../sdb_microscope/_imaging/Imaging/grab_frame_to_disk.html">grab_frame_to_disk()</a> function.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/GrabFrameSettings/frame_integration.html">frame_integration</a></td>
+            <td><em>[Optional]</em> int</td>
+            <td>If the number is &gt; 1, integration filter is switched on during image acquisition with specified number of frames.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/GrabFrameSettings/drift_correction.html">drift_correction</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>Enables image drift correction when the integration filter is active. Requires that the frame_integration parameter is specified and is greater than 1.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/GrabFrameSettings/views.html">views</a></td>
+            <td><em>[Optional]</em> List[int]</td>
+            <td>Imaging views to participate in multiple frame acquisition. This parameter is ignored by acquisition functions other than <a href="../../sdb_microscope/_imaging/Imaging/grab_multiple_frames.html">grab_multiple_frames()</a>.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/GrabFrameSettings/exposure_time.html">exposure_time</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The duration of exposure in seconds for acquiring images using a fluorescence light microscope camera (FLM).</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/GrabFrameSettings/binning.html">binning</a></td>
+            <td><em>[Optional]</em> int</td>
+            <td>The pixel binning value for acquiring images using a fluorescence light microscope camera (FLM). Binning is the process of combining adjacent pixels throughout an image, by summing or averaging their values during or after readout.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/GrabFrameSettings/emission_type.html">emission_type</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>The specific wavelength or color of light emitted by the LED used for sample illumination in fluorescence light microscope camera (FLM) acquisitions.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/GrabFrameSettings/smart_frame_integration.html">smart_frame_integration</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>If true, the smart frame integration technique is employed during image acquisition to reduce noise and blur. The parameters <a href="../../structures/GrabFrameSettings/dwell_time.html">dwell_time</a> and <a href="../../structures/GrabFrameSettings/frame_integration.html">frame_integration</a> must be specified along with this parameter.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    <p>
+        You can pass this structure as an optional parameter to functions <a href="../../sdb_microscope/_imaging/Imaging/grab_frame.html">grab_frame()</a>,
+        <a href="../../sdb_microscope/_imaging/Imaging/grab_multiple_frames.html">grab_multiple_frames()</a> and
+        <a href="../../sdb_microscope/_imaging/Imaging/grab_frame_to_disk.html">grab_frame_to_disk()</a>.
+    </p>
+    
+    For non-standard image resolutions, that is resolutions outside the predefined presets 
+    from the <a href="../../enumerations/ScanningResolution/ScanningResolution.html">ScanningResolution</a> enumeration, 
+    some of the scan settings are not applicable. The following table summarizes the situation:<br><br>
+    
+    <table>
+        <tr>
+            <td>&nbsp;</td>
+            <td><strong>Standard resolutions</strong></td>
+            <td><strong>Non-standard resolutions</strong></td>
+        </tr>
+        <tr>
+            <td>dwell time</td>
+            <td class="green">
+                Supported.<br>
+                The minimum depends on image resolution and horizontal field width, with an absolute minimum of 25 ns.
+            </td>
+            <td class="green">
+                Supported.<br>
+                The minimum depends on image resolution and horizontal field width, with an absolute minimum of 25 ns.
+            </td>
+        </tr>
+        <tr>
+            <td>bit_depth</td>
+            <td class="green">8, 16 and 24.</td>
+            <td style="background-color: orange">
+                8:&nbsp;&nbsp; Supported on all software platform versions.<br>
+                16: Supported on some software platform versions.<br>
+                24: Not supported.
+            </td>
+        </tr>
+        <tr>
+            <td>reduced_area</td>
+            <td class="green">Supported.</td>
+            <td class="green">Supported.</td>
+        </tr>
+        <tr>
+            <td>line_integration</td>
+            <td class="green">Supported, 1..255.</td>
+            <td style="background-color: orange">Supported on some software platform versions, 1..255.</td>
+        </tr>
+        <tr>
+            <td>scan_interlacing</td>
+            <td class="green">Supported, 1..8.</td>
+            <td class="red">Not supported.</td>
+        </tr>
+        <tr>
+            <td>frame_integration</td>
+            <td class="green">Supported, 1..512.</td>
+            <td class="red">Not supported.</td>
+        </tr>
+        <tr>
+            <td>drift_correction</td>
+            <td class="green">Supported.</td>
+            <td class="red">Not supported.</td>
+        </tr>
+        <tr>
+            <td>views</td>
+            <td class="green">Supported.</td>
+            <td class="red">Not supported.</td>
+        </tr>
+        <tr>
+            <td>exposure_time</td>
+            <td class="green">Supported for selected camera detectors.</td>
+            <td class="red">Not supported.</td>
+        </tr>
+        <tr>
+            <td>binning</td>
+            <td class="green">Supported only for Fluorescence Light Microscope (FLM) camera.</td>
+            <td class="red">Not supported.</td>
+        </tr>
+        <tr>
+            <td>emission_type</td>
+            <td class="green">Supported only for Fluorescence Light Microscope (FLM) camera.</td>
+            <td class="red">Not supported.</td>
+        </tr>
+        <tr>
+            <td>smart_frame_integration</td>
+            <td class="green">Supported on <a href="smart_frame_integration.html">selected</a> systems.</td>
+            <td class="red">Not supported.</td>
+        </tr>
+    </table>
+
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

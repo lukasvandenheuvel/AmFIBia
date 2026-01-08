@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>auto_functions.run_auto_stigmator</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/auto_functions.html">auto_functions</a>.<a class="header-path" href="../../../sdb_microscope/_auto_functions/AutoFunctions/run_auto_stigmator.html">run_auto_stigmator</a></h1>
+    <p>Runs a routine that automatically optimizes stigmator in the active view.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">run_auto_stigmator()
+run_auto_stigmator(settings)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>settings</td>
+            <td><a href="../../../structures/RunAutoStigmatorSettings/RunAutoStigmatorSettings.html">RunAutoStigmatorSettings</a></td>
+            <td>Settings for the automatic stigmator adjustment routine.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    
+    <ul>
+        <li>
+            Two algorithm variants ("methods") are available for the routine: <code>Standard</code> and <code>OngEtAl</code>.
+            You can select the desired routine via property <code>method</code>
+            of the <a href="../../../structures/RunAutoStigmatorSettings/RunAutoStigmatorSettings.html">RunAutoStigmatorSettings</a> structure. <code>Standard</code> method is the default one.
+        </li>
+        <li>
+            On Axia family microscopes the <code>Standard</code> method accepts two optional parameters in the settings structure.
+        </li>
+        <li>
+            The <code>Standard </code>method performs the same algorithm that you can also run manually from the microscope's main user interface.
+        </li>
+        <li>
+            The <code>OngEtAl</code> algorithm optimizes both the stigmator and focus.
+        </li>
+    </ul>
+    
+    <p>The following table lists applicable settings for each method:</p>
+    
+    <table class="small-table">
+        <tr>
+            <th></th>
+            <th style="width: 20%;"><code>Standard</code></th>
+            <th style="width: 20%;"><code>Standard on selected systems *)</code></th>
+            <th style="width: 20%;"><code>OngEtAl</code></th>
+        </tr>
+        <tr>
+             <td><code>dwell_time</code></td>
+             <td class="red">NO</td>
+             <td class="green">YES</td>
+             <td class="green">YES</td>
+        </tr>
+        <tr>
+            <td><code>horizontal_field_width</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+        </tr>
+        <tr>
+            <td><code>line_integration</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+        </tr>
+        <tr>
+            <td><code>number_of_frames</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+        </tr>
+        <tr>
+            <td><code>reduced_area</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+        </tr>
+        <tr>
+            <td><code>resolution</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+        </tr>
+        <tr>
+            <td><code>stigmation_step</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+        </tr>
+        <tr>
+            <td><code>display_point</code></td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+            <td class="red">NO</td>
+        </tr>
+        <tr>
+            <td><code>maximum_iteratons</code></td>
+            <td class="red">NO</td>
+            <td class="red">NO</td>
+            <td class="green">YES</td>
+        </tr>
+    </table>
+
+    <br>
+    *) The Standard autostigmator method on <strong>Axia ChemiSEM</strong> systems (software platform version 27.x) and <strong>Apreo ChemiSEM</strong> (platform version 37.x)
+    has a different set of applicable settings.
+
+
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Run the standard auto stigmator routine
+        microscope.auto_functions.run_auto_stigmator()
+    
+        # Run the "OngEtAl" auto stigmator routine
+        settings = RunAutoStigmatorSettings(method="OngEtAl")
+        microscope.auto_functions.run_auto_stigmator(settings)
+    
+        # Run the "OngEtAl" auto stigmator routine, supplying additional parameters
+        settings = RunAutoStigmatorSettings(method="OngEtAl", resolution="192x128", reduced_area=Rectangle(0.1, 0.1, 0.8, 0.8))
+        microscope.auto_functions.run_auto_stigmator(settings)
+    
+        # Run the standard auto stigmator routine with the Axia specific parameter from which the position of reduced area is calculated
+        settings = RunAutoStigmatorSettings(display_point=Point(0.2, 0.3))
+        microscope.auto_functions.run_auto_stigmator(settings)
+    </code></pre>
+
+    <h2>See also</h2>
+    <a href="run_auto_cb.html">auto_functions.run_auto_cb()</a><br>
+    <a href="run_auto_focus.html">auto_functions.run_auto_focus()</a><br>
+    <a href="run_auto_lens_alignment.html">auto_functions.run_auto_lens_alignment()</a><br>
+    <a href="run_auto_source_tilt.html">auto_functions.run_auto_source_tilt()</a><br>
+    <a href="run_auto_stigmator_centering.html">auto_functions.run_auto_stigmator_centering()</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

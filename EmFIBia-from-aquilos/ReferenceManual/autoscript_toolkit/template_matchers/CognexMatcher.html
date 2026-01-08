@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+<!-- Custom part - START -->
+	<h1><a class="header-path" href="#">CognexMatcher</a></h1>
+	
+	<p>This class represents an image template matcher based on the <em>Cognex PatMax</em> algorithm.</p>
+	<h2>Properties</h2>
+    <table>
+        <tr>
+            <td><a href="CognexMatcher/is_installed.html">is_installed</a></td>
+            <td><em>[Read only]</em> Returns true if the Cognex VisionPro software is installed on the microscope computer.</td>
+        </tr>
+        <tr>
+            <td><a href="CognexMatcher/is_licensed.html">is_licensed</a></td>
+            <td><em>[Read only]</em> Returns true if the Cognex VisionPro software is licensed on the microscope computer.</td>
+        </tr>
+    </table>
+	<h2>Methods</h2>
+	<table>
+		<tr>
+			<td><a href="CognexMatcher/__init__.html">__init__()</a></td>
+			<td>Creates a new <code class="language-python">CognexMatcher</code>.</td>
+		</tr>
+		<tr>
+			<td><a href="TemplateMatcher/match.html">match()</a></td>
+			<td>Matches the given template image within the given image.</td>
+        </tr>
+        <tr>
+            <td><a href="CognexMatcher/train.html">train()</a></td>
+            <td>Trains the Cognex PatMax algorithm on a template image, allowing for detailed training settings to be specified.</td>
+		</tr>
+	</table>
+
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            <em>PatMax</em> is a robust feature location algorithm from Cognex's <em>VisionPro</em> machine vision library.
+            This algorithm is designed to accurately locate features even if they have undergone transformations
+            such as rotation or resizing. 
+        </li>
+        
+        <li>
+            <strong>VisionPro software is not installed with the base AutoScript product. Its lisense is not 
+            included in any AutoScript product license variant.</strong>
+        </li>
+        
+        <li>    
+            <em>VisionPro </em>must be installed manually on the microscope computer alongside the AutoScript server component. 
+            The required <em>VisionPro </em>version is <strong>9.5</strong> or newer, <strong>64-bit</strong> edition.
+        </li>
+        
+        <li>
+            For more information about <em>VisionPro</em>, visit the vendor's site: <a target="_blank" href="https://www.cognex.com/">https://www.cognex.com/</a>.
+        </li>
+    </ul>
+
+    <h2>Examples</h2>
+
+    <pre><code class="language-python">
+        import autoscript_toolkit.vision as vision_toolkit
+        import autoscript_toolkit.user_interface as ui_toolkit
+        from autoscript_toolkit.template_matchers import *
+        from autoscript_toolkit_cognex_extension.cognex_template_matcher import *
+
+        # Acquire one full-frame image in the active view
+        settings = GrabFrameSettings(resolution="1536x1024", dwell_time=1e-6)
+        image = microscope.imaging.grab_frame(settings)
+        
+        # Acquire one reduced area image to serve as a template
+        settings.reduced_area = Rectangle(0.05, 0.05, 0.10, 0.10)
+        template = microscope.imaging.grab_frame(settings)
+        
+        # Locate the template in the original image with default PatMax training strategy
+        cognex_matcher = CognexMatcher(microscope)
+        location = vision_toolkit.locate_feature(image, template, cognex_matcher)
+        ui_toolkit.plot_match(image, template, location.center_in_pixels)
+        
+        # Repeat the search, but with a different training algorithm
+        patmax_settings = CognexMatcherSettings(train_algorithm=CognexTrainAlgorithm.PAT_MAX_AND_PAT_QUICK)
+        cognex_matcher.train(template, patmax_settings)
+        location = vision_toolkit.locate_feature(image, template, cognex_matcher)
+        vision_toolkit.plot_match(image, template, location.center_in_pixels)
+    </code></pre>
+    
+    <h2>See also</h2>
+    <a href="HogMatcher.html">HogMatcher</a><br>
+    <a href="OpencvTemplateMatcher.html">OpencvTemplateMatcher</a><br>
+
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

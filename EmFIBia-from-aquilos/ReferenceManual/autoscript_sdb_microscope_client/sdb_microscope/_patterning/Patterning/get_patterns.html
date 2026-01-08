@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>patterning.get_patterns</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/patterning.html">patterning</a>.<a class="header-path" href="../../../sdb_microscope/_patterning/Patterning/get_patterns.html">get_patterns</a></h1>
+    <p>Returns a list of patterns created in the active view for the current imaging device.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">get_patterns()</code></pre>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td>List[Union]</td>
+            <td>The list of existing patterns.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            This function provides a way to access patterns that have been created outside of AutoScript, either in Microscope Control
+            or any other application with pattern-creation capabilities.         
+        </li>
+        <li>
+            The returned list is a heterogeneous collection, containing items of different types corresponding
+            to individual patterns, for example [RectanglePattern, LinePattern].
+        </li>
+        <li>
+            The "Trapezoid" pattern type, available in certain SEM systems and platform software versions via the Microscope Control
+            application, is internally represented as a polygon pattern.
+            This is how it will be included in the returned collection.
+        </li>
+    </ul>
+
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        from autoscript_sdb_microscope_client.dynamic_objects import *
+        
+        # Read all patterns from the active view
+        all_patterns = microscope.patterning.get_patterns()
+        for pattern in all_patterns:
+            if type(pattern) is RectanglePattern:
+                # Perform rectangle pattern specific operations
+                # ...
+                pass
+            elif type(pattern) is CirclePattern:
+                # Perform circle pattern specific operations
+                # ...
+                pass
+    </code></pre>
+    
+    <!--<h2>See also</h2>-->
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

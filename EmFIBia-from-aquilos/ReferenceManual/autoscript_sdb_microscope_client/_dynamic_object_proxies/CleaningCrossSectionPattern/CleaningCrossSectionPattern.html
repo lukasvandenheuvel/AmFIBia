@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CleaningCrossSectionPattern</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/CleaningCrossSectionPattern.html">CleaningCrossSectionPattern</a></h1>
+    <p>The cleaning cross section pattern type.</p>
+    <h2>Properties</h2>
+    <table>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/application_file.html">application_file</a></td>
+            <td>The name of the application file.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/beam_type.html">beam_type</a></td>
+            <td>The beam used for patterning, either electron or ion.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/blur.html">blur</a></td>
+            <td>Like Defocus, but specifying the additional diameter of the blurred spot.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/center_x.html">center_x</a></td>
+            <td>The X coordinate of the pattern center position.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/center_y.html">center_y</a></td>
+            <td>The Y coordinate of the pattern center position.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/defocus.html">defocus</a></td>
+            <td>The defocus (WD change) of the beam. It allows focusing above (negative value) or below (positive value) the sample surface.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/depth.html">depth</a></td>
+            <td>The depth of the pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/dose.html">dose</a></td>
+            <td>Defines the charge dose per area in C/&#181;m&#178;.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/dwell_time.html">dwell_time</a></td>
+            <td>The time the beam spends on a single pixel per pass (rounded to a multiple of 25 ns).</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/enabled.html">enabled</a></td>
+            <td>If set to False, the pattern is removed from the patterning job.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/gas_flow.html">gas_flow</a></td>
+            <td>Sets the custom gas flow for the pattern. Make sure to set the gas type first before setting the gas flow.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/gas_needle_position.html">gas_needle_position</a></td>
+            <td>The position of the MultiChem needle when patterning begins.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/gas_type.html">gas_type</a></td>
+            <td>The name of the gas required to pattern this shape, or an empty string if no gas should be used.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/height.html">height</a></td>
+            <td>The pattern height.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/id.html">id</a></td>
+            <td><em>[Read only]</em> A unique pattern identifier.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/interaction_diameter.html">interaction_diameter</a></td>
+            <td>The interaction diameter for an infinitely small beam in meters.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/is_exclusion_zone.html">is_exclusion_zone</a></td>
+            <td>If set to True, the pattern area is not to be processed.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/overlap_x.html">overlap_x</a></td>
+            <td>Sets the beam diameter overlap in X direction.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/overlap_y.html">overlap_y</a></td>
+            <td>Sets the beam diameter overlap in Y direction.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/pass_count.html">pass_count</a></td>
+            <td>The number of passes (scans) to be performed over the pattern area.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/pitch_x.html">pitch_x</a></td>
+            <td>Sets the pitch X between two spots.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/pitch_y.html">pitch_y</a></td>
+            <td>Sets the pitch Y between two spots.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/refresh_time.html">refresh_time</a></td>
+            <td>The minimum loop time that must at least elapse before the next pass, so that the adsorbed gas can be refreshed.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/rotation.html">rotation</a></td>
+            <td>The pattern rotation angle.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/scan_direction.html">scan_direction</a></td>
+            <td>The direction of the scan movement.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/scan_type.html">scan_type</a></td>
+            <td>The scanning strategy used while patterning.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/time.html">time</a></td>
+            <td>The time required to process the pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/volume_per_dose.html">volume_per_dose</a></td>
+            <td>The volume of material that is removed per charge in mm&#179;/nC.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/CleaningCrossSectionPattern/width.html">width</a></td>
+            <td>The pattern width.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

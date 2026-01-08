@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+<!-- Custom part - START -->
+	<h1><a class="header-path" href="#">TemplateMatcher</a></h1>
+	<p>The base class for all image template matchers compatible with the AutoScript toolkit.</p>
+	<h2>Methods</h2>
+	<table>
+		<tr>
+			<td><a href="TemplateMatcher/match.html">match()</a></td>
+			<td>Finds the specified template image within the searched image.</td>
+		</tr>
+	</table>
+	<h2>Remarks</h2>
+	<p>
+		To create a custom template matcher, derive from this class and implement the <code>match()</code> method.
+	</p>
+    
+    <h2>Examples</h2>
+    
+    Create  a custom implementation of the template matcher compatible with the
+    <a href="../drift_correction/index.html">Drift correction</a> or <a href="../vision/index.html">Vision</a> AutoScript modules.    
+    
+    <pre><code class="language-python">
+        from autoscript_toolkit.template_matchers import *
+
+        class MyTemplateMatcher(TemplateMatcher):
+            def match(self, image: AdornedImage, template: AdornedImage) -&gt; ImageMatch:
+                # Custom template matching code should be placed here
+                # ...
+                calculated_center = Point(307, 205)
+                calculated_score = 0.82
+
+                # Return the ImageMatch structure containing the match results
+                return ImageMatch(center=calculated_center, score=calculated_score)
+
+        template_matcher = MyTemplateMatcher()
+    </code></pre>
+    
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

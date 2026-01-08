@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ChemicalElement</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_structures_eds/ChemicalElement/ChemicalElement.html">ChemicalElement</a></h1>
+    <p>Represents one chemical element.</p>
+    <h2>Items</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_eds/ChemicalElement/symbol.html">symbol</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>The symbol of the chemical element as it appears in the periodic table.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_eds/ChemicalElement/name.html">name</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>The name of the chemical element.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_eds/ChemicalElement/atomic_number.html">atomic_number</a></td>
+            <td><em>[Optional]</em> int</td>
+            <td>The number of protons in the nucleus of each atom of the element.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_eds/ChemicalElement/line_family.html">line_family</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>The spectral line as one of the strings &quot;K&quot;, &quot;L&quot; or &quot;M&quot;. The line indicates the energy level of X-rays from which the presence of this chemical element is determined. The line identifier is only considered by EDS mapping functions.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_eds/ChemicalElement/K.html">K</a></td>
+            <td><em>[Optional]</em> <a href="../../_structures_eds/ChemicalElement/ChemicalElement.html">ChemicalElement</a></td>
+            <td>Returns a copy of this chemical element with the selected spectral line &quot;K&quot;.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_eds/ChemicalElement/L.html">L</a></td>
+            <td><em>[Optional]</em> <a href="../../_structures_eds/ChemicalElement/ChemicalElement.html">ChemicalElement</a></td>
+            <td>Returns a copy of this chemical element with the selected spectral line &quot;L&quot;.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_eds/ChemicalElement/M.html">M</a></td>
+            <td><em>[Optional]</em> <a href="../../_structures_eds/ChemicalElement/ChemicalElement.html">ChemicalElement</a></td>
+            <td>Returns a copy of this chemical element with the selected spectral line &quot;M&quot;.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    
+    AutoScript defines an auxiliary class <a href="../PeriodicTable/PeriodicTable.html">PeriodicTable</a> 
+    that holds a collection of all elements from the periodic table as instances of the  
+    <a href="ChemicalElement.html">ChemicalElement</a> class. 
+    The class is especially useful when you want to pass chemical elements as parameters to the spectrum processing functions
+    <a href="../../sdb_microscope/analysis/_eds/Eds/get_peak_id.html">analysis.get_peak_id()</a> or
+    <a href="../../sdb_microscope/analysis/_eds/Eds/get_composition.html">analysis.eds.get_composition()</a>.
+          
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Create a chemical element object that represents nitrogen
+        nitrogen = ChemicalElement("N")
+        
+        # ...or simply 
+        nitrogen = PeriodicTable.NITROGEN
+        
+        # Create a chemical element object representing titanium with "L" spectral line specified
+        titanium_l = PeriodicTable.TITANIUM.L
+    </code></pre>
+    
+    <h2>See also</h2>
+    
+    <a href="../../sdb_microscope/analysis/_eds/Eds/get_peak_id.html">analysis.eds.get_peak_id()</a><br>
+    <a href="../../sdb_microscope/analysis/_eds/Eds/get_composition.html">analysis.eds.get_composition()</a><br>
+    <a href="../PeriodicTable/PeriodicTable.html">PeriodicTable</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

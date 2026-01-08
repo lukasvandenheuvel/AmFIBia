@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>imaging.get_image</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/imaging.html">imaging</a>.<a class="header-path" href="../../../sdb_microscope/_imaging/Imaging/get_image.html">get_image</a></h1>
+    <p>Retrieves a microscope image currently present in the active view.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">get_image()
+get_image(settings)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>settings</td>
+            <td><a href="../../../structures/GetImageSettings/GetImageSettings.html">GetImageSettings</a></td>
+            <td>Additional settings that determine how the image is retrieved when the active view is in acquiring state.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td><a href="../../../_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+            <td>The microscope image retrieved from the active view.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            The method does not initiate the scanning of a new image frame.
+            It inspects the imaging view and returns the image stored there from previous calls to <a href="grab_frame.html">grab_frame()</a>.<br>
+            If you want to acquire a new image with the active imaging device, call <a href="grab_frame.html">grab_frame()</a> instead.
+        </li>
+        <li>
+            When the <a href="../../../structures/GetImageSettings/wait_for_frame.html">wait_for_frame</a> flag in
+            <a href="../../../structures/GetImageSettings/GetImageSettings.html">settings </a> is set to True and the view is in an acquiring state,
+            the <code>get_image()</code> function will block until the end of the frame is reached, and then it returns the image.
+            If the view is in an idle state, the <a href="../../../structures/GetImageSettings/wait_for_frame.html">wait_for_frame</a> flag is disregarded.
+        </li>
+        <li>
+            The <a href="../../../structures/GetImageSettings/wait_for_frame.html">wait_for_frame</a> flag in settings is applicable only when the active device is either the electron or ion beam.
+        </li>
+    </ul>
+
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Read image from active view and save it to disk; the get_image() function doesn't block
+        image = microscope.imaging.get_image()
+        image.save("c:\\temp\\image.tif")
+    </code></pre>
+
+    <pre><code class="language-python">
+        # The following example showcases live SEM image streaming,
+        # with completed image frames being displayed in a window as they are scanned.
+        
+        import cv2
+        
+        # Start scanning with electron beam
+        microscope.imaging.set_active_device(ImagingDevice.ELECTRON_BEAM)
+        microscope.imaging.start_acquisition()
+    
+        while microscope.imaging.state == ImagingState.ACQUIRING:
+            # Wait for the completion of one frame and then copy the image
+            settings = GetImageSettings(wait_for_frame=True)    
+            image = microscope.imaging.get_image(settings)
+        
+            # Show the image in a window
+            cv2.imshow('SEM Image', image.data)
+        
+            # Abort the loop on Esc key press
+            k = cv2.waitKey(10)
+            if k == 27:
+                break    
+    </code></pre>
+    
+    <h2>See also</h2>
+    <a href="grab_frame.html">grab_frame()</a>
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

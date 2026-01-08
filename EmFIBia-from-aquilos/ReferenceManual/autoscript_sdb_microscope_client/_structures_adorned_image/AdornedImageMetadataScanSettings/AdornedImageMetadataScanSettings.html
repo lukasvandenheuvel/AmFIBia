@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AdornedImageMetadataScanSettings</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_structures_adorned_image/AdornedImageMetadataScanSettings/AdornedImageMetadataScanSettings.html">AdornedImageMetadataScanSettings</a></h1>
+    <p>Section of image metadata describing scan settings.</p>
+    <h2>Items</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataScanSettings/scan_rotation.html">scan_rotation</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The rotation angle of the scan.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataScanSettings/line_integration_count.html">line_integration_count</a></td>
+            <td><em>[Optional]</em> int</td>
+            <td>The number of lines that are averaged before proceeding to the next line. The default value is 1.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataScanSettings/line_interlacing.html">line_interlacing</a></td>
+            <td><em>[Optional]</em> int</td>
+            <td>The number of partial frames to get one total frame. The default value is 1.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataScanSettings/mains_lock_on.html">mains_lock_on</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>True if the image line or frame scan frequency is synchronized with the power supply frequency.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataScanSettings/scan_size.html">scan_size</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>Total size of the frame width and height, in pixels.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataScanSettings/acquisition_time.html">acquisition_time</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The total time taken to acquire the image/result. Always &gt;= the frame time, but may be larger due to post processing or multi-frame compositing.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataScanSettings/dwell_time.html">dwell_time</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Time to scan one pixel, in seconds.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataScanSettings/frame_time.html">frame_time</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Time to scan one frame, including flyback times, in seconds.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataScanSettings/line_time.html">line_time</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Time to scan one line including flyback time, in seconds.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataScanSettings/scan_area.html">scan_area</a></td>
+            <td><strong>Get: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Rectangle/Rectangle.html">Rectangle</a><br><strong>Set: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Rectangle/Rectangle.html">Rectangle</a> | list | tuple</td>
+            <td>The rectangular area of the scan. The actual captured area, which must be &lt;= the Scan Size. If the ScanArea is not provided then it is assumed to be the Scan Size with 0,0 for X, Y.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

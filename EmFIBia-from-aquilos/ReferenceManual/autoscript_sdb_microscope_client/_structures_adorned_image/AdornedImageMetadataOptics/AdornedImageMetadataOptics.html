@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AdornedImageMetadataOptics</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_structures_adorned_image/AdornedImageMetadataOptics/AdornedImageMetadataOptics.html">AdornedImageMetadataOptics</a></h1>
+    <p>Section of image metadata explaining the optical parameters of the electron or ion beam column.</p>
+    <h2>Items</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/acceleration_voltage.html">acceleration_voltage</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The accelerating voltage for the charged particle.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/apertures.html">apertures</a></td>
+            <td>List[<a href="../../_structures_adorned_image/AdornedImageMetadataOpticsAperture/AdornedImageMetadataOpticsAperture.html">AdornedImageMetadataOpticsAperture</a>]</td>
+            <td>The list of available apertures.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/beam_convergence.html">beam_convergence</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Convergence semi-angle of the beam.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/beam_current.html">beam_current</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The actual current induced into the sample.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/beam_current_selected.html">beam_current_selected</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The user-selected beam current which may vary from actual beam current for purposes of querying and report generation.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/beam_diameter.html">beam_diameter</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Diameter of the beam at the sample, in meters. Logically similar to SpotSize, but applies to a different mode, so not comparable.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/camera_length.html">camera_length</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>&quot;Length&quot; of a virtual camera system (distance between the film plate/CCD and the sample). Only for diffraction.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/deceleration_voltage.html">deceleration_voltage</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Deceleration voltage [V]. Landing Energy will be calculated based on AccelerationVoltage minus DecelerationVoltage. ImmersionRatio will also be calculated as AccelerationVoltage divided by LandingEnergy.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/defocus.html">defocus</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The distance from the focus plane to a plane the user chooses, in meters.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/emission_current.html">emission_current</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The source emission current.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/eucentric_working_distance.html">eucentric_working_distance</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The working distance of the primary beam to the beam intersection.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/extractor_voltage.html">extractor_voltage</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Voltage applied to the extractor electrode to extract electrons from the tip, in volts. FEG only.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/fib_l0_voltage.html">fib_l0_voltage</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Voltage applied to L0 which contributes to the Focus. Only applies to some FIB systems.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/fib_l1_voltage.html">fib_l1_voltage</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Voltage applied to L1 which contributes to Beam Current and Focus.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/fib_l2_voltage.html">fib_l2_voltage</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Voltage applied to L2 which contributes to the Focus.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/focus.html">focus</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Distance from the focus plane to the eucentric focus plane, in meters. Controlled by the objective lens.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/full_scan_field_of_view.html">full_scan_field_of_view</a></td>
+            <td><em>[Optional]</em> <a href="../../_structures_adorned_image/AdornedImageMetadataOpticsScanFieldSize/AdornedImageMetadataOpticsScanFieldSize.html">AdornedImageMetadataOpticsScanFieldSize</a></td>
+            <td>The size of the full scan, in meters.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/landing_energy.html">landing_energy</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The beam landing energy is be calculated based on AccelerationVoltage minus DecelerationVoltage.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/last_measured_screen_current.html">last_measured_screen_current</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The last measured flu-screen current when the screen was inserted.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/sample_pre_tilt_angle.html">sample_pre_tilt_angle</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The inherent sample tilt. The combined sample tilt and stage tilt will be sent to optics for tilt correction.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/scan_field_of_view.html">scan_field_of_view</a></td>
+            <td><em>[Optional]</em> <a href="../../_structures_adorned_image/AdornedImageMetadataOpticsScanFieldSize/AdornedImageMetadataOpticsScanFieldSize.html">AdornedImageMetadataOpticsScanFieldSize</a></td>
+            <td>The size of the image as determined by the physical size of the scan system. The image field of view is always smaller or equal to the full scan field of view.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/screen_current.html">screen_current</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The current as measured on the flu-screen, in amperes.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/spherical_aberration.html">spherical_aberration</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The spherical aberration of the objective lens or the spherical aberration set by the aberration corrector, in meters.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/spot_size.html">spot_size</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The spot diameter.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/stem_focus.html">stem_focus</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Distance from the focus plane to the eucentric focus plane (STEM), in meters. Controlled by changing intensity or objective.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/wehnelt_bias.html">wehnelt_bias</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The bias voltage of the Wehnelt, in volts. Thermionic systems only.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/working_distance.html">working_distance</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The distance from the pole tip to the focal point of the beam.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/cross_over_on.html">cross_over_on</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>True if cross over mode is on. Relates to ScanMode in SEM.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/diffraction_focus.html">diffraction_focus</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The focus value used in diffraction.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/eftem_on.html">eftem_on</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>True if magnifications are adapted to the energy filter.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/gun_filament_settings.html">gun_filament_settings</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The setting of the filament heating current.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/gun_lens_setting.html">gun_lens_setting</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The user selected value that affects the voltage of the gun lens.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/high_magnification_mode.html">high_magnification_mode</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>High magnification sub-modes.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/illumination_intensity_normalized.html">illumination_intensity_normalized</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Illumination intensity normalized to a range of 0-100, where 100 represents the maximum possible intensity for the illumination source and 0 represents none.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/illumination_mode.html">illumination_mode</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>Illumination/Condenser mode.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/illumination_on.html">illumination_on</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>True if the optical camera illumination source is active during image capture.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/illumination_type.html">illumination_type</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>The name of the type of illumination.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/nominal_magnification.html">nominal_magnification</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Magnification to the chosen camera plane.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/objective_lens_mode.html">objective_lens_mode</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>Mode of the objective lens. Aka LensMode, ObjectiveMode. STEM Only.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/operation_mode.html">operation_mode</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>Primary operating mode of the column.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/optical_mode.html">optical_mode</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>The name of the optical preset.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/probe_mode.html">probe_mode</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>Mode of the minicondenser probe.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/projector_mode.html">projector_mode</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>Mode of the projection system.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/sample_tilt_correction_is_on.html">sample_tilt_correction_is_on</a></td>
+            <td><em>[Optional]</em> bool</td>
+            <td>True if tilt-correction is turned on.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/spot_index.html">spot_index</a></td>
+            <td><em>[Optional]</em> int</td>
+            <td>SpotIndex is a number that indicates the order of the beam current. Spot Index 1 is the highest beam current. The beam current reduces as inverse of the square, where higher SpotIndex numbers indicate the progressive reduction in the beam current.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/tem_operating_sub_mode.html">tem_operating_sub_mode</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>TEM specific operating mode of the column.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/beam_shift.html">beam_shift</a></td>
+            <td><strong>Get: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a><br><strong>Set: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>Shift of the beam from the optical axis [x, y: meters] as applied by the user.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/beam_tilt.html">beam_tilt</a></td>
+            <td><strong>Get: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a><br><strong>Set: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>Tilt of the beam before the sample, in radians. 0 is perpendicular to the sample.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/c1_lens_intensity.html">c1_lens_intensity</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>C1 lens setting. TEM only. To get as a percentage, divide the value by its maximum range value, in most cases 0.902.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/c2_lens_intensity.html">c2_lens_intensity</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>C2 lens setting. TEM only. To get as a percentage, divide the value by its maximum range value, in most cases 0.902.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/c3_lens_intensity.html">c3_lens_intensity</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>C3 lens setting. TEM only. To get as a percentage, divide the value by its maximum range value, in most cases 0.902.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/condenser_stigmator_raw.html">condenser_stigmator_raw</a></td>
+            <td><strong>Get: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a><br><strong>Set: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>Stigmator of the beam shape. To be distinguished from the GunStigmator.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/diffraction_lens_intensity.html">diffraction_lens_intensity</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Diffraction lens setting. TEM only. To get as a percentage, divide the value by its maximum range value, in most cases 0.902.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/diffraction_stigmator_raw.html">diffraction_stigmator_raw</a></td>
+            <td><strong>Get: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a><br><strong>Set: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>The uncalibrated value of the diffraction lens stigmator.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/fib_steering.html">fib_steering</a></td>
+            <td><strong>Get: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a><br><strong>Set: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>Voltage applied to the steering deflector in the column X [or Y] axis. FIB only.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/gun_shift_raw.html">gun_shift_raw</a></td>
+            <td><strong>Get: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a><br><strong>Set: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>Technically an alignment, Source Tilt and Source Shift are needed to reproduce results.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/gun_stigmator_raw.html">gun_stigmator_raw</a></td>
+            <td><strong>Get: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a><br><strong>Set: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>Gun stigmator strength.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/gun_tilt_raw.html">gun_tilt_raw</a></td>
+            <td><strong>Get: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a><br><strong>Set: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>The uncalibrated value of the gun tilt.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/image_shift.html">image_shift</a></td>
+            <td><strong>Get: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a><br><strong>Set: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>The shift of the image from the optical axis.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/intermediate_lens_intensity.html">intermediate_lens_intensity</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Intermediate lens setting. TEM only. To get as a percentage, divide the value by its maximum range value, in most cases 0.902.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/lorentz_lens_intensity.html">lorentz_lens_intensity</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Lorentz lens setting. TEM only. To get as a percentage, divide the value by its maximum range value, in most cases 0.902.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/mini_condenser_lens_intensity.html">mini_condenser_lens_intensity</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>MiniCondenser lens setting. TEM only. To get as a percentage, divide the value by its maximum range value, in most cases 0.109.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/objective_lens_intensity.html">objective_lens_intensity</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Objective lens setting. TEM only. To get as a percentage, divide the value by its maximum range value, in most cases 2.02.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/objective_stigmator_raw.html">objective_stigmator_raw</a></td>
+            <td><strong>Get: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a><br><strong>Set: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>The uncalibrated value of the objective lens stigmator.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/projector1_lens_intensity.html">projector1_lens_intensity</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Projector1 lens setting. TEM only. To get as a percentage, divide the value by its maximum range value, in most cases 0.902.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/projector2_lens_intensity.html">projector2_lens_intensity</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>Projector2 lens setting. TEM only. To get as a percentage, divide the value by its maximum range value, in most cases 0.902.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_adorned_image/AdornedImageMetadataOptics/stigmator_raw.html">stigmator_raw</a></td>
+            <td><strong>Get: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a><br><strong>Set: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>The stigmator strength for SEM or FIB.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>vacuum.pump</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/vacuum.html">vacuum</a>.<a class="header-path" href="../../../sdb_microscope/_vacuum/Vacuum/pump.html">pump</a></h1>
+    <p>Pumps the specimen chamber into vacuum or changes vacuum conditions according to the specified settings.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">pump()
+pump(settings)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>settings</td>
+            <td><a href="../../../structures/VacuumSettings/VacuumSettings.html">VacuumSettings</a></td>
+            <td>A structure specifying vacuum mode, pressure and gas.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+    
+    <ul class="spaced-list">
+        <li>
+            Calling <code>pump()</code> when the chamber is already pumped does nothing.
+        </li>
+        <li>
+            Calling <code>pump(settings)</code> with settings different from current conditions will bring the vacuum to the desired state.
+        </li>
+        <li>
+            Both <code>pump()</code> and <code>vent()</code> functions are synchronous, with the exception noted below.
+            If the vacuum system is already in the "venting" transition state when the <code>pump()</code> function is called,
+            the function will interrupt the transition in progress and start pumping the chamber.
+        </li>
+        <li>
+            The change in chamber pressure is executed asynchronously.
+            The <code>pump()</code> function may return before the specified chamber pressure is reached.
+        </li>
+    </ul>
+
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        settings = VacuumSettings(mode=VacuumMode.LOW_VACUUM, gas=VacuumGasType.WATER, pressure=120)
+        microscope.vacuum.pump(settings)
+    </code></pre>
+
+    <h2>See also</h2>
+    
+    <a href="vent.html">vacuum.vent()</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enumerations</title>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1>Enumerations</h1>
+<!-- Custom part - START -->
+
+    <p>
+        Enumeration types do not appear directly in the API as function parameters or return values.
+        Instead, the API uses simple types like strings or integers. However, using enum values rather than hard-coded
+        constants is recommended to minimize typos and improve code readability.
+        <br>
+        
+        If there is a possibility to supply an enumeration value for a function parameter,
+        this manual will mention it in the function description.
+        <br><br>
+    </p>
+    
+<!-- Custom part - END -->
+    <table>
+        <tr>
+            <td><a href="../enumerations/AlignmentMillingProcess/AlignmentMillingProcess.html">AlignmentMillingProcess</a></td>
+            <td>Type of milling process used by some of the alignments from the ToolReadiness service.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/AngularCorrectionMode/AngularCorrectionMode.html">AngularCorrectionMode</a></td>
+            <td>Specifies the supported angular correction modes.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/AutoFunctionMethod/AutoFunctionMethod.html">AutoFunctionMethod</a></td>
+            <td>An enumeration of all auto function methods.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/AutoLensAlignmentModulationType/AutoLensAlignmentModulationType.html">AutoLensAlignmentModulationType</a></td>
+            <td>Specifies the modulation types for the automatic lens alignment adjustment routine.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/AutoloaderCompartmentType/AutoloaderCompartmentType.html">AutoloaderCompartmentType</a></td>
+            <td>Specifies the Autoloader device compartment type.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/BeamType/BeamType.html">BeamType</a></td>
+            <td>Specifies the supported beam types.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/CameraEmissionType/CameraEmissionType.html">CameraEmissionType</a></td>
+            <td>The color of light emitted by the LED used for sample illumination in fluorescence light microscope camera (FLM) acquisitions.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/CameraFilterType/CameraFilterType.html">CameraFilterType</a></td>
+            <td>The type of optical filter used in fluorescence light microscope camera (FLM) acquisitions.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/ChemicalCompositionLineFamily/ChemicalCompositionLineFamily.html">ChemicalCompositionLineFamily</a></td>
+            <td>Specifies selected line family in the ChemicalCompositionEntry.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/CoordinateSystem/CoordinateSystem.html">CoordinateSystem</a></td>
+            <td>Specifies the coordinate systems in which stage coordinates can be given.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/CryoCompartmentTemperature/CryoCompartmentTemperature.html">CryoCompartmentTemperature</a></td>
+            <td>Specifies the cryo compartment temperature presets.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/DetectorMode/DetectorMode.html">DetectorMode</a></td>
+            <td>Specifies the supported detector modes.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/DetectorSegment/DetectorSegment.html">DetectorSegment</a></td>
+            <td>Specifies the names of detector segments.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/DetectorType/DetectorType.html">DetectorType</a></td>
+            <td>Specifies the supported detector types.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/EdsDetectorPositions/EdsDetectorPositions.html">EdsDetectorPositions</a></td>
+            <td>Specifies the available EDS detector positions.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/EdsMappingEngineType/EdsMappingEngineType.html">EdsMappingEngineType</a></td>
+            <td>Specifies the possible types of mapping engines for generating EDS elemental maps.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/EdsSegmentationFilterMask/EdsSegmentationFilterMask.html">EdsSegmentationFilterMask</a></td>
+            <td>Defines different image filter strengths for image segmentation within the EDS phase mapping engine. The two &#39;Auto&#39; options are designed for dynamic segmentation resolutions.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/EdsSegmentationFilterType/EdsSegmentationFilterType.html">EdsSegmentationFilterType</a></td>
+            <td>Defines different filter settings for reducing the noise in the input data within the EDS phase mapping engine.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/EdsSegmentationMethod/EdsSegmentationMethod.html">EdsSegmentationMethod</a></td>
+            <td>The type of image segmentation algorithm for the EDS elemental mapping engine.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/EdsSegmentationResolution/EdsSegmentationResolution.html">EdsSegmentationResolution</a></td>
+            <td>Represents different resolution settings for image segmentation in the EDS phase mapping engine. It includes options for dynamic resolution, which applies varying resolutions to individual segmentation layers, and preset resolutions, which maintain a fixed resolution across all layers.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/ElectronBeamMode/ElectronBeamMode.html">ElectronBeamMode</a></td>
+            <td>Specifies the supported modes of the electron beam source.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/ImageDataEncoding/ImageDataEncoding.html">ImageDataEncoding</a></td>
+            <td>Specifies the supported image encodings.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/ImageFileFormat/ImageFileFormat.html">ImageFileFormat</a></td>
+            <td>Specifies the supported image file formats.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/ImagingDevice/ImagingDevice.html">ImagingDevice</a></td>
+            <td>Specifies the supported imaging devices.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/ImagingState/ImagingState.html">ImagingState</a></td>
+            <td>Specifies the possible states of image acquisition.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/LoadLockState/LoadLockState.html">LoadLockState</a></td>
+            <td>Specifies the possible states of the LoadLock device.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/Location/Location.html">Location</a></td>
+            <td>Specifies location in space.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/ManipulatorCoordinateSystem/ManipulatorCoordinateSystem.html">ManipulatorCoordinateSystem</a></td>
+            <td>Specifies the coordinate systems in which manipulator (EasyLift) coordinates can be given.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/ManipulatorSavedPosition/ManipulatorSavedPosition.html">ManipulatorSavedPosition</a></td>
+            <td>Specifies the names of saved manipulator positions which can be retrieved by the function <a href="../sdb_microscope/specimen/_manipulator/Manipulator/get_saved_position.html">get_saved_position()</a>.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/ManipulatorState/ManipulatorState.html">ManipulatorState</a></td>
+            <td>Specifies the insertion states of the manipulator needle.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/MultiChemGasState/MultiChemGasState.html">MultiChemGasState</a></td>
+            <td>Defines the possible states of the MultiChem gas.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/MultiChemInjectorState/MultiChemInjectorState.html">MultiChemInjectorState</a></td>
+            <td>Defines possible states of the MultiChem injector.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/MultiChemInsertPosition/MultiChemInsertPosition.html">MultiChemInsertPosition</a></td>
+            <td>Specifies the standard insert positions of the MultiChem device.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/OpticalMode/OpticalMode.html">OpticalMode</a></td>
+            <td>Specifies the SEM optical modes.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/Orientation/Orientation.html">Orientation</a></td>
+            <td>Specifies orientation in space.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/PatterningMode/PatterningMode.html">PatterningMode</a></td>
+            <td>Specifies the modes of the patterning process.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/PatterningState/PatterningState.html">PatterningState</a></td>
+            <td>Specifies the possible states of the patterning process.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/PatternScanDirection/PatternScanDirection.html">PatternScanDirection</a></td>
+            <td>Specifies the possible directions of scanning for a pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/PatternScanType/PatternScanType.html">PatternScanType</a></td>
+            <td>Specifies the scanning strategies for a pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/PlasmaGasType/PlasmaGasType.html">PlasmaGasType</a></td>
+            <td>Specifies gases that can be set to the Multiple Ion Plasma FIB source.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/ProtectiveShutterMode/ProtectiveShutterMode.html">ProtectiveShutterMode</a></td>
+            <td>Specifies the available modes of the protective shutter.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/Quantity/Quantity.html">Quantity</a></td>
+            <td>Defines the physical quantities for which the preferred unit can be configured instead of the default SI unit. Future versions of AutoScript are planned to include additional quantities in this enumeration.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/RegionCoordinateSystem/RegionCoordinateSystem.html">RegionCoordinateSystem</a></td>
+            <td>Defines the coordinate system for a region used for spectrum acquisition.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/RegionType/RegionType.html">RegionType</a></td>
+            <td>Defines the type of region for image or spectrum acquisition.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/RegularCrossSectionScanMethod/RegularCrossSectionScanMethod.html">RegularCrossSectionScanMethod</a></td>
+            <td>Specifies the supported scan methods for a regular cross section pattern.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/RetractableDeviceState/RetractableDeviceState.html">RetractableDeviceState</a></td>
+            <td>Specifies the possible states of a retractable device.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/RtmCoordinateSystem/RtmCoordinateSystem.html">RtmCoordinateSystem</a></td>
+            <td>Specifies the available RTM coordinate systems.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/RtmMode/RtmMode.html">RtmMode</a></td>
+            <td>Specifies the available RTM resolution modes.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/SampleMapType/SampleMapType.html">SampleMapType</a></td>
+            <td>Specifies sample map variants.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/ScanningFilterType/ScanningFilterType.html">ScanningFilterType</a></td>
+            <td>Specifies the supported types of the scanning filter.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/ScanningMode/ScanningMode.html">ScanningMode</a></td>
+            <td>Specifies the available scanning modes for electron or ion beams.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/ScanningResolution/ScanningResolution.html">ScanningResolution</a></td>
+            <td>Specifies the standard scan resolutions.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/SegmentPolarity/SegmentPolarity.html">SegmentPolarity</a></td>
+            <td>Specifies the polarity of a detector segment.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/StageAxis/StageAxis.html">StageAxis</a></td>
+            <td>An enumeration of stage axes.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/Stem4Positions/Stem4Positions.html">Stem4Positions</a></td>
+            <td>Specifies the available STEM4 positions.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/StopAcquisitionMethod/StopAcquisitionMethod.html">StopAcquisitionMethod</a></td>
+            <td>Specifies how the acquisition stop operation should be performed.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/TemperatureStageHeatShieldType/TemperatureStageHeatShieldType.html">TemperatureStageHeatShieldType</a></td>
+            <td>Specifies the types of heat shields for a heating stage.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/TemperatureStageType/TemperatureStageType.html">TemperatureStageType</a></td>
+            <td>Specifies the types of temperature stages.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/ToolReadinessAlignmentName/ToolReadinessAlignmentName.html">ToolReadinessAlignmentName</a></td>
+            <td>Alignment names known to the ToolReadiness service.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/ToolReadinessAlignmentState/ToolReadinessAlignmentState.html">ToolReadinessAlignmentState</a></td>
+            <td>Represents the status of the alignment in the ToolReadiness service.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/Unit/Unit.html">Unit</a></td>
+            <td>An enumeration of units that can be set as preferred for a physical quantity.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/VacuumGasType/VacuumGasType.html">VacuumGasType</a></td>
+            <td>Specifies the types of gases for the ESEM vacuum mode.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/VacuumMode/VacuumMode.html">VacuumMode</a></td>
+            <td>Specifies the vacuum modes of the specimen chamber.</td>
+        </tr>
+        <tr>
+            <td><a href="../enumerations/VacuumState/VacuumState.html">VacuumState</a></td>
+            <td>Specifies the possible states of specimen chamber vacuum.</td>
+        </tr>
+    </table>
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

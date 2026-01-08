@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>specimen</title>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../SdbMicroscopeClient/specimen.html">specimen</a></h1>
+    <p>Enables control and provides the status of sample manipulation devices.</p>
+    <h2>Classes</h2>
+    <table>
+        <tr>
+            <td><a href="../sdb_microscope/_specimen/Specimen/autoloader.html">autoloader</a></td>
+            <td>Represents the Autoloader device.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_specimen/Specimen/cap_probe.html">cap_probe</a></td>
+            <td>Enables configuration (&quot;training&quot;) of the CapProbe height sensor.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_specimen/Specimen/compustage.html">compustage</a></td>
+            <td>Enables control and provides the status of the Compustage device.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_specimen/Specimen/loadlock.html">loadlock</a></td>
+            <td>Enables control and provides the status of the microscope LoadLock device.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_specimen/Specimen/manipulator.html">manipulator</a></td>
+            <td>Enables control and provides the status of the manipulator device. The device is also referred to as EasyLift.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_specimen/Specimen/sample_cleaning.html">sample_cleaning</a></td>
+            <td>Enables control and provides the status of the sample cleaning device.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_specimen/Specimen/sputter_coater.html">sputter_coater</a></td>
+            <td>Allows monitoring and control of the sputter coater device, commonly referred to as &quot;MicroSputter&quot;.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_specimen/Specimen/stage.html">stage</a></td>
+            <td>Enables control and provides the status of the bulk stage.</td>
+        </tr>
+        <tr>
+            <td><a href="../sdb_microscope/_specimen/Specimen/temperature_stage.html">temperature_stage</a></td>
+            <td>Enables control and provides the status of the microscope temperature stage.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

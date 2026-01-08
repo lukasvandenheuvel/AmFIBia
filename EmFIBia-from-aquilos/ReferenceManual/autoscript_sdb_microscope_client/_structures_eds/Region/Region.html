@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Region</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_structures_eds/Region/Region.html">Region</a></h1>
+    <p>Specifies the area for image or spectrum acquisition.</p>
+    <h2>Items</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_eds/Region/type.html">type</a></td>
+            <td>str</td>
+            <td>Type of the region. You can use values from the <a href="../../enumerations/RegionType/RegionType.html">RegionType</a> enumeration.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_eds/Region/point.html">point</a></td>
+            <td><strong>Get: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a><br><strong>Set: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Point/Point.html">Point</a> | list | tuple</td>
+            <td>The X and Y coordinate of the point, in pixels by default. Must be specified for <a href="../../enumerations/RegionType/POINT.html">POINT</a> regions.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_eds/Region/rectangle.html">rectangle</a></td>
+            <td><strong>Get: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Rectangle/Rectangle.html">Rectangle</a><br><strong>Set: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Rectangle/Rectangle.html">Rectangle</a> | list | tuple</td>
+            <td>The position and size of the rectangle, in pixels by default. Must be specified for <a href="../../enumerations/RegionType/RECTANGLE.html">RECTANGLE</a> regions.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_eds/Region/vertices.html">vertices</a></td>
+            <td><strong>Get: </strong><em>[Optional]</em> List[<a href="../../_structures_primitives/Point/Point.html">Point</a>]<br><strong>Set: </strong><em>[Optional]</em> List[<a href="../../_structures_primitives/Point/Point.html">Point</a> | list | tuple]</td>
+            <td>The list of polygon vertices as points, where each point specifies X and Y coordinates of the vertex, in pixels by default. The minimum number of vertices is 3. Must be specified for <a href="../../enumerations/RegionType/POLYGON.html">POLYGON</a> regions.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_eds/Region/coordinate_system.html">coordinate_system</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>Coordinate system in which the region coordinates are specified. You can use values from the <a href="../../enumerations/RegionCoordinateSystem/RegionCoordinateSystem.html">RegionCoordinateSystem</a> enumeration.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    
+    <h2>Remarks</h2>
+    
+    In EDS spectrum acquisition, namely the
+    <a href="../../sdb_microscope/analysis/_eds/Eds/acquire_spectrum.html">analysis.eds.acquire_spectrum()</a> function,
+    the concept of regions is used to delineate the area of the sample where scanning is to occur, generating the EDS signal.
+    The Region structure is first assigned a type and based on the type additional parameters are entered to define
+    the position and size of the region.
+    <br><br>
+
+    Regions unify different coordinate systems of the underlying imaging and patterning objects
+    (such as reduced area, spot, polygon pattern) into one - pixels. All coordinates specified in pixels are relative to the currently set
+    scanning resolution of the electron beam (<a href="../../sdb_microscope/beams/electron_beam/scanning/_resolution/Resolution/value.html">beams.electron_beam.scanning.resolution.value</a> 
+     property). Coordinate [0, 0] is the upper left corner of the field of view, [resolution X, resolution Y] is the lower right corner.
+    <br><br>
+
+    Starting from AutoScript version 4.8.0 regions can be defined in other than pixel coordinate systems, 
+    see <a href="../../enumerations/RegionCoordinateSystem/RegionCoordinateSystem.html">RegionCoordinateSystem</a> enumeration.<br>
+        The default coordinate system is <a href="../../enumerations/RegionCoordinateSystem/PIXELS.html">Pixels</a> if none is explicitly specified in the region constructor.
+     
+    <h2>Examples</h2>
+        
+    <pre><code class="language-python">
+        # Create a region for scanning across the entire field of view
+        region = Region(type=RegionType.FULL_FRAME)
+       
+        # Create a region for scanning over a rectangular part of the field of view, given in pixels
+        region = Region(type=RegionType.RECTANGLE, rectangle=Rectangle(100, 100, 400, 400))
+        
+        # Create a region for scanning over a rectangular part of the field of view, given in reduced area coordinate system
+        region = Region(type=RegionType.RECTANGLE, rectangle=[0.1, 0.2, 0.4, 0.4],
+                        coordinate_system=RegionCoordinateSystem.REDUCED_AREA)
+
+        # Create a region for scanning over a single point
+        region = Region(type=RegionType.POINT, point=[200, 300])
+        
+        # Create a region for scanning over a polygon defined by coordinates of its vertices  
+        region = Region(type=RegionType.POLYGON, vertices=[Point(10, 10), Point(200, 200), Point(20, 400)])
+    </code></pre>
+ 
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

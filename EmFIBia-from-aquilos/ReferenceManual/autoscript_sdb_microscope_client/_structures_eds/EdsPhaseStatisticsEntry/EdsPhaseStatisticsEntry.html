@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EdsPhaseStatisticsEntry</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_structures_eds/EdsPhaseStatisticsEntry/EdsPhaseStatisticsEntry.html">EdsPhaseStatisticsEntry</a></h1>
+    <p>Contains statistical data for a single phase identified in an EDS stream. The function <a href="../../_dynamic_object_proxies/EdsStream/run_phase_analysis.html">run_phase_analysis()</a> returns a list of these structures for each phase it identifies in the input stream.</p>
+    <h2>Items</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_eds/EdsPhaseStatisticsEntry/phase_index.html">phase_index</a></td>
+            <td><em>[Optional]</em> int</td>
+            <td>An integer representing the index of the phase, starting from 1.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_eds/EdsPhaseStatisticsEntry/phase_name.html">phase_name</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>A string identifier for the phase.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_eds/EdsPhaseStatisticsEntry/area_in_meters.html">area_in_meters</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The area the phase occupies in the field of view, measured in square meters.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_eds/EdsPhaseStatisticsEntry/area_in_pixels.html">area_in_pixels</a></td>
+            <td><em>[Optional]</em> int</td>
+            <td>The area the phase occupies in the field of view, measured in pixels.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_structures_eds/EdsPhaseStatisticsEntry/area_in_percent.html">area_in_percent</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The area the phase occupies in the field of view, expressed as a percentage of the entire site area.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

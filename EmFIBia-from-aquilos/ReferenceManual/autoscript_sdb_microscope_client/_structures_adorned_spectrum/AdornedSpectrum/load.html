@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AdornedSpectrum.load</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_structures_adorned_spectrum/AdornedSpectrum/AdornedSpectrum.html">AdornedSpectrum</a>.<a class="header-path" href="../../_structures_adorned_spectrum/AdornedSpectrum/load.html">load</a></h1>
+    <p>Loads a spectrum from an EMSA file.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">load(path)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>path</td>
+            <td></td>
+            <td>The path to the EMSA file from which to load the spectrum.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td><a href="../../_structures_adorned_spectrum/AdornedSpectrum/AdornedSpectrum.html">AdornedSpectrum</a></td>
+            <td>The loaded spectrum as an AdornedSpectrum object.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <h2>Remarks</h2>
+
+    The EMSA format is standardized by ISO 22029:2022. 
+    However, AutoScript supports only EMSA files with specific attributes commonly used in EDS analysis applications.
+    The following list outlines the required values of selected EMSA attributes.
+    Files that do not meet these criteria will not be loaded.
+
+    <ul>
+        <li>#SIGNALTYPE = "EDS"</li>
+        <li>#XUNITS = "eV"</li>
+        <li>#YUNITS = "counts"</li>
+        <li>#DATATYPE = "XY"</li>
+        <li>#NCOLUMNS = 1</li>
+    </ul>
+
+
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # Load spectrum from the given path
+        spectrum = AdornedSpectrum.load(r"C:\spectrum.emsa")
+    </code></pre>
+    
+    
+    <h2>See also</h2>
+    
+    <a href="save.html">AdornedSpectrum.save()</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

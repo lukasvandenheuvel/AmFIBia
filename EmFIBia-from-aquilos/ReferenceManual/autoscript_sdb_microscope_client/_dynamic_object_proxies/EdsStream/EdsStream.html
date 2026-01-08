@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EdsStream</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_dynamic_object_proxies/EdsStream/EdsStream.html">EdsStream</a></h1>
+    <p>Represents an EDS data container, collecting EDS data as the electron beam scans. The data includes both the count of characteristic X-rays and their positions on the sample.</p>
+    <h2>Properties</h2>
+    <table>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/EdsStream/is_open.html">is_open</a></td>
+            <td><em>[Read only]</em> Returns True if the stream is presently collecting X-rays during electron beam scanning. To carry out data processing operations with the stream, it is necessary to close it first.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/EdsStream/total_counts.html">total_counts</a></td>
+            <td><em>[Read only]</em> Returns the total number of characteristic X-ray counts in the EDS stream.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/EdsStream/close.html">close()</a></td>
+            <td>Closes the EDS stream, indicating the end of the EDS experiment and allowing for the subsequent processing of the data stored in the stream.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/EdsStream/dispose.html">dispose()</a></td>
+            <td>Frees all resources allocated on the AutoScript server side for this EDS stream. Once the object is disposed, performing operations on the EDS data it represents is no longer possible.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/EdsStream/get_elemental_map.html">get_elemental_map()</a></td>
+            <td>Generates an elemental map image from the EDS stream for specified chemical elements. Before calling this function, it&#39;s necessary to prepare the mapping engine by executing <a href="../../_dynamic_object_proxies/EdsStream/run_elemental_analysis.html">run_elemental_analysis()</a>.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/EdsStream/get_peak_id.html">get_peak_id()</a></td>
+            <td>Identifies the presence of chemical elements in the EDS stream. The stream must be closed before calling this function.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/EdsStream/get_phase_map.html">get_phase_map()</a></td>
+            <td>The function generates either a single phase map or a composite map of several phases. Before calling this function, it&#39;s necessary to prepare the mapping engine by executing <a href="../../_dynamic_object_proxies/EdsStream/run_phase_analysis.html">run_phase_analysis()</a>.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/EdsStream/get_phase_spectrum.html">get_phase_spectrum()</a></td>
+            <td>Provides an EDS spectrum collected from the area of the sample corresponding to the specified phase. Before calling this function, it&#39;s necessary to complete the phase analysis of the stream by executing <a href="../../_dynamic_object_proxies/EdsStream/run_phase_analysis.html">run_phase_analysis()</a>.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/EdsStream/get_scene_spectrum.html">get_scene_spectrum()</a></td>
+            <td>Returns the scene (full-frame) spectrum calculated from the EDS stream. The stream must be closed before calling this function.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/EdsStream/get_sem_image.html">get_sem_image()</a></td>
+            <td>Returns the SEM image that captures the scene at the moment the EDS stream was closed.     This image, stored within the EdsStream object, serves a role in mapping applications. Mapping engines leverage the topological data     extracted from this image to refine the distinction between chemically coherent regions, thereby enhancing boundary delineation accuracy.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/EdsStream/run_elemental_analysis.html">run_elemental_analysis()</a></td>
+            <td>Analyzes the data contained within the EDS stream and prepares a mapping engine for elemental map generation. The stream must be closed before calling this function.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/EdsStream/run_phase_analysis.html">run_phase_analysis()</a></td>
+            <td>Performs an analysis of the EDS stream to identify distinct chemical phases within the sample. Also prepares the phase mapping engine, allowing it to generate phase maps upon subsequent calls to <a href="../../_dynamic_object_proxies/EdsStream/get_phase_map.html">get_phase_map()</a>. The stream must be closed before calling this function.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/EdsStream/save.html">save()</a></td>
+            <td>Exports the EDS stream into a file in Thermo Scientific PAD format. The stream must be closed before calling this function.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

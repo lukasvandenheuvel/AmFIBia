@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+<!-- Custom part - START -->
+    <h1><a class="header-path" href="../CognexMatcher.html">CognexMatcher</a>.<a class="header-path" href="#">train</a></h1>
+    
+	<p>Trains the <em>Cognex PatMax</em> algorithm on a template image, allowing for detailed training settings to be specified.</p>
+	
+	<h2>Syntax</h2>
+	
+	<pre><code class="language-python">train(template: AdornedImage, settings: CognexMatcherSettings = None)</code></pre>
+	<h2>Parameters</h2>
+	<table>
+		<tr>
+			<td>template</td>
+			<td><a href="../../../autoscript_sdb_microscope_client/_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+			<td>Template image to be matched within the searched image in further runs (calls to <a href="../TemplateMatcher/match.html">match()</a>).</td>
+		</tr>
+        <tr>
+			<td>settings</td>
+			<td>CognexMatcherSettings</td>
+			<td>Settings for the PatMax algorithm training.</td>
+		</tr>
+	</table>
+	
+    <h2>Remarks</h2>
+    
+    The structure <code>CognexMatcherSettings</code> and enumerations
+    <code>CognexTrainAlgorithm</code>, <code>CognexTrainMode</code>, <code>CognexRunAlgorithm</code>, <code>CognexRunMode</code>,
+    and <code>CognexSearchRegionMode</code> are declared but not yet documented in the current version of AutoScript.
+    
+    <h2>Examples</h2>
+    See <a href="../CognexMatcher.html">CognexMatcher</a>.
+    
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

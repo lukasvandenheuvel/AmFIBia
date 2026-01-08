@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PeriodicTable</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_structures_eds/PeriodicTable/PeriodicTable.html">PeriodicTable</a></h1>
+    
+    <p>
+        An auxiliary class representing the periodic table of chemical elements.
+        The main purpose of the class is to provide preconfigured elements as instances of
+        <a href="../ChemicalElement/ChemicalElement.html">ChemicalElement</a> class
+        that can be easily passed as arguments to EDS spectrum processing functions.
+    </p>
+  
+ <h2>Examples</h2>
+    
+<pre><code class="language-python">
+    # Get spectrum collected by previous scanning activity 
+    spectrum = microscope.analysis.eds.get_spectrum()
+    
+    # Identify elements, removing carbon and oxygen from the result
+    peaks = microscope.analysis.eds.get_peak_id(spectrum, [PeriodicTable.CARBON, PeriodicTable.OXYGEN])
+</code></pre>
+
+<h2>See also</h2>
+<a href="../ChemicalElement/ChemicalElement.html">ChemicalElement structure</a><br>
+<a href="../../sdb_microscope/analysis/_eds/Eds/get_peak_id.html">analysis.eds.get_peak_id()</a><br>
+<a href="../../sdb_microscope/analysis/_eds/Eds/get_composition.html">analysis.eds.get_composition()</a>
+<!-- Custom part - END -->
+
+</body>
+</html>

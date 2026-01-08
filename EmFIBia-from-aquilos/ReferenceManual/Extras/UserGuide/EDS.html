@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+
+<body>
+
+<h1><a class="header-path" href="UserGuide.html">User guide: </a> <a class="header-path" href="#">Chemical analysis of materials with EDS</a></h1>
+
+On systems equipped with an integrated Thermo Scientific EDS (Energy Dispersive Spectroscopy) detector,
+AutoScript enables material analysis by acquiring EDS spectra from specific areas of the sample and extracting
+their chemical composition.<br><br>
+
+In its current version, <strong>AutoScript does not support third-party EDS detectors</strong>.
+<br><br>
+
+For element identification and chemical composition calculation, AutoScript employs a built-in quantification library that is shared with the main microscope user interface so that the results obtained manually via UI and via scripting match exactly.
+<br><br>
+
+Accessing the EDS part of the AutoScript API requires a special product license variant <em>"SEM EDS Academic"</em> or <em>"SEM EDS Commercial"</em>.<br><br>
+
+AutoScript provides 2 methods to collect EDS spectra from the sample:
+<ol>
+    <li>Automated</li>
+    <li>Manual</li>
+</ol>
+
+<h2>1. Automated spectrum acquisition</h2>
+
+The <a href="../../autoscript_sdb_microscope_client/sdb_microscope/analysis/_eds/Eds/acquire_spectrum.html">acquire_spectrum()</a>
+function can be used to acquire a spectrum from a sample area defined by the
+<a href="../../autoscript_sdb_microscope_client/_structures_eds/Region/Region.html">Region</a> object.
+The duration of scanning is determined by either time or counts criteria.
+The function is synchronous. It returns the acquired spectrum as an
+<a href="../../autoscript_sdb_microscope_client/_structures_adorned_spectrum/AdornedSpectrum/AdornedSpectrum.html">AdornedSpectrum</a> object
+containing both the X-ray energy counts and metadata describing the system state.<br><br>
+
+All coordinates used to initialize the Region are specified in pixels with respect to the active scan resolution set for the electron beam.
+To set the resolution, use the <code>value</code> property on <code>scanning.resolution</code> object:
+
+<pre><code class="language-python">
+microscope.beams.electron_beam.scanning.resolution.value = ScanningResolution.PRESET_1536X1024
+</code></pre>
+
+Then you can acquire spectrum from the entire field of view:
+
+<pre><code class="language-python">
+    # Collect a spectrum from the entire field of view by scanning it for 3 seconds
+    region = Region(type=RegionType.FULL_FRAME)
+    spectrum = microscope.analysis.eds.acquire_spectrum(region, 3)
+</code></pre>
+
+Alternatively, you can acquire the spectrum from a rectangular sub-region of the field of view defined by the coordinates
+left, top, width and height, specified in pixels:
+
+<pre><code class="language-python">
+    # Collect a spectrum with 5000 X-ray counts from a rectangular subregion of the field of view.
+    # The time criterion (here 120 seconds) must also be specified and serves as a timeout.
+    region = Region(type=RegionType.RECTANGLE, rectangle=Rectangle(100, 100, 400, 400))
+    spectrum = microscope.analysis.eds.acquire_spectrum(region, 120, 5000)
+</code></pre>
+
+You can also specify the coordinates in the <a href="../AutoScript/Introduction/CoordinateSystems.html">reduced area coordinate system</a>:
+
+<pre><code class="language-python">
+    region = Region(type=RegionType.RECTANGLE, rectangle=Rectangle(0.1, 0.2, 0.4, 0.4),
+                    coordinate_system=RegionCoordinateSystem.REDUCED_AREA)
+    spectrum = microscope.analysis.eds.acquire_spectrum(region, 120, 5000)
+</code></pre>
+
+Similarly, to acquire spectrum from a single point defined by X and Y coordinates in pixels:
+
+<pre><code class="language-python">
+    # Collect a spectrum by scanning a single point for 5 seconds
+    region = Region(type=RegionType.POINT, point=Point(200, 300))
+    spectrum = microscope.analysis.eds.acquire_spectrum(region, 5)
+</code></pre>
+
+To obtain a spectrum from a non-rectangular area (polygon) defined by a set of vertices
+- each is a point, again given in pixels:
+
+<pre><code class="language-python">
+    # Acquire a spectrum from a polygon with three vertices (= triangle)
+    region = Region(type=RegionType.POLYGON, vertices=[Point(10, 10), Point(200, 200), Point(20, 400)])
+    spectrum = microscope.analysis.eds.acquire_spectrum(region, 5)
+</code></pre>
+
+The acquisition of polygon areas is done internally with the patterning engine.
+You can observe that in main UI a polygonal pattern is created for the duration of
+<a href="../../autoscript_sdb_microscope_client/sdb_microscope/analysis/_eds/Eds/acquire_spectrum.html">acquire_spectrum()</a> execution
+and deleted after the function is finished.
+
+<br><br>
+On the Axia ChemiSEM system, support for patterning was introduced in platform software version 27.2.2.
+ Earlier versions throw an exception when a polygon type region is passed to <a href="../../autoscript_sdb_microscope_client/sdb_microscope/analysis/_eds/Eds/acquire_spectrum.html">acquire_spectrum()</a>.
+
+
+<h2>2. Manual spectrum acquisition</h2>
+
+The AutoScript API in the <a href="../../autoscript_sdb_microscope_client/sdb_microscope/_analysis/Analysis/eds.html">analysis.eds</a>
+section also contains several functions that allow you to control the spectrum acquisition process at a lower level.
+You can implement a sequence of actions in the client script that directly access the EDS spectrum buffer managed by the
+microscope platform software.<br><br>
+You typically clear the buffer before starting data collection, then control the scanning of the beam using the AutoScript API
+on the <a href="../../autoscript_sdb_microscope_client/sdb_microscope/beams/_electron_beam/ElectronBeam/scanning.html">beam.scanning</a> section,
+and read the collected spectrum after scanning is complete.<br><br>
+The advantage of this technique is the maximum flexibility in controlling the scanning process, which can lead to better performance,
+for example, by avoiding beam blanking, which is always performed by the
+<a href="../../autoscript_sdb_microscope_client/sdb_microscope/analysis/_eds/Eds/acquire_spectrum.html">acquire_spectrum()</a>
+function for point-type regions.<br><br>
+
+Below is an example of a manual sequence where a rectangular area is scanned for 5 seconds and the EDS spectrum is collected:
+
+<pre><code class="language-python">
+    import time
+
+    # Reset EDS buffer
+    microscope.analysis.eds.reset_spectrum()
+
+    # Switch to reduced area scanning mode and position the reduced area
+    microscope.beams.electron_beam.scanning.mode.set_reduced_area(0.1, 0.1, 0.2, 0.2)
+
+    # Unpause scanning
+    microscope.imaging.start_acquisition()
+
+    # Wait 5 seconds
+    time.sleep(5)
+
+    # Pause scanning
+    microscope.imaging.stop_acquisition()
+
+    # Get the gathered EDS spectrum
+    spectrum = microscope.analysis.eds.get_spectrum()
+</code></pre>
+
+
+<h2>Saving EDS spectra to files</h2>
+
+AutoScript supports serialization of spectra into files in EMSA format.
+This format is used by the main user interface and other Thermo Scientific applications such as Velox,
+ensuring easy import and export of EDS spectra between multiple Thermo Scientific software packages.
+
+<pre><code class="language-python">
+    # Load a spectrum from given path
+    spectrum = AdornedSpectrum.load(r"C:\spectrum_1.emsa")
+
+    # Save the spectrum to a new file
+    spectrum.save(r"c:\spectrum_2.emsa")
+</code></pre>
+
+
+<h2>Identification of chemical elements</h2>
+
+Once the spectrum is acquired, you can determine the presence of chemical elements in the spectrum by calling
+<a href="../../autoscript_sdb_microscope_client/sdb_microscope/analysis/_eds/Eds/get_peak_id.html">get_peak_id()</a>
+and possibly specifying a list of elements to be excluded from the identification.
+
+<pre><code class="language-python">
+    # Acquire spectrum from the entire field of view
+    region = Region(type=RegionType.FULL_FRAME)
+    spectrum = microscope.analysis.eds.acquire_spectrum(region, 3)
+
+    # Identify chemical elements present in the spectrum
+    elements_found = microscope.analysis.eds.get_peak_id(spectrum)
+
+    # Returned list: [Boron, Nitrogen, Fluorine, Gallium, Silicon]
+</code></pre>
+
+AutoScript can also perform a quantitative analysis and return the chemical composition,
+i.e. the relative concentration of elements, together with data on the achieved accuracy of the quantification.
+
+<pre><code class="language-python">
+    # Acquire spectrum from the entire field of view
+    region = Region(type=RegionType.FULL_FRAME)
+    spectrum = microscope.analysis.eds.acquire_spectrum(region, 3)
+
+    # Identify chemical elements present in the spectrum
+    elements_found = microscope.analysis.eds.get_peak_id(spectrum)
+
+    # Get quantitative chemical composition from the spectrum
+    composition = microscope.analysis.eds.get_composition(spectrum, elements_found)
+
+    # Result:
+    # [ChemicalCompositionEntry(element=Boron, atomic_percentage=15.56, weight_percentage=4.442),
+    #  ChemicalCompositionEntry(element=Fluorine, atomic_percentage=50.11, weight_percentage=25.14),
+    #  ChemicalCompositionEntry(element=Silicon, atomic_percentage=0.5068, weight_percentage=0.3759),
+    #  ChemicalCompositionEntry(element=Gallium, atomic_percentage=31.64, weight_percentage=58.25)]
+</code></pre>
+
+</body>
+</html>

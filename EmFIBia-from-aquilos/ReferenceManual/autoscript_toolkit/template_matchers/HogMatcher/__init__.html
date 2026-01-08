@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+<!-- Custom part - START -->
+    <h1><a class="header-path" href="../HogMatcher.html">HogMatcher</a>.<a class="header-path" href="#">__init__</a></h1>
+    
+	<p>This method creates a new <code>HogMatcher</code> using the given microscope object for HOG algorithm execution.</p>
+	
+	<h2>Syntax</h2>
+	
+	<pre><code class="language-python">__init__(microscope)</code></pre>
+	<h2>Parameters</h2>
+	<table>
+		<tr>
+			<td>microscope</td>
+			<td><a href="../../../autoscript_sdb_microscope_client/SdbMicroscopeClient/SdbMicroscopeClient.html">SdbMicroscopeClient</a></td>
+			<td>A connected instance of the microscope client class.</td>
+		</tr>
+	</table>
+	
+    <!--<h2>Remarks</h2>-->
+    
+    <h2>Examples</h2>
+    
+    See <a href="../HogMatcher.html">HogMatcher</a>.
+    
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+<!-- Custom part - START -->
+    
+    <h1><a class="header-path" href="#">plot_image</a></h1>
+    <p>
+        Opens a pop-up window displaying a plot of the provided image, given as an AdornedImage instance.
+        The image is rendered using a grayscale palette.
+    </p>
+    
+    <h2>Syntax</h2>
+    <pre>
+        <code class="language-python">plot_image(image, label=None)</code>
+    </pre>
+    
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>image</td>
+            <td><a href="../../autoscript_sdb_microscope_client/_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a></td>
+            <td>The image to be displayed.</td>
+        </tr>
+        <tr>
+            <td>label</td>
+            <td>str</td>
+            <td>The title of the window displaying the image plot. If not specified, the title is derived from the detector name in the image metadata.</td>
+        </tr>
+    </table>
+    
+     
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        import autoscript_toolkit.user_interface as ui_toolkit
+        
+        # Acquire a partial image
+        settings = GrabFrameSettings(reduced_area=[0.1, 0.2, 0.2, 0.2])
+        image = microscope.imaging.grab_frame(settings)
+
+        # Display it in a popup window
+        ui_toolkit.plot_image(image)
+    </code></pre>
+
+    <img src="../Resources/PlotImage.png" alt="">
+    
+    <h2>See also</h2>
+    
+    <a href="plot_images.html">plot_images()</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

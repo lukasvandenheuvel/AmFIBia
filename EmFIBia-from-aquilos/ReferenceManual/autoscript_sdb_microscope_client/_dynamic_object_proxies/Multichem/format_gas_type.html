@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multichem.format_gas_type</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_dynamic_object_proxies/Multichem/Multichem.html">Multichem</a>.<a class="header-path" href="../../_dynamic_object_proxies/Multichem/format_gas_type.html">format_gas_type</a></h1>
+    <p>A helper function that formats the gas name along with the MultiChem port identifier. You can use this function to correctly format a string that specifies both the MultiChem port and gas name, which can be assigned to the <a href="../../_dynamic_object_proxies/RectanglePattern/gas_type.html">gas_type</a> property of a pattern or used as a gas name parameter for various functions on this MultiChem object.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">format_gas_type(gas_name)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>gas_name</td>
+            <td>str</td>
+            <td>The name of the gas.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td>str</td>
+            <td>The formatted string of the gas and MultiChem port.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+
+    <!--<h2>Remarks</h2>-->
+    
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        # The function is especially useful when constructing a gas type string for gasses from multiple MultiChem devices.
+        # In the following example, we want to configure a pattern for using carbon gas from two available MultiChems on ports 1 and 4.
+        
+        # Get the MultiChem objects
+        multichem1 = microscope.gas.get_multichem("1")
+        multichem2 = microscope.gas.get_multichem("4")
+        
+        # Create a rectangular pattern
+        rectangle_pattern = microscope.patterning.create_rectangle(0, 0, 1e-6, 1e-6, 1e-6)
+        
+        # Construct the gas_type string 
+        gas_type = multichem1.format_gas_type("C") + multichem2.format_gas_type("C")
+        
+        # Note: gas_type was formatted to "M1(C);M4(C);"
+        
+        # Configure the pattern
+        rectangle_pattern.gas_type = gas_type
+    </code></pre>
+
+    <h2>See also</h2>
+    <a href="../../_dynamic_object_proxies/RectanglePattern/gas_type.html">Assigning a MultiChem gas to a pattern</a>
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

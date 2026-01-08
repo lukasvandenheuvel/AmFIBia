@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PyCharm editor</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+
+<h1>PyCharm editor</h1>
+
+PyCharm is a dedicated Python Integrated Development Environment (IDE) from <a href="https://www.jetbrains.com" target="_blank" >JetBrains</a>. It provides a wide range of essential tools for Python developers,
+tightly integrated to create a convenient environment for productive data science development.
+<br><br>
+
+The AutoScript product includes the PyCharm editor in Community version.
+A detailed user manual for PyCharm IDE can be found online on the vendor's website <a href="https://www.jetbrains.com/help/pycharm/2024.1" target="_blank">https://www.jetbrains.com/help/pycharm</a>.<br><br>
+
+During product installation, PyCharm is optionally extended
+with custom plugins that provide AutoScript-specific functionality. Below is a screenshot of the PyCharm editor with AutoScript extensions installed:
+
+<br><br>
+<img src="../Resources/PyCharm.png" width="1152" height="581" alt="">
+
+<br><br>
+
+<h3>Microscope API Browser</h3>
+
+The panel visualizes the microscope API structure and allows you to easily navigate between objects,
+their methods and properties. Double-clicking on an API element copies a code snippet to the editor area.
+Double-clicking on the root elements copies the AutoScript initialization code to the editor.
+Additional functions are available from the context menu.
+
+<h3>Image Viewer</h3>
+
+The panel can be used during code debugging to visualize the contents of variables of type <a href="../../../autoscript_sdb_microscope_client/_structures_adorned_image/AdornedImage/AdornedImage.html">AdornedImage</a>.
+This is especially useful when applying image processing routines to the image, as you can immediately see the effects of the processing.<br>
+To add a variable to the panel, type its name in the text box at the bottom or right-click the variable in the "Variables" tool window and choose "View as Image".
+
+<h3>Integrated documentation</h3>
+
+Pressing Shift + F1 while the cursor is on an API element, such as class, method or property, opens this reference manual to a page describing the details of the element,
+often with usage examples.
+
+<h3>Pause/Stop requests</h3>
+
+<p>The AutoScript plugin in PyCharm extends its ability to control script execution.
+
+It allows the user to pause or stop the script at an appropriate time
+(see <a href="../../UserGuide/PauseStopScriptExecution.html">User guide: Pause/Stop script execution</a>). </p>
+
+<p>Once you click on the AS icon in the main toolbar, the drop-down menu with "Request Pause" and "Request Stop" entries is displayed.</p>
+<p>
+
+    <img src="../Resources/PluginRequests.png" alt="AS plugin dropdown" height="256" width="696">
+</p>
+
+<p>The icons have the following meaning:</p>
+
+<p><img src="../Resources/PauseDisabled.png" alt="Request pause disabled icon"> <img src="../Resources/StopDisabled.png" alt="Request stop disabled icon"> - The item is disabled, request can not be made. Either the script is not running or another action has already been requested.</p>
+<p><img src="../Resources/Pause.png" alt="Request pause icon"> <img src="../Resources/Stop.png" alt="Request stop icon"> - The item is enabled and clicking it will request the corresponding action.</p>
+<p><img src="../Resources/PauseRequested.png" alt="Request pause requested icon"> <img src="../Resources/StopRequested.png" alt="Request stop requested icon"> - The corresponding action is requested. It is possible to cancel the request at this moment by clicking the item again.</p>
+<p><img src="../Resources/Resume.png" alt="Request resume icon"> - The script is paused. By clicking the item the script execution will resume.</p>
+
+<p>By default, the request menu items are accessible only from the AS drop-down menu to keep the main toolbar uncluttered. However, in some cases where the request buttons are used frequently, it may be impractical to access them from the drop-down menu. In this case you can pin the request buttons to the main toolbar by following the instructions below:</p>
+
+<p style="margin-left: 1cm;">
+    <em>
+        Right-click on the main toolbar area (next to the "AS" button) -&gt; Click Customize Menus and Toolbars -&gt;
+        Expand Menus and Toolbars/Main Toolbar folder -&gt; Select the button next to which you want to place the request buttons
+        (e.g. AutoScript Actions) -&gt; Click the "+" sign -&gt; Click Add action... -&gt; Expand Plugins -&gt; Expand AutoScript Browser
+        -&gt; Select Request Pause/Stop actions-&gt; Click OK
+    </em>
+</p>
+
+<p>The main toolbar with the two pinned buttons will look like this:</p>
+<img src="../Resources/MainToolbar.png" alt="Request pause disabled icon" height="163" width="560">
+
+<p>In the current version of AutoScript, it is not possible to make pause/stop requests for multiple running scripts in PyCharm. If multiple scripts are running in one instance of PyCharm editor, the Request Pause/Stop buttons work only for the most recently executed script.</p>
+
+</body>
+</html>

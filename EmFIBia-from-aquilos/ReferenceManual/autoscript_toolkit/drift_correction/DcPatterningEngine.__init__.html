@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+<!-- Custom part - START -->
+
+	<h1><a class="header-path" href="DcPatterningEngine.html">DcPatterningEngine</a>.<a class="header-path" href="#">__init__</a></h1>
+	<p class="short">
+	    Initializes a new instance of DcPatterningEngine.
+	</p>
+	<h2>Syntax</h2>
+	<pre><code class="language-python">__init__(microscope, template_matcher=None)</code></pre>
+	<h2>Parameters</h2>
+	<table>
+		<tr>
+			<td>microscope</td>
+			<td><a href="../../autoscript_sdb_microscope_client/SdbMicroscopeClient/SdbMicroscopeClient.html">SdbMicroscopeClient</a></td>
+			<td>The initialized (connected) instance of the SdbMicroscopeClient class.</td>
+		</tr>
+		<tr>
+			<td>template_matcher</td>
+			<td><a href="../template_matchers/TemplateMatcher.html">TemplateMatcher</a></td>
+			<td>
+    			The template matcher to be used for locating the fiducial.
+    			If not provided, the engine will default to using the OpenCV template matcher.
+            </td>
+		</tr>
+	</table>
+	
+    <!--<h2>Remarks</h2>-->
+    
+    <h2>Examples</h2>
+    
+    <pre><code class="language-python">
+        import autoscript_toolkit.drift_correction as dc_toolkit
+        
+        # Create the engine with the default (Open-CV based) template matching algorithm
+        dcp_engine = dc_toolkit.DcPatterningEngine(microscope)
+        
+        # Create another engine, now with the histogram-of-gradients template matching algorithm
+        template_matcher = HogMatcher(microscope)
+        dcp_engine = dc_toolkit.DcPatterningEngine(microscope, template_matcher=template_matcher)
+    </code></pre>
+
+    <pre><code class="language-python">
+        import autoscript_toolkit.drift_correction as dc_toolkit
+        from autoscript_toolkit.template_matchers import *
+        
+        # Prepare a custom implementation of the template matcher
+        class MyTemplateMatcher(TemplateMatcher):
+            def match(self, image: AdornedImage, template: AdornedImage) -&gt; ImageMatch:
+                # Custom template matching code should be placed here
+                # ...
+                calculated_center = Point(307, 205)
+                calculated_score = 0.82
+    
+                # Return the ImageMatch structure containing the match results
+                return ImageMatch(center=calculated_center, score=calculated_score)
+    
+        # Create an engine that will use the custom matching algorithm
+        template_matcher = MyTemplateMatcher()
+        dcp_engine = dc_toolkit.DcPatterningEngine(microscope, template_matcher=template_matcher)
+    </code></pre>
+
+    
+    <!--<h2>See also</h2>-->
+    
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

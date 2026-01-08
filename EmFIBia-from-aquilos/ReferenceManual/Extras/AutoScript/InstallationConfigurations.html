@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Installation configurations</title>
+    
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+
+<body>
+    
+<h1>Installation configurations</h1>
+
+Two essential components of the AutoScript product are <strong>the server</strong> and <strong>the client</strong>.
+The product installer provides the possibility to install these components in different configurations with respect to the 
+typical network architecture of SEM systems.
+The specifics of each configuration are described below.
+
+<h2>Remote scripting configuration</h2>
+
+This is the preferred and most common installation configuration for systems with a standalone <strong>Support PC</strong>,
+which is connected to the <strong>Microscope PC</strong> via the Support network.
+
+<p><img height="229" src="Resources/RemoteScripting.png" width="622" alt=""></p>
+
+The AutoScript server component is installed on the Microscope PC and the client is installed on the Support PC
+along with the <a href="ProductComponents/PythonDistribution.html">Python distribution</a> and <a href="ProductComponents/PyCharmEditor.html">PyCharm editor</a>.<br>
+Python scripts are executed on the Support PC, passing the IP address of the Microscope PC to the <a href="../../autoscript_sdb_microscope_client/SdbMicroscopeClient/connect.html">connect()</a>
+function on the <a href="../../autoscript_sdb_microscope_client/SdbMicroscopeClient/SdbMicroscopeClient.html">SdbMicroscopeClient</a> object.<br>
+The advantage of this configuration is that the Python development environment does not interfere with the rest of
+the microscope software ecosystem on the Microscope PC. 
+
+
+<h2>Local scripting configuration</h2>
+
+In this configuration, all product components are installed on the <strong>Microscope PC</strong> and the Python scripts are
+executed from there.<br>
+
+<p><img height="229" src="Resources/LocalScripting.png" width="392" alt=""></p>
+
+The <a href="../../autoscript_sdb_microscope_client/SdbMicroscopeClient/SdbMicroscopeClient.html">SdbMicroscopeClient</a>
+object must be connected to the locally running server with the hostname "localhost",
+as described in the <a href="../UserGuide/ClientStartup.html">User guide</a>.
+<br>
+This is not a preferred configuration, it is often used as a workaround when the Support PC is not available on the SEM system.
+
+
+<h2>Offline scripting configuration</h2>
+
+In this configuration, all product components are installed on any PC, such as a personal notebook, and the Offline product license
+is activated there.<br>
+The server will switch to simulation mode. It will simulate a dual beam system, i.e. a system that has both electron and ion beams.
+The offline environment is often used to create and pre-test scripts before running them on the real microscope.
+See the <a href="OfflineMode.html">Offline mode</a> chapter for more details.
+
+<p><img height="211" src="Resources/OfflineScripting.png" width="271" alt=""></p>
+
+<h2>Client-only configuration</h2>
+
+With this configuration, only the AutoScript client is installed on an arbitrary PC, e.g. a personal notebook, and the server installation is skipped completely.<br>
+
+<p><img height="198" src="Resources/ClientOnlyScripting.png" width="162" alt=""></p>
+
+The client component alone gives you the opportunity to explore the capabilities and "feel" of AutoScript at an elementary level
+without actually being able to run the scripts.<br>
+
+The Python editor will provide standard syntax checks and code completion hints for the API calls. 
+Tools for managing the <a href="ProductComponents/PythonDistribution.html">Python environment</a>, all documentation and the database of code examples
+(<a href="ProductComponents/AutoScriptTools/AutoScriptSnippets.html">AutoScript Snippets</a>) will also be fully functional.
+<br><br>
+This configuration does not include any form of microscope simulation.<br>
+No product license is required for this installation setup.
+    
+</body>
+</html>

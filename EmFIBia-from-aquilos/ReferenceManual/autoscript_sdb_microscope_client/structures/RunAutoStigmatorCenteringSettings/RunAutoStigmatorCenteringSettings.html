@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RunAutoStigmatorCenteringSettings</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../structures/RunAutoStigmatorCenteringSettings/RunAutoStigmatorCenteringSettings.html">RunAutoStigmatorCenteringSettings</a></h1>
+    <p>Contains settings for the automatic adjustment of stigmator center.</p>
+    <h2>Items</h2>
+    <table>
+        <tr>
+            <td><a href="../../structures/RunAutoStigmatorCenteringSettings/method.html">method</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>The name of the auto stigmator centering algorithm variant.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/RunAutoStigmatorCenteringSettings/dwell_time.html">dwell_time</a></td>
+            <td><em>[Optional]</em> float</td>
+            <td>The scanning dwell time to apply during the routine.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/RunAutoStigmatorCenteringSettings/line_integration.html">line_integration</a></td>
+            <td><em>[Optional]</em> int</td>
+            <td>The number of lines to integrate when acquiring image in each auto function iteration.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/RunAutoStigmatorCenteringSettings/number_of_frames.html">number_of_frames</a></td>
+            <td><em>[Optional]</em> int</td>
+            <td>The number of frames to integrate when acquiring image in each auto function iteration.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/RunAutoStigmatorCenteringSettings/reduced_area.html">reduced_area</a></td>
+            <td><strong>Get: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Rectangle/Rectangle.html">Rectangle</a><br><strong>Set: </strong><em>[Optional]</em> <a href="../../_structures_primitives/Rectangle/Rectangle.html">Rectangle</a> | list | tuple</td>
+            <td>The coordinates defining the reduced area where the routine runs. Point [0,0] corresponds to the upper left corner of the image, and point [1,1] to the lower right corner.</td>
+        </tr>
+        <tr>
+            <td><a href="../../structures/RunAutoStigmatorCenteringSettings/resolution.html">resolution</a></td>
+            <td><em>[Optional]</em> str</td>
+            <td>Scanning resolution to be used during the routine.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

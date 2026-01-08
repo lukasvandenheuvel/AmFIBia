@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>patterning.create_polygon</title>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../../Resources/common.js"></script>
+    <script src="../../../../Resources/page.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../../Resources/prism.js"></script>
+    <script src="../../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../../Resources/prism-c.js"></script>
+    <script src="../../../../Resources/prism-cpp.js"></script>
+    <script src="../../../../Resources/prism-csharp.js"></script>
+    <script src="../../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../../SdbMicroscopeClient/patterning.html">patterning</a>.<a class="header-path" href="../../../sdb_microscope/_patterning/Patterning/create_polygon.html">create_polygon</a></h1>
+    <p>Creates a polygon pattern.</p>
+    <h2>Syntax</h2>
+    <pre><code class="language-python">create_polygon(vertices, depth)</code></pre>
+    <h2>Parameters</h2>
+    <table>
+        <tr>
+            <td>vertices</td>
+            <td>List[<a href="../../../_structures_primitives/Point/Point.html">Point</a> | list | tuple]</td>
+            <td>The list of polygon vertices as points, where each point specifies X and Y coordinates of the vertex. The minimum number of vertices is 3.</td>
+        </tr>
+        <tr>
+            <td>depth</td>
+            <td>float</td>
+            <td>The depth of the pattern.</td>
+        </tr>
+    </table>
+    <h2>Return value</h2>
+    <table>
+        <tr>
+            <td><a href="../../../_dynamic_object_proxies/PolygonPattern/PolygonPattern.html">PolygonPattern</a></td>
+            <td>An object representing the new polygon pattern.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <h2>Examples</h2>
+    <pre><code class="language-python">
+        # Create a triangular-shaped pattern with a depth of 1 micron.
+        vertices = [[2e-6, 2e-6], [-2e-6, 2e-6], [0, -2e-6]]
+        polygon = microscope.patterning.create_polygon(vertices, 1e-6)
+    </code></pre>
+
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

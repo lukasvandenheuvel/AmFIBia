@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+
+<h1><a class="header-path" href="UserGuide.html">User guide: </a> <a class="header-path" href="#">Client startup</a></h1>
+
+<p>This chapter shows how to start an AutoScript client.</p>
+<p>Prior to proceeding with code snippets below, import AutoScript packages using the following code:</p>
+
+<pre><code class="language-python">
+    from autoscript_sdb_microscope_client import SdbMicroscopeClient
+    from autoscript_sdb_microscope_client.enumerations import *
+    from autoscript_sdb_microscope_client.structures import *
+</code></pre>
+
+<p>First, create the microscope client object:</p>
+
+<pre><code class="language-python">
+microscope = SdbMicroscopeClient()
+</code></pre>
+
+<p>Connect the client to the AutoScript server running on the Microscope computer with a standard IP address of <code class="language-python">192.168.0.1</code>:</p>
+
+<pre><code class="language-python">
+    microscope.connect("192.168.0.1")
+</code></pre>
+
+<p>Connect the client to the server running on the same computer:</p>
+
+<pre><code class="language-python">
+    microscope.connect("localhost")
+</code></pre>
+
+<p>By default, client tries to connect to the standard address <code class="language-python">192.168.0.1</code>:</p>
+
+<pre><code class="language-python">
+    microscope.connect()
+</code></pre>
+
+<p>Connect the client to the server with certain host name, e.g. <code class="language-python">MPC-TENEO-A2</code>:</p>
+
+<pre><code class="language-python">
+    microscope.connect("MPC-TENEO-A2")
+</code></pre>
+
+<p>Disconnect the client from server:</p>
+
+<pre><code class="language-python">
+    microscope.disconnect()
+</code></pre>
+
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multichem</title>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../../Resources/syntax-highlight-style.css">
+
+    <script src="../../../Resources/common.js"></script>
+    <script src="../../../Resources/page.js"></script>
+    <script src="../../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../../Resources/prism.js"></script>
+    <script src="../../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../../Resources/prism-c.js"></script>
+    <script src="../../../Resources/prism-cpp.js"></script>
+    <script src="../../../Resources/prism-csharp.js"></script>
+    <script src="../../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1><a class="header-path" href="../../_dynamic_object_proxies/Multichem/Multichem.html">Multichem</a></h1>
+    <p>Represents the MultiChem gas injection device.</p>
+    <h2>Properties</h2>
+    <table>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/active_gas.html">active_gas</a></td>
+            <td>Retrieves or assigns the current gas on the MultiChem port.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/available_needle_positions.html">available_needle_positions</a></td>
+            <td><em>[Read only]</em> Returns a list of available needle positions. Each position is described by its label, assigned during microscope alignment or from the main user interface application. Default positions are listed in the <a href="../../enumerations/MultiChemInsertPosition/MultiChemInsertPosition.html">MultiChemInsertPosition</a> enumeration.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/gas_flow.html">gas_flow</a></td>
+            <td>Controls the custom gas flow for the active gas.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/injector_state.html">injector_state</a></td>
+            <td><em>[Read only]</em> Returns the state of MultiChem injector. The <a href="../../enumerations/MultiChemInjectorState/MultiChemInjectorState.html">MultiChemInjectorState</a> enumeration lists all possible states.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/needle_position.html">needle_position</a></td>
+            <td><em>[Read only]</em> Returns the name of the current position of the MultiChem needle. The available positions were designated during microscope alignment, numeric coordinates are not accessible via the API.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/port_name.html">port_name</a></td>
+            <td><em>[Read only]</em> Returns the name of the port to which this MultiChem device is connected.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/state.html">state</a></td>
+            <td><em>[Read only]</em> Returns the state of the MultiChem needle. The <a href="../../enumerations/RetractableDeviceState/RetractableDeviceState.html">RetractableDeviceState</a> enumeration lists all possible states.</td>
+        </tr>
+    </table>
+    <h2>Methods</h2>
+    <table>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/close.html">close()</a></td>
+            <td>Closes the gas flow in MultiChem.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/format_gas_type.html">format_gas_type()</a></td>
+            <td>A helper function that formats the gas name along with the MultiChem port identifier. You can use this function to correctly format a string that specifies both the MultiChem port and gas name, which can be assigned to the <a href="../../_dynamic_object_proxies/RectanglePattern/gas_type.html">gas_type</a> property of a pattern or used as a gas name parameter for various functions on this MultiChem object.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/get_gas_state.html">get_gas_state()</a></td>
+            <td>Provides information about the state of the active gas, unless a specific gas is provided. Possible states are listed in the <a href="../../enumerations/MultiChemGasState/MultiChemGasState.html">MultiChemGasState</a> enumeration.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/get_temperature.html">get_temperature()</a></td>
+            <td>Determines the temperature of the active gas, unless a specific gas is provided. The default unit is Kelvin, but you can configure a preferred unit by calling <a href="../../sdb_microscope/service/autoscript/_client/Client/set_preferred_unit.html">set_preferred_unit()</a>.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/insert.html">insert()</a></td>
+            <td>Inserts the MultiChem needle into one of the predefined positions.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/list_all_gases.html">list_all_gases()</a></td>
+            <td>Lists all gases in MultiChem.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/open.html">open()</a></td>
+            <td>Opens the flow of the active gas, unless a specific gas is provided. This action also sets the gas as active.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/purge.html">purge()</a></td>
+            <td>Initiates the purge procedure for the active gas, unless a specific gas is provided. This action also sets the gas as active.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/retract.html">retract()</a></td>
+            <td>Retracts the MultiChem needle if inserted.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/turn_heater_off.html">turn_heater_off()</a></td>
+            <td>Turns the MultiChem heater off for the active gas, unless a specific gas is provided.</td>
+        </tr>
+        <tr>
+            <td><a href="../../_dynamic_object_proxies/Multichem/turn_heater_on.html">turn_heater_on()</a></td>
+            <td>Turns the MultiChem heater on for the active gas, unless a specific gas is provided.</td>
+        </tr>
+    </table>
+<!-- Custom part - START -->
+    <!--<h2>Remarks</h2>-->
+    <!--<h2>Examples</h2>-->
+    <!--<h2>See also</h2>-->
+<!-- Custom part - END -->
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

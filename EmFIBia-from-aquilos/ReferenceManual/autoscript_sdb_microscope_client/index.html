@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Microscope API</title>
+    <link rel="stylesheet" type="text/css" href="../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../Resources/syntax-highlight-style.css">
+
+    <script src="../Resources/common.js"></script>
+    <script src="../Resources/page.js"></script>
+    <script src="../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../Resources/page_jupyter_checking.js"></script>
+    <script src="../Resources/prism.js"></script>
+    <script src="../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../Resources/prism-c.js"></script>
+    <script src="../Resources/prism-cpp.js"></script>
+    <script src="../Resources/prism-csharp.js"></script>
+    <script src="../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+<body>
+    <h1>Microscope API</h1>
+<!-- Custom part - START -->
+
+    <p class="visibility-python">
+        The <code>autoscript_sdb_microscope_client</code> Python package 
+        provides functionalities for controlling microscope systems from Thermo Fisher Scientific,
+        specifically SEM (scanning electron microscope) and DualBeam families.
+    </p>
+    
+    <p class="visibility-csharp">
+        The <code>ThermoScientific.ASAPI</code> NuGet package includes assemblies that encapsulate interfaces,
+        classes, and data types required for controlling Thermo Fisher Scientific SEM systems.
+    </p>
+    
+    <p class="visibility-cpp">
+        The ProSEM API C++ SDK package offers headers and static libraries that define and implement the interfaces,
+        classes, and data types required for controlling Thermo Fisher Scientific SEM systems.
+    </p>
+
+    <p>
+        The primary class in this package is <a href="SdbMicroscopeClient/SdbMicroscopeClient.html">SdbMicroscopeClient</a>.
+        Upon instantiation and connection to an AutoScript server, this class offers a range of functions through its members,
+        organized in a <a class="toplevel" href="sdb_microscope/Index.html">static tree</a> structure.
+        These members include child objects, properties, and functions that facilitate various control operations.
+    </p>
+    
+    <p>
+        The package also includes other classes that enhance its capabilities.
+        
+        <strong>Data structures</strong> are designed to provide comprehensive parameter definitions and return values
+        for functions within the static tree. 
+        
+        <strong>Enumerations</strong> are employed to minimize potential typos
+        by using predefined values instead of raw strings or integers.
+        
+        <span class="visibility-python">
+            <strong>Dynamic objects</strong>, on the other hand, have a shorter lifespan compared to <code>SdbMicroscopeClient</code>
+            and are typically created explicitly during script execution. Patterns represent a notable example of dynamic objects.
+        </span>
+
+        <span class="visibility-vendor">
+            <strong>Dynamic objects</strong>, on the other hand, have a shorter lifespan compared to <code>SdbMicroscopeClient</code>
+            and are typically created explicitly during code execution.
+        </span>
+    </p>
+
+    <p>
+        In the following sections of this manual, you will find detailed information covering all the aforementioned components.
+    </p>
+    
+<!-- Custom part - END -->
+    <table>
+        <tr><td><a href="SdbMicroscopeClient/SdbMicroscopeClient.html">SdbMicroscopeClient object</a></td></tr>
+        <tr><td><a href="sdb_microscope/index.html">Static tree</a></td></tr>
+        <tr><td><a href="_dynamic_object_proxies/index.html">Dynamic objects</a></td></tr>
+        <tr><td><a href="structures/index.html">Data structures</a></td></tr>
+        <tr><td><a href="enumerations/index.html">Enumerations</a></td></tr>
+    </table>
+</body>
+</html>
+<!-- This file was automatically generated. Content between custom parts will not be regenerated. Remove this line if you want the generator to completely ignore this file. -->

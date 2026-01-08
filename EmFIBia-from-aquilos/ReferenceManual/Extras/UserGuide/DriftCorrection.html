@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../Resources/common-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-custom-style.css">
+    <link rel="stylesheet" type="text/css" href="../../Resources/syntax-highlight-style.css">
+
+    <script src="../../Resources/common.js"></script>
+    <script src="../../Resources/page.js"></script>
+    <script src="../../Resources/page_jupyter_checking_ie.js"></script>
+    <script src="../../Resources/page_jupyter_checking.js"></script>
+    <script src="../../Resources/prism.js"></script>
+    <script src="../../Resources/prism-normalize-whitespace.js"></script>
+    <script src="../../Resources/prism-c.js"></script>
+    <script src="../../Resources/prism-cpp.js"></script>
+    <script src="../../Resources/prism-csharp.js"></script>
+    <script src="../../Resources/prism-python.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            onContentLoaded('../../shell.html');
+
+            try {
+                checkAllJupyterLinks();
+            } catch(e) {
+                disableAllJupyterLinks();
+            };
+        });
+    </script>
+
+    <!-- For old IE browsers: IE 9 and lower -->
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="../../Resources/page-style-old-ie.css">
+    <![endif]-->
+</head>
+
+<body>
+<h1><a class="header-path" href="UserGuide.html">User guide: </a> <a class="header-path" href="#">Drift correction</a></h1>
+
+<p>This chapter describes how to use the drift correction features of the <em>AutoScript toolkit</em> extension.</p>
+
+<p>
+    Before proceeding with the code snippets below, initialize AutoScript with the following code.
+    Set the server address according to your environment.
+</p>
+
+<pre><code class="language-python">
+    from autoscript_sdb_microscope_client import SdbMicroscopeClient
+    from autoscript_sdb_microscope_client.enumerations import *
+    from autoscript_sdb_microscope_client.structures import *
+    
+    microscope = SdbMicroscopeClient()
+    microscope.connect("localhost")
+</code></pre>
+
+<p>Import the drift correction toolkit with a convenient alias:</p>
+
+<pre><code class="language-python">
+    import autoscript_toolkit.drift_correction as dc_toolkit
+</code></pre>
+
+<p>Prepare a new patterning job using the ion beam in view 2:</p>
+
+<pre><code class="language-python">
+    microscope.imaging.set_active_view(2)
+    microscope.imaging.set_active_device(ImagingDevice.ION_BEAM)
+    
+    microscope.beams.ion_beam.horizontal_field_width.value = 20e-6
+    
+    microscope.patterning.clear_patterns()
+    microscope.patterning.set_default_beam_type(BeamType.ION)
+    microscope.patterning.set_default_application_file("Si")
+        
+    # Create one rectangular pattern
+    pattern = microscope.patterning.create_rectangle(0, 0, 5e-6, 5e-6, 1e-6)
+    
+    # Refresh image
+    microscope.imaging.grab_frame(GrabFrameSettings(resolution="1536x1024", dwell_time=1e-6))
+</code></pre>
+
+<p>
+    Run the drift corrected patterning loop with the drift corrected patterning engine
+    (<code class="language-python">DcPatterningEngine</code>), correcting the drift every 5 seconds:
+</p>
+
+<pre><code class="language-python">
+    # Create the drift corrected patterning engine
+    dcp_engine = dc_toolkit.DcPatterningEngine(microscope)
+    
+    # Define a fiducial (coordinates are in meters)
+    settings = GrabFrameSettings(resolution="1536x1024", dwell_time=1e-6)
+    image = microscope.imaging.grab_frame(settings)
+    dcp_engine.define_fiducial(image, center=[-6e-6, 3e-6], size=3e-6)
+    
+    # Run drift corrected patterning
+    dcp_engine.run(correction_interval=5)
+</code></pre>
+
+<p>
+    Prepare for advanced use cases of drift correction.<br>
+    Such use cases may include patterning tasks for which the DcPatterningEngine mentioned above is not sufficient,
+    or tasks unrelated to patterning, such as imaging tasks.
+</p>
+
+<pre><code class="language-python">
+    import autoscript_toolkit.vision as vision_toolkit
+    
+    # Set up imaging view 1
+    microscope.imaging.set_active_view(1)
+    microscope.imaging.set_active_device(ImagingDevice.ELECTRON_BEAM)
+    microscope.beams.electron_beam.scanning.resolution.value = "1536x1024"
+    
+    # Acquire one image and cut out a template from it
+    settings = GrabFrameSettings(resolution="1536x1024", dwell_time=1e-6)
+    image = microscope.imaging.grab_frame(settings)
+    fiducial_image = vision_toolkit.cut_image(image, relative_center=[0.40, 0.40], relative_size=[0.20, 0.20])
+</code></pre>
+
+<p>Run the drift correction loop in a custom use case:</p>
+
+<pre><code class="language-python">
+    import time
+    
+    current_cycle_number = 1
+    while True:
+        print("Cycle", current_cycle_number)
+    
+        # Custom code should be placed here
+        # ...
+    
+        # Locate the fiducial; the operation includes shift calculation, coordinates are in pixels
+        settings = GrabFrameSettings(resolution="1536x1024", dwell_time=1e-6)
+        image = microscope.imaging.grab_frame(settings)
+        feature_location = vision_toolkit.locate_feature(image, fiducial_image, original_feature_center=[307, 205])
+    
+        # Correct the drift with beam shift
+        microscope.beams.electron_beam.beam_shift.value += feature_location.shift_in_meters
+    
+        # Stop after performing five correction cycles
+        if current_cycle_number == 5:
+            break
+    
+        # Wait before next correction
+        time.sleep(3)
+    
+        current_cycle_number += 1
+</code></pre>
+
+<p>Select a template matcher to be used for the drift-correction engine:</p>
+
+<pre><code class="language-python">
+    from autoscript_toolkit.template_matchers import *
+    
+    # Select the default built-in template matcher (OpenCV)
+    template_matcher = DEFAULT_TEMPLATE_MATCHER
+    
+    # Select the built-in template matcher based on OpenCV explicitly
+    template_matcher = OpencvTemplateMatcher()
+    
+    # Select the built-in Histogram of gradients template matcher
+    template_matcher = HogMatcher(microscope)
+</code></pre>
+
+<p>Create a new drift-correction engine with the selected template matcher:</p>
+
+<pre><code class="language-python">
+    dcp_engine = dc_toolkit.DcPatterningEngine(microscope, template_matcher=template_matcher)
+</code></pre>
+
+<p>Use the selected template matcher for feature location:</p>
+
+<pre><code class="language-python">
+    location = vision_toolkit.locate_feature(image, fiducial_image, template_matcher=template_matcher)
+    location.print_all_information()
+</code></pre>
+
+<p>Create a custom template matcher:</p>
+
+<pre><code class="language-python">
+    from autoscript_toolkit.template_matchers import *
+    
+    class MyTemplateMatcher(TemplateMatcher):
+        def match(self, image: AdornedImage, template: AdornedImage) -&gt; ImageMatch:
+        
+            # Custom template matching code should be placed here
+            # ...
+        
+            calculated_center = Point(307, 205)
+            calculated_score = 0.82
+    
+            # Return a structure containing values calculated by the custom logic
+            match = ImageMatch(center=calculated_center, score=calculated_score)
+            return match
+    
+    template_matcher = MyTemplateMatcher()
+</code></pre>
+
+</body>
+</html>
