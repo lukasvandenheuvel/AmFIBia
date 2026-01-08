@@ -3044,6 +3044,8 @@ class MainWindow(QWidget):
             self.image_widget.load_shapes(patterns, locked=locked)
 
     def run(self):
+        # Save current state
+        self.save_state()
         # Build task list first
         task_list = self.build_task_list()
         
@@ -3202,6 +3204,8 @@ class MainWindow(QWidget):
             self._set_milling_controls_enabled(True)
             # Final status update
             self.update_display()
+            # Save current state
+            self.save_state()
         
         print("Milling complete.")
 
@@ -3316,6 +3320,12 @@ def center_shapes(pattern_dict,offset_x=0,offset_y=0,flip_y_around=None):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+
+    # Set application icon (works for taskbar on Windows)
+    icon_path = "icon.png"
+    if os.path.exists(icon_path):
+        app.setWindowIcon(QIcon(icon_path))
+
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
