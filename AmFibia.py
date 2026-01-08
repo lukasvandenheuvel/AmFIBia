@@ -23,7 +23,7 @@ import cv2
 
 PIXEL_TO_MICRON = 1/2
 MAX_DELAY_NO_HOME = 300  # seconds
-MODE = "dev" # "scope" or "dev"
+MODE = "scope" # "scope" or "dev"
 
 from src.PatternMaker import PatternMaker
 from src.SettingsPanel import SettingsPanel
@@ -1557,7 +1557,7 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Protocol Editor")
-        self.showFullScreen()
+        #self.showFullScreen()
 
         self.positions = {}
         self.selected_displayable_patterns = []  # Track currently selected patterns (list)

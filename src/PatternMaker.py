@@ -97,7 +97,7 @@ class PatternMaker(QWidget):
         if self.mode == "scope" and self.scope is not None:
             try:
                 # Get from microscope - values are in Amperes
-                values = self.scope.beams.ion_beam.beam_current.available_values
+                values = self.scope.get_available_ion_beam_currents()
                 return sorted(values)
             except Exception as e:
                 print(f"Warning: Could not get beam currents from scope: {e}")
