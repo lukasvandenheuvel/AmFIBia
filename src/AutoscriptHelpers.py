@@ -3,13 +3,20 @@ try:
     from autoscript_sdb_microscope_client import SdbMicroscopeClient
     from autoscript_sdb_microscope_client.enumerations import PatterningState
     from autoscript_sdb_microscope_client.structures import GrabFrameSettings, StagePosition, Rectangle, Point
+    
     # Set Up Microscope
     microscope = SdbMicroscopeClient()
 
-
     from autoscript_toolkit.template_matchers import * 
     import autoscript_toolkit.vision as vision_toolkit
-    from src.CustomMatchers import CustomCVMatcher
+    
+    # Import CustomCVMatcher (depends on autoscript)
+    try:
+        from src.CustomMatchers import CustomCVMatcher
+    except ImportError as e:
+        print(f"Could not import CustomCVMatcher from src.CustomMatchers: {e}")
+        CustomCVMatcher = None
+    
 except:
     print("No Autoscript installed")
 
@@ -18,6 +25,9 @@ import numpy as np
 import time
 import os
 import datetime
+import re
+
+MIN_ALIGNMENT_DISTANCE = 82.9e-06/3072/2
 
 try:
     microscope.connect()
@@ -27,7 +37,6 @@ except:
         microscope.connect('localhost')
     except:
         print("Loading Testimages")
-
 
 
 class fibsem:
@@ -90,6 +99,15 @@ class fibsem:
         microscope.specimen.stage.home()
         microscope.beams.electron_beam.turn_off()
         microscope.beams.ion_beam.turn_off()
+        return()
+
+    def clear_patterns(self):
+        '''
+        Input: None
+        Output: None
+        Action: Clear all patterns from xT GUI
+        '''
+        microscope.patterning.clear_patterns()
         return()
     
     def take_image_IB(self, reduced_area=None, resolution="1536x1024", dwell_time=3.0e-6):
@@ -237,6 +255,22 @@ class fibsem:
             return False
         return True
     
+    def set_full_frame_IB(self):
+        microscope.beams.ion_beam.scanning.mode.set_full_frame()
+        return()
+
+
+    def get_current_scanning_resolution(self):
+        return microscope.beams.ion_beam.scanning.resolution.value
+    
+    def get_current_horizontal_field_width(self):
+        return microscope.beams.ion_beam.horizontal_field_width.value
+
+    def set_image_conditions_IB(self,resolution="1536x1024", horizontal_field_width=207e-6):
+        microscope.beams.ion_beam.scanning.resolution.value = resolution
+        microscope.beams.ion_beam.horizontal_field_width.value = horizontal_field_width
+        return()
+
     def align(self,image,position_index=0,seq_group_index=0,current=1.0e-11,reduced_area=None, reset_beam_shift=True):
         '''
         Input: Alignment image, Beam ("ION" or "ELECTRON"), optionally current but replaced by the GUI option
@@ -252,20 +286,11 @@ class fibsem:
             print('Running alignment')
             microscope.imaging.set_active_view(2)
 
-            # Get old resolution of images to go back after alignment
-            old_resolution = microscope.beams.ion_beam.scanning.resolution.value
-            old_mag = microscope.beams.ion_beam.horizontal_field_width.value
-
-            # Get resolution of reference image and set microscope to given HFW
-            img_resolution = image.metadata.scan_settings.scan_size
-            microscope.beams.ion_beam.scanning.resolution.value = img_resolution
+            # Set alignment current
             microscope.beams.ion_beam.beam_current.value = current
             beam_current_string = str(microscope.beams.ion_beam.beam_current.value)
 
-            # Get HFW from Image
-
             # Run auto contrast brightness and reset beam shift. Take an image as reference for alignment
-            microscope.beams.ion_beam.horizontal_field_width.value = image.metadata.optics.scan_field_of_view.width
             if reduced_area is not None: # Set reduced area if provided
                 microscope.beams.ion_beam.scanning.mode.set_reduced_area(reduced_area["left"], reduced_area["top"], reduced_area["width"], reduced_area["height"])
             if reset_beam_shift:
@@ -273,15 +298,17 @@ class fibsem:
             microscope.auto_functions.run_auto_cb()
             current_img = self.take_image_IB(reduced_area=reduced_area)
 
-            # If image and template sizes differ, throw an error
-            if current_img.width != image.data.shape[1] or current_img.height != image.data.shape[0]:
-                print("ERROR: Image and template sizes differ. Cannot align.")
+            # Adjust template size if needed (handles ±1 pixel differences)
+            try:
+                ref_image = self._adjust_template_size(current_img, image)
+            except ValueError as e:
+                print(f"Error in adjustment of template size: {e}")
                 return False
 
             # Load Matcher function and locate feature
             #favourite_matcher = CustomCVMatcher(cv2.TM_CCOEFF_NORMED, tiling=False)
             favourite_matcher = CustomCVMatcher('phase')
-            l = vision_toolkit.locate_feature(current_img, image, favourite_matcher)
+            l = vision_toolkit.locate_feature(current_img, ref_image, favourite_matcher)
             print("Current confidence: " + str(l.confidence))
             self.log_output=self.log_output+"Step Clarification: Initial Alignment after Stage move \n"
             self.log_output=self.log_output+"Current confidence: " + str(l.confidence)+'\n'
@@ -295,18 +322,20 @@ class fibsem:
             self.log_output=self.log_output+"Saved Image as : "+output_name+'\n'
 
             # If cross correlation metric too low, continue movements for maximum 3 steps
-            while l.confidence < 0.98 and move_count < 3:
+            while l.confidence < 0.98 and move_count < 5:
                 self.log_output = self.log_output + "Move Count =" + str(move_count) + '\n'
                 x = l.center_in_meters.x * -1 # sign may need to be flipped depending on matcher
                 y = l.center_in_meters.y * -1
                 distance = np.sqrt(x ** 2 + y ** 2)
-                print("Deviation (in meters): " + str(distance))
+                print(f"Move count {move_count}: Deviation (in meters): {distance}")
                 self.log_output = self.log_output + "Deviation (in meters): " + str(distance) + '\n'
 
 
                 # If distance, meaning offset between images low enough, stop.
-                if distance < 82.9e-06/3072/2:
+                if distance < MIN_ALIGNMENT_DISTANCE:
+                    print(f"Distance within acceptable limits of {MIN_ALIGNMENT_DISTANCE}, stopping.")
                     break
+
                 elif distance > 1e-05:
                     # move stage and reset beam shift
                     print("Moving stage by ("+str(x)+","+str(y)+") and resetting beam shift...")
@@ -345,13 +374,10 @@ class fibsem:
                 print("Current confidence: " + str(l.confidence))
                 self.log_output = self.log_output + "Current confidence: " + str(l.confidence) + '\n'
 
-            # Go back to old resolution
-            microscope.beams.ion_beam.scanning.resolution.value = old_resolution
-            microscope.beams.ion_beam.horizontal_field_width.value = old_mag
             if reduced_area is not None: # Get rid of the reduced area if it was provided
-                microscope.beams.ion_beam.scanning.mode.set_full_frame()
+                self.set_full_frame_IB()
 
-            print("Done.")
+            print("Alignment done.")
 
         except Exception as e:
             print(f"An error occurred during alignment: {e}")
@@ -359,6 +385,60 @@ class fibsem:
 
         return True
 
+    def _adjust_template_size(self, current_img, template):
+        '''
+        Adjust template size to match current image if they differ by 1 pixel or less.
+        
+        Input:
+            current_img: AdornedImage from microscope
+            template: AdornedImage of template image data
+        Output:
+            Adjusted template as AdornedImage
+        Raises:
+            ValueError: If size difference is more than 1 pixel
+        '''
+        template_height, template_width = template.height, template.width
+        current_height, current_width = current_img.height, current_img.width
+        
+        # Check if sizes differ
+        if current_width == template_width and current_height == template_height:
+            return template  # No adjustment needed
+        
+        width_diff = abs(current_width - template_width)
+        height_diff = abs(current_height - template_height)
+        
+        # If difference is more than 1 pixel, cannot adjust
+        if width_diff > 1 or height_diff > 1:
+            raise ValueError(
+                f"Image ({current_width}x{current_height}) and template "
+                f"({template_width}x{template_height}) sizes differ by more than 1 pixel. Cannot align."
+            )
+        
+        # Adjust template to match current image size
+        print(f"Adjusting template size from ({template_width}x{template_height}) to ({current_width}x{current_height})")
+        adjusted_template = np.copy(template.data)
+        
+        # Handle height adjustment
+        if template_height < current_height:
+            # Pad height with mirror padding
+            pad_height = current_height - template_height
+            adjusted_template = np.pad(adjusted_template, ((0, pad_height), (0, 0)), mode='reflect')
+        elif template_height > current_height:
+            # Crop height
+            adjusted_template = adjusted_template[:current_height, :]
+        
+        # Handle width adjustment
+        if template_width < current_width:
+            # Pad width with mirror padding
+            pad_width = current_width - template_width
+            adjusted_template = np.pad(adjusted_template, ((0, 0), (0, pad_width)), mode='reflect')
+        elif template_width > current_width:
+            # Crop width
+            adjusted_template = adjusted_template[:, :current_width]
+        
+        print(f"Template adjusted to ({adjusted_template.shape[1]}x{adjusted_template.shape[0]})")
+        return AdornedImage(data=adjusted_template, metadata=template.metadata)
+    
     def align_current(self,new_current):
         '''
         Input: Current to change towards
@@ -410,26 +490,19 @@ class fibsem:
         
         Input:
             pattern: A CustomPatterns pattern object (RectanglePattern, LinePattern, etc.)
+                     Can be either our custom dataclass or an AutoScript proxy object
         Output:
             xT_pattern: The created AutoScript pattern object, or None if pattern type is unknown
         '''
-        if mode != "scope":
-            from src.CustomPatterns import (
-                RectanglePattern, LinePattern, PolygonPattern, CirclePattern,
-                RegularCrossSectionPattern, CleaningCrossSectionPattern, 
-                StreamPattern, BitmapPattern
-            )
-        else:
-            from autoscript_sdb_microscope_client.structures import (
-                RectanglePattern, LinePattern, PolygonPattern, CirclePattern,
-                RegularCrossSectionPattern, CleaningCrossSectionPattern, 
-                StreamPattern, BitmapPattern
-            )
         
         xT_pattern = None
-        microscope.patterning.clear_patterns()
+        if pattern.depth <= 0:
+            pattern.depth = 1e-9  # Set minimal depth if non-positive
         
-        if isinstance(pattern, RectanglePattern):
+        # Get the pattern type name - works for both proxy objects and custom dataclasses
+        pattern_type = type(pattern).__name__
+        
+        if pattern_type == 'RectanglePattern':
             xT_pattern = microscope.patterning.create_rectangle(
                 center_x=pattern.center_x,
                 center_y=pattern.center_y,
@@ -445,7 +518,7 @@ class fibsem:
             if pattern.pitch_y > 0:
                 xT_pattern.pitch_y = pattern.pitch_y
                 
-        elif isinstance(pattern, LinePattern):
+        elif pattern_type == 'LinePattern':
             xT_pattern = microscope.patterning.create_line(
                 start_x=pattern.start_x,
                 start_y=pattern.start_y,
@@ -458,7 +531,7 @@ class fibsem:
             if pattern.pitch > 0:
                 xT_pattern.pitch = pattern.pitch
                 
-        elif isinstance(pattern, PolygonPattern):
+        elif pattern_type == 'PolygonPattern':
             # Convert vertices to list of [x, y] pairs
             vertices = [[v[0], v[1]] for v in pattern.vertices]
             xT_pattern = microscope.patterning.create_polygon(
@@ -473,7 +546,7 @@ class fibsem:
             if pattern.pitch_y > 0:
                 xT_pattern.pitch_y = pattern.pitch_y
                 
-        elif isinstance(pattern, CirclePattern):
+        elif pattern_type == 'CirclePattern':
             xT_pattern = microscope.patterning.create_circle(
                 center_x=pattern.center_x,
                 center_y=pattern.center_y,
@@ -489,7 +562,7 @@ class fibsem:
             if pattern.pitch_t > 0:
                 xT_pattern.pitch_t = pattern.pitch_t
                 
-        elif isinstance(pattern, RegularCrossSectionPattern):
+        elif pattern_type == 'RegularCrossSectionPattern':
             xT_pattern = microscope.patterning.create_regular_cross_section(
                 center_x=pattern.center_x,
                 center_y=pattern.center_y,
@@ -508,7 +581,7 @@ class fibsem:
             xT_pattern.scan_method = pattern.scan_method
             xT_pattern.scan_ratio = pattern.scan_ratio
                 
-        elif isinstance(pattern, CleaningCrossSectionPattern):
+        elif pattern_type == 'CleaningCrossSectionPattern':
             xT_pattern = microscope.patterning.create_cleaning_cross_section(
                 center_x=pattern.center_x,
                 center_y=pattern.center_y,
@@ -524,14 +597,14 @@ class fibsem:
             if pattern.pitch_y > 0:
                 xT_pattern.pitch_y = pattern.pitch_y
                 
-        elif isinstance(pattern, StreamPattern):
+        elif pattern_type == 'StreamPattern':
             xT_pattern = microscope.patterning.create_stream(
                 center_x=pattern.center_x,
                 center_y=pattern.center_y,
                 stream_file_path=pattern.stream_file_path
             )
                 
-        elif isinstance(pattern, BitmapPattern):
+        elif pattern_type == 'BitmapPattern':
             xT_pattern = microscope.patterning.create_bitmap(
                 center_x=pattern.center_x,
                 center_y=pattern.center_y,
@@ -558,35 +631,100 @@ class fibsem:
             pattern: The CustomPatterns BasePattern-derived object
         '''
         # Set common properties that most patterns share
-        if pattern.application_file:
-            xT_pattern.application_file = pattern.application_file
-        if pattern.beam_type:
-            xT_pattern.beam_type = pattern.beam_type
-        if pattern.blur > 0:
-            xT_pattern.blur = pattern.blur
-        if pattern.defocus != 0:
-            xT_pattern.defocus = pattern.defocus
-        if pattern.dose > 0:
-            xT_pattern.dose = pattern.dose
-        if pattern.dwell_time > 0:
-            xT_pattern.dwell_time = pattern.dwell_time
-        xT_pattern.enabled = pattern.enabled
-        if pattern.gas_type:
-            xT_pattern.gas_type = pattern.gas_type
-        if pattern.gas_flow > 0:
-            xT_pattern.gas_flow = pattern.gas_flow
-        if pattern.gas_needle_position:
-            xT_pattern.gas_needle_position = pattern.gas_needle_position
-        if pattern.interaction_diameter > 0:
-            xT_pattern.interaction_diameter = pattern.interaction_diameter
-        xT_pattern.is_exclusion_zone = pattern.is_exclusion_zone
-        if pattern.pass_count > 0:
-            xT_pattern.pass_count = pattern.pass_count
-        if pattern.refresh_time > 0:
-            xT_pattern.refresh_time = pattern.refresh_time
-        if pattern.rotation != 0:
-            xT_pattern.rotation = pattern.rotation
-        if pattern.scan_direction:
-            xT_pattern.scan_direction = pattern.scan_direction
-        if pattern.scan_type:
-            xT_pattern.scan_type = pattern.scan_type
+        # Use try-except for each property to identify type errors
+        
+        try:
+            if hasattr(pattern, 'application_file'):
+                app_file = pattern.application_file
+                if app_file and str(app_file).strip() and str(app_file) != "None":
+                    xT_pattern.application_file = str(app_file)
+        except Exception as e:
+            print(f"Warning: Could not set application_file: {e}")
+        
+        try:
+            if pattern.beam_type:
+                xT_pattern.beam_type = pattern.beam_type
+        except Exception as e:
+            print(f"Warning: Could not set beam_type: {e}")
+        
+        try:
+            if pattern.blur > 0:
+                xT_pattern.blur = float(pattern.blur)
+        except Exception as e:
+            print(f"Warning: Could not set blur: {e}")
+        
+        try:
+            if pattern.defocus != 0:
+                xT_pattern.defocus = float(pattern.defocus)
+        except Exception as e:
+            print(f"Warning: Could not set defocus: {e}")
+        
+        try:
+            if pattern.dose > 0:
+                xT_pattern.dose = float(pattern.dose)
+        except Exception as e:
+            print(f"Warning: Could not set dose: {e}")
+        
+        try:
+            if pattern.dwell_time > 0:
+                xT_pattern.dwell_time = float(pattern.dwell_time)
+        except Exception as e:
+            print(f"Warning: Could not set dwell_time: {e}")
+        
+        try:
+            xT_pattern.enabled = bool(pattern.enabled)
+        except Exception as e:
+            print(f"Warning: Could not set enabled: {e}")
+        
+        try:
+            if pattern.gas_type:
+                xT_pattern.gas_type = pattern.gas_type
+                if pattern.gas_flow > 0:
+                    xT_pattern.gas_flow = float(pattern.gas_flow)
+                if pattern.gas_needle_position:
+                    xT_pattern.gas_needle_position = pattern.gas_needle_position
+        except Exception as e:
+            print(f"Warning: Could not set gas properties: {e}")
+        
+        try:
+            if pattern.interaction_diameter > 0:
+                xT_pattern.interaction_diameter = float(pattern.interaction_diameter)
+        except Exception as e:
+            print(f"Warning: Could not set interaction_diameter: {e}")
+        
+        try:
+            xT_pattern.is_exclusion_zone = bool(pattern.is_exclusion_zone)
+        except Exception as e:
+            print(f"Warning: Could not set is_exclusion_zone: {e}")
+        
+        try:
+            if pattern.pass_count > 0:
+                xT_pattern.pass_count = int(pattern.pass_count)
+        except Exception as e:
+            print(f"Warning: Could not set pass_count: {e}")
+        
+        try:
+            if pattern.refresh_time > 0:
+                xT_pattern.refresh_time = float(pattern.refresh_time)
+        except Exception as e:
+            print(f"Warning: Could not set refresh_time: {e}")
+        
+        try:
+            if pattern.rotation != 0:
+                xT_pattern.rotation = float(pattern.rotation)
+        except Exception as e:
+            print(f"Warning: Could not set rotation: {e}")
+        
+        try:
+            if pattern.scan_direction:
+                xT_pattern.scan_direction = pattern.scan_direction
+        except Exception as e:
+            print(f"Warning: Could not set scan_direction: {e}")
+        
+        try:
+            if pattern.scan_type:
+                xT_pattern.scan_type = pattern.scan_type
+        except Exception as e:
+            print(f"Warning: Could not set scan_type: {e}")
+        
+        # Note: time property is read-only on xT patterns, calculated by microscope

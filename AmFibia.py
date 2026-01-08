@@ -20,6 +20,7 @@ import numpy as np
 import xml.etree.ElementTree as ET
 import html
 import cv2
+import re
 
 PIXEL_TO_MICRON = 1/2
 MAX_DELAY_NO_HOME = 300  # seconds
@@ -1369,7 +1370,8 @@ class PositionList(QListWidget):
 def calculate_pattern_time(pattern):
     """Calculate approximate milling time for a pattern in seconds.
     
-    Uses the formula: time = (area / pitch^2) * dwell_time * pass_count
+    First checks if pattern has a 'time' attribute set by user.
+    Otherwise uses the formula: time = (area / pitch^2) * dwell_time * pass_count
     
     Args:
         pattern: A pattern object (RectanglePattern, PolygonPattern, LinePattern, etc.)
@@ -1377,6 +1379,11 @@ def calculate_pattern_time(pattern):
     Returns:
         Estimated time in seconds
     """
+    # Use time attribute directly if available and greater than 0
+    if hasattr(pattern, 'time') and pattern.time and pattern.time > 0:
+        return pattern.time
+    
+    # Otherwise calculate from pattern parameters
     dwell_time = getattr(pattern, 'dwell_time', 1e-6)
     pass_count = getattr(pattern, 'pass_count', 1)
     
@@ -1693,9 +1700,10 @@ class MainWindow(QWidget):
         self.pattern_properties_table.setHorizontalHeaderLabels(["Property", "Value"])
         self.pattern_properties_table.horizontalHeader().setStretchLastSection(True)
         self.pattern_properties_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        self.pattern_properties_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.pattern_properties_table.setEditTriggers(QAbstractItemView.DoubleClicked | QAbstractItemView.EditKeyPressed)
         self.pattern_properties_table.setSelectionMode(QAbstractItemView.NoSelection)
         self.pattern_properties_table.verticalHeader().setVisible(False)
+        self.pattern_properties_table.itemChanged.connect(self.on_pattern_property_changed)
 
         left_layout.addLayout(tab_buttons_layout)
         
@@ -1732,9 +1740,11 @@ class MainWindow(QWidget):
         self.settings_panel.dwell_time_changed.connect(self._on_dwell_time_changed)
         self.settings_panel.load_state_requested.connect(self.load_state)
         
-        # In dev mode, set a default working directory
+        # Set default working directory based on mode
         if MODE == "dev":
             self.settings_panel.set_working_directory("/Users/lukasvandenheuvel/Documents/PhD/Scripts/AmFIBia/test_out_dir")
+        elif MODE == "scope":
+            self.settings_panel.set_working_directory("C:/Users/jdaraspe/Desktop/AmFIBia/test_output_dir")
 
         # Image panel
         pixmap = QPixmap("logo.png")
@@ -2105,14 +2115,14 @@ class MainWindow(QWidget):
             item = self.position_list.item(i)
             data = item.data(Qt.UserRole)
             
-            # Store position data (exclude QPixmap which isn't picklable)
+            # Store position data (exclude QPixmap and AdornedImage which aren't picklable)
             position_data = {
                 'coords': data.get('coords'),
                 'rect': data.get('rect'),
                 'pixel_to_um': data.get('pixel_to_um'),
                 'tracking_area': data.get('tracking_area'),
-                'patterns': data.get('patterns', []),  # PatternGroups are picklable
-                'image': data.get('image'),  # AdornedImage is picklable (numpy array + dataclasses)
+                'patterns': data.get('patterns', []),  # Already converted when loaded from xT
+                'image_path': data.get('image_path'),  # Store path to TIFF file instead of object
             }
             state_data['positions'].append(position_data)
         
@@ -2164,26 +2174,40 @@ class MainWindow(QWidget):
         for position_data in state_data.get('positions', []):
             item = QListWidgetItem()
             
-            # Reconstruct QPixmap from AdornedImage if available
-            adorned_image = position_data.get('image')
+            # Load AdornedImage from TIFF file if path exists
+            image_rel_path = position_data.get('image_path')
+            adorned_image = None
             pixmap = None
-            if adorned_image is not None:
-                img_data = adorned_image.data
-                height, width = img_data.shape[:2]
-                if img_data.ndim == 2:  # Grayscale
-                    pixmap = QPixmap.fromImage(
-                        QImage(img_data.data, width, height, width, QImage.Format_Grayscale8)
-                    )
-                else:  # RGB
-                    pixmap = QPixmap.fromImage(
-                        QImage(img_data.data, width, height, width * 3, QImage.Format_RGB888)
-                    )
+            
+            if image_rel_path:
+                image_full_path = os.path.join(working_dir, image_rel_path)
+                if os.path.exists(image_full_path):
+                    try:
+                        # Load using AdornedImage.load() - works for both scope and dev mode
+                        adorned_image = AdornedImage.load(image_full_path)
+                        
+                        # Create QPixmap for display
+                        img_data = adorned_image.data
+                        height, width = img_data.shape[:2]
+                        if img_data.ndim == 2:  # Grayscale
+                            pixmap = QPixmap.fromImage(
+                                QImage(img_data.data, width, height, width, QImage.Format_Grayscale8)
+                            )
+                        else:  # RGB
+                            pixmap = QPixmap.fromImage(
+                                QImage(img_data.data, width, height, width * 3, QImage.Format_RGB888)
+                            )
+                    except Exception as e:
+                        print(f"Warning: Could not load image from {image_full_path}: {e}")
+                else:
+                    print(f"Warning: Image file not found: {image_full_path}")
             
             data = {
                 'coords': position_data.get('coords'),
                 'rect': position_data.get('rect'),
                 'pixmap': pixmap,
                 'image': adorned_image,
+                'image_path': image_rel_path,
                 'pixel_to_um': position_data.get('pixel_to_um'),
                 'patterns': position_data.get('patterns', []),
                 'tracking_area': position_data.get('tracking_area'),
@@ -2255,6 +2279,7 @@ class MainWindow(QWidget):
             "rect": None,
             "pixmap": None, # Pixmap of the ion beam image for display
             "image": None, # AdornedImage object 
+            "image_path": None,  # Path to saved TIFF file
             "pixel_to_um": None,
             "patterns": [],  # List of pattern dicts
             "tracking_area": None  # Tracking area in µm coordinates
@@ -2298,6 +2323,21 @@ class MainWindow(QWidget):
         # Take image
         if MODE == "scope":
             adorned_img = scope.take_image_IB(resolution=self.scanning_resolution, dwell_time=self.dwell_time)
+            
+            # Save the Autoscript AdornedImage to a TIFF file
+            working_dir = self.settings_panel.get_working_directory()
+            if working_dir:
+                images_dir = os.path.join(working_dir, 'images')
+                os.makedirs(images_dir, exist_ok=True)
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+                image_filename = f"position_{index}_{timestamp}.tif"
+                image_path = os.path.join(images_dir, image_filename)
+                adorned_img.save(image_path)
+                # Store relative path from working directory
+                image_rel_path = os.path.join('images', image_filename)
+            else:
+                image_rel_path = None
+            
             img = adorned_img.data
             width = adorned_img.width
             height = adorned_img.height
@@ -2333,7 +2373,8 @@ class MainWindow(QWidget):
         # Update data
         data["coords"] = coords # Update coordinates in case they changed since the position was added
         data["pixmap"] = pixmap
-        data["image"] = adorned_img
+        data["image"] = adorned_img  # Keep in memory for current session
+        data["image_path"] = image_rel_path if MODE == "scope" else None  # Store path for persistence
         data["pixel_to_um"] = pixel_to_um
 
         item.setData(Qt.UserRole, data)
@@ -2349,6 +2390,8 @@ class MainWindow(QWidget):
         if not item:
             print("Warning: No position selected.")
             return
+
+        print("loading xT patterns...")
         
         if MODE == "dev":
             # In dev mode with auto checkbox checked, use last loaded patterns
@@ -2374,6 +2417,7 @@ class MainWindow(QWidget):
             
             # Read all patterns from the active view
             all_patterns = scope.retreive_xT_patterns()
+            print(all_patterns)
             
             # Get image dimensions and FOV for coordinate conversion
             img_w = data["image"].width
@@ -2392,7 +2436,7 @@ class MainWindow(QWidget):
                 fov_width_m, fov_height_m,
                 group_index=len(existing_patterns)
             )
-            
+            [print(f"{id}: coords = {p.coords}") for id,p in pattern_group.patterns.items()]
             # Append to existing patterns list
             existing_patterns.append(pattern_group)
             data["patterns"] = existing_patterns
@@ -2412,6 +2456,8 @@ class MainWindow(QWidget):
         if MODE != "scope":
             print("Warning: Sending patterns to xT is only available in scope mode.")
             return
+        # Clear existing patterns on the microscope
+        scope.clear_patterns()
         # Create each pattern on the microscope
         for pattern_group in existing_patterns:
             pattern_dict = pattern_group.patterns
@@ -2670,18 +2716,32 @@ class MainWindow(QWidget):
         if not first_pattern:
             return
         
-        from dataclasses import fields
         properties = []
-        for f in fields(first_pattern):
-            name = f.name
-            if name in exclude_props or name.startswith('_'):
+        
+        # Get all attributes from first pattern (works for both dataclass and proxy objects)
+        # Filter to only include relevant pattern properties
+        common_pattern_attrs = [
+            'time',  # Time at the top
+            'application_file',  # Application file
+            'dwell_time', 'scan_type', 'scan_direction',
+            'center_x', 'center_y', 'width', 'height', 'depth', 'rotation',
+            'start_x', 'start_y', 'end_x', 'end_y', 'length',  # Line pattern
+            'outer_diameter', 'inner_diameter',  # Circle pattern
+            'vertices',  # Polygon pattern
+            'overlap_x', 'overlap_y', 'overlap', 'overlap_r', 'overlap_t',
+            'pitch_x', 'pitch_y', 'pitch', 'pitch_r', 'pitch_t',
+            'dose', 'blur', 'defocus', 'enabled', 'beam_type',
+        ]
+        
+        for attr_name in common_pattern_attrs:
+            if not hasattr(first_pattern, attr_name) or attr_name in exclude_props or attr_name.startswith('_'):
                 continue
             
             # Collect values from all selected patterns
             values = []
             for dp in displayable_patterns:
-                if dp.pattern:
-                    values.append(getattr(dp.pattern, name))
+                if dp.pattern and hasattr(dp.pattern, attr_name):
+                    values.append(getattr(dp.pattern, attr_name))
             
             # Check if all values are the same
             if len(set(str(v) for v in values)) == 1:
@@ -2689,14 +2749,63 @@ class MainWindow(QWidget):
             else:
                 value_str = "(mixed)"
             
-            properties.append((name.replace('_', ' ').title(), value_str))
+            properties.append((attr_name.replace('_', ' ').title(), value_str))
         
         # Populate the pattern properties table
+        self.pattern_properties_table.blockSignals(True)  # Block signals while populating
         self.pattern_properties_table.setRowCount(len(properties))
         
         for row, (prop_name, prop_value) in enumerate(properties):
-            self.pattern_properties_table.setItem(row, 0, QTableWidgetItem(prop_name))
-            self.pattern_properties_table.setItem(row, 1, QTableWidgetItem(prop_value))
+            prop_item = QTableWidgetItem(prop_name)
+            prop_item.setFlags(prop_item.flags() & ~Qt.ItemIsEditable)  # Make property name non-editable
+            self.pattern_properties_table.setItem(row, 0, prop_item)
+            
+            value_item = QTableWidgetItem(prop_value)
+            # Make 'time' and 'depth' editable
+            if prop_name.lower() in ['time', 'depth']:
+                value_item.setFlags(value_item.flags() | Qt.ItemIsEditable)
+            else:
+                value_item.setFlags(value_item.flags() & ~Qt.ItemIsEditable)
+            self.pattern_properties_table.setItem(row, 1, value_item)
+        
+        self.pattern_properties_table.blockSignals(False)  # Re-enable signals
+
+    def on_pattern_property_changed(self, item):
+        """Handle changes to pattern properties in the table."""
+        if item.column() != 1:  # Only handle value column
+            return
+        
+        # Get property name from the same row
+        prop_name_item = self.pattern_properties_table.item(item.row(), 0)
+        if not prop_name_item:
+            return
+        
+        prop_name = prop_name_item.text().lower().replace(' ', '_')
+        
+        # Only handle time and depth properties
+        if prop_name not in ['time', 'depth']:
+            return
+        
+        # Get the new value
+        try:
+            new_value = float(item.text())
+            if new_value < 0:
+                raise ValueError(f"{prop_name_item.text()} must be non-negative")
+        except ValueError as e:
+            QMessageBox.warning(self, "Invalid Value", f"Please enter a valid positive number for {prop_name_item.text()}.\nError: {e}")
+            # Restore the original value
+            self.on_pattern_selected(self.image_widget._get_selected_displayable_patterns())
+            return
+        
+        # Update all selected patterns
+        selected_patterns = self.image_widget._get_selected_displayable_patterns()
+        for dp in selected_patterns:
+            if dp.pattern and hasattr(dp.pattern, prop_name):
+                setattr(dp.pattern, prop_name, new_value)
+        
+        # Refresh the display
+        self.image_widget.update()
+        print(f"Updated {prop_name_item.text()} to {new_value} for {len(selected_patterns)} pattern(s)")
 
     def _select_all_in_group(self):
         """Select all patterns belonging to the currently selected pattern groups."""
@@ -3068,6 +3177,10 @@ class MainWindow(QWidget):
         self._set_milling_controls_enabled(False)
         self._milling_stopped = False  # Reset stop flag
         QApplication.processEvents()
+
+        # Get old resolution of images to go back after alignment
+        old_resolution = scope.get_current_scanning_resolution()
+        old_fov = scope.get_current_horizontal_field_width()
         
         if MODE=='scope':
             print(f"Scope output directory: {scope.working_dir}")
@@ -3135,6 +3248,10 @@ class MainWindow(QWidget):
                     # Send patterns to scope and mill
 
                     scope.ion_on()
+                    img_resolution = str(task.image.data.shape[1]) + "x" + str(task.image.data.shape[0])
+                    img_fov = task.image.metadata.optics.scan_field_of_view.width
+                    scope.set_image_conditions_IB(resolution=img_resolution, horizontal_field_width=img_fov)
+                    scope.set_full_frame_IB()
                     # If this is the first task of if the position has changed, move stage and align at low current
                     move_and_align = False
                     if task_idx == 0:
@@ -3206,6 +3323,9 @@ class MainWindow(QWidget):
             self.update_display()
             # Save current state
             self.save_state()
+            if MODE == "scope":
+                # Restore old scanning resolution and FOV
+                scope.set_image_conditions_IB(resolution=old_resolution, horizontal_field_width=old_fov)
         
         print("Milling complete.")
 
@@ -3254,6 +3374,27 @@ def relative_coords(tracking_area, fov_width, fov_height):
     rel_tracking_area["left"]   = 0.5 + tracking_area["left"] / fov_width
     rel_tracking_area["top"]    = 0.5 - tracking_area["top"] / fov_height
     return rel_tracking_area
+
+def convert_resolution_string(resolution_str):
+    """
+    Convert resolution string from '{Width=1536, Height=1024}' format to 'WIDTHxHEIGHT' format.
+    
+    Args:
+        resolution_str: String in format '{Width=1536, Height=1024}'
+        
+    Returns:
+        String in format '1536x1024'
+    """
+    # Extract width and height using regex
+    width_match = re.search(r'Width=(\d+)', resolution_str)
+    height_match = re.search(r'Height=(\d+)', resolution_str)
+    
+    if width_match and height_match:
+        width = width_match.group(1)
+        height = height_match.group(1)
+        return f"{width}x{height}"
+    else:
+        raise ValueError(f"Could not parse resolution string: {resolution_str}")
         
 def parse_ptf(filepath):
     tree = ET.parse(filepath)

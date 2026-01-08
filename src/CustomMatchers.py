@@ -15,10 +15,18 @@ for usage of functions, scroll to end of file
 import numpy as np
 import cv2
 
+# Try to import phase correlation from scikit-image
 try:
     from skimage.feature import register_translation
-except ModuleNotFoundError:
-    pass
+    _HAS_SKIMAGE = True
+except (ModuleNotFoundError, ImportError):
+    # Try newer scikit-image API (>= 0.19)
+    try:
+        from skimage.registration import phase_cross_correlation as register_translation
+        _HAS_SKIMAGE = True
+    except (ModuleNotFoundError, ImportError):
+        _HAS_SKIMAGE = False
+        register_translation = None
 
 
 # Import statements necessary for class CustomCVMatcher
@@ -42,13 +50,22 @@ def phase_correlate(image_8bit, template_8bit, upsample_factor=25):
     template_8bit_pad = np.zeros([target_height,target_width],dtype=np.uint8)
     template_8bit_pad[0:template_height,0:template_width] = template_8bit
 
-    try:
-        # Phase correlation with upsampled matrix-multiplication DFT
-        shift, error, diffphase = register_translation(template_8bit_pad, image_8bit_pad, upsample_factor)
-        match_center_x = template_width / 2 - shift[1]
-        match_center_y = template_height / 2 - shift[0]
-        transform = np.float32([ [1,0,shift[1]], [0,1,shift[0]] ])
-    except NameError:
+    # Try phase correlation with skimage if available, otherwise use cv2
+    use_cv2_fallback = False
+    if _HAS_SKIMAGE:
+        try:
+            # Phase correlation with upsampled matrix-multiplication DFT
+            shift, error, diffphase = register_translation(template_8bit_pad, image_8bit_pad, upsample_factor)
+            match_center_x = template_width / 2 - shift[1]
+            match_center_y = template_height / 2 - shift[0]
+            transform = np.float32([ [1,0,shift[1]], [0,1,shift[0]] ])
+        except Exception:
+            # Fall back to cv2 if skimage fails
+            use_cv2_fallback = True
+    else:
+        use_cv2_fallback = True
+    
+    if use_cv2_fallback:
         # Phase correlation with Hanning window function and 5x5-weighted centroid around peak
         retval, response = cv2.phaseCorrelate(np.float32(template_8bit_pad), np.float32(image_8bit_pad))
         match_center_x = template_width / 2 + retval[0]

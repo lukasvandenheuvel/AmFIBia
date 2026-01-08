@@ -819,11 +819,14 @@ def pattern_to_image_coords(
         return (img_x, img_y)
     
     # Handle different pattern types
-    if isinstance(pattern, RectanglePattern):
+    # Check for AutoScript pattern types first (they have different class names)
+    pattern_type = type(pattern).__name__
+    
+    if isinstance(pattern, RectanglePattern) or pattern_type == 'RectanglePattern':
         # Get the 4 corners of the rectangle
         cx, cy = pattern.center_x, pattern.center_y
         w, h = pattern.width / 2, pattern.height / 2
-        rot = pattern.rotation
+        rot = pattern.rotation if hasattr(pattern, 'rotation') else 0
         
         # Corners before rotation (relative to center)
         corners = [
@@ -845,11 +848,15 @@ def pattern_to_image_coords(
         # Translate to pattern center and convert to pixels
         return [meters_to_pixels(cx + x, cy + y) for x, y in corners]
     
-    elif isinstance(pattern, PolygonPattern):
+    elif isinstance(pattern, PolygonPattern) or pattern_type == 'PolygonPattern':
         # Polygon vertices are already in absolute coordinates
-        return [meters_to_pixels(x, y) for x, y in pattern.vertices]
+        if hasattr(pattern, 'vertices'):
+            return [meters_to_pixels(x, y) for x, y in pattern.vertices]
+        else:
+            # AutoScript polygon might have a different structure
+            return [meters_to_pixels(pattern.center_x, pattern.center_y)]
     
-    elif isinstance(pattern, CirclePattern):
+    elif isinstance(pattern, CirclePattern) or pattern_type in ['CirclePattern', 'AnnulusPattern']:
         # Approximate circle with polygon points
         import math
         cx, cy = pattern.center_x, pattern.center_y
@@ -859,25 +866,25 @@ def pattern_to_image_coords(
         num_points = 32
         points = []
         for i in range(num_points):
-            angle = 2 * math.pi * i / num_points + pattern.rotation
+            angle = 2 * math.pi * i / num_points + (pattern.rotation if hasattr(pattern, 'rotation') else 0)
             x = cx + r * math.cos(angle)
             y = cy + r * math.sin(angle)
             points.append(meters_to_pixels(x, y))
         
         return points
     
-    elif isinstance(pattern, LinePattern):
+    elif isinstance(pattern, LinePattern) or pattern_type == 'LinePattern':
         # Return start and end points
         return [
             meters_to_pixels(pattern.start_x, pattern.start_y),
             meters_to_pixels(pattern.end_x, pattern.end_y),
         ]
     
-    elif isinstance(pattern, (RegularCrossSectionPattern, CleaningCrossSectionPattern, BitmapPattern)):
+    elif isinstance(pattern, (RegularCrossSectionPattern, CleaningCrossSectionPattern, BitmapPattern)) or pattern_type in ['RegularCrossSectionPattern', 'CleaningCrossSectionPattern', 'BitmapPattern']:
         # Treat like rectangle
         cx, cy = pattern.center_x, pattern.center_y
         w, h = pattern.width / 2, pattern.height / 2
-        rot = pattern.rotation
+        rot = pattern.rotation if hasattr(pattern, 'rotation') else 0
         
         corners = [(-w, -h), (+w, -h), (+w, +h), (-w, +h)]
         
@@ -891,7 +898,7 @@ def pattern_to_image_coords(
         
         return [meters_to_pixels(cx + x, cy + y) for x, y in corners]
     
-    elif isinstance(pattern, StreamPattern):
+    elif isinstance(pattern, StreamPattern) or pattern_type == 'StreamPattern':
         # Stream patterns don't have geometric coordinates - return center point
         return [meters_to_pixels(pattern.center_x, pattern.center_y)]
     
@@ -1149,18 +1156,125 @@ def convert_xT_patterns_to_displayable(
     """
     patterns_dict = {}
     for pid, xT_pattern in enumerate(xT_patterns):
+        # Convert proxy pattern to dataclass immediately to avoid stale references
+        dataclass_pattern = convert_proxy_pattern_to_dataclass(xT_pattern)
+        
         coords = pattern_to_image_coords(
-            xT_pattern,
+            dataclass_pattern,
             image_width_px,
             image_height_px,
             field_of_view_width_m,
             field_of_view_height_m
         )
         unique_id = f"xT_{uuid.uuid4().hex[:8]}"
-        patterns_dict[unique_id] = DisplayablePattern(pattern=xT_pattern, coords=coords)
+        patterns_dict[unique_id] = DisplayablePattern(pattern=dataclass_pattern, coords=coords)
     
     return PatternGroup.create_with_index(
         patterns=patterns_dict,
         milling_current=milling_current,
         index=group_index
     )
+
+
+def convert_proxy_pattern_to_dataclass(pattern):
+    """
+    Convert an AutoScript proxy pattern to a custom dataclass pattern.
+    If the pattern is already a dataclass, return it unchanged.
+    
+    Args:
+        pattern: Pattern object (AutoScript proxy or custom dataclass)
+    
+    Returns:
+        Custom pattern dataclass instance
+    """
+    # Check if it's already a dataclass (from CustomPatterns)
+    if isinstance(pattern, (RectanglePattern, CirclePattern, LinePattern, PolygonPattern, BasePattern)):
+        return pattern
+    
+    # It's an AutoScript proxy - extract attributes
+    pattern_type = type(pattern).__name__
+    
+    # Extract common attributes
+    attrs = {}
+    common_attrs = [
+        'center_x', 'center_y', 'width', 'height', 'depth', 'rotation',
+        'start_x', 'start_y', 'end_x', 'end_y', 'length',
+        'outer_diameter', 'inner_diameter', 'vertices',
+        'application_file', 'beam_type', 'blur', 'defocus', 'dose',
+        'dwell_time', 'enabled', 'gas_flow', 'gas_needle_position', 'gas_type',
+        'interaction_diameter', 'is_exclusion_zone', 'pass_count',
+        'refresh_time', 'scan_direction', 'scan_type', 'time', 'volume_per_dose',
+        'overlap_x', 'overlap_y', 'overlap', 'overlap_r', 'overlap_t',
+        'pitch_x', 'pitch_y', 'pitch', 'pitch_r', 'pitch_t',
+        'multi_scan_pass_count', 'scan_method', 'scan_ratio',  # RegularCrossSectionPattern
+        'fix_aspect_ratio', 'bitmap_data',  # BitmapPattern
+        'stream_file_path',  # StreamPattern
+    ]
+    
+    for attr in common_attrs:
+        if hasattr(pattern, attr):
+            value = getattr(pattern, attr)
+            # Convert lists to ensure they're picklable
+            if isinstance(value, list):
+                attrs[attr] = list(value)
+            else:
+                attrs[attr] = value
+    
+    # Create the appropriate dataclass based on type
+    if pattern_type == 'RectanglePattern':
+        return RectanglePattern(**attrs)
+    elif pattern_type == 'CirclePattern':
+        return CirclePattern(**attrs)
+    elif pattern_type == 'LinePattern':
+        return LinePattern(**attrs)
+    elif pattern_type == 'PolygonPattern':
+        return PolygonPattern(**attrs)
+    elif pattern_type == 'RegularCrossSectionPattern':
+        return RegularCrossSectionPattern(**attrs)
+    elif pattern_type == 'CleaningCrossSectionPattern':
+        return CleaningCrossSectionPattern(**attrs)
+    elif pattern_type == 'BitmapPattern':
+        return BitmapPattern(**attrs)
+    elif pattern_type == 'StreamPattern':
+        return StreamPattern(**attrs)
+    else:
+        # Unknown type, create a base pattern
+        return BasePattern(**attrs)
+
+
+def convert_pattern_groups_for_pickle(pattern_groups):
+    """
+    Convert all patterns in PatternGroups from AutoScript proxies to custom dataclasses.
+    This makes the PatternGroups picklable for state persistence.
+    
+    Args:
+        pattern_groups: List of PatternGroup objects
+    
+    Returns:
+        New list of PatternGroup objects with converted patterns
+    """
+    converted_groups = []
+    for pg in pattern_groups:
+        # Convert patterns first, THEN clone
+        # (cloning with deepcopy fails on proxy objects with thread locks)
+        converted_patterns = {}
+        for pattern_id, displayable_pattern in pg.patterns.items():
+            # Convert the pattern to dataclass
+            converted_pattern = convert_proxy_pattern_to_dataclass(displayable_pattern.pattern)
+            # Create new DisplayablePattern with converted pattern
+            converted_patterns[pattern_id] = DisplayablePattern(
+                pattern=converted_pattern,
+                coords=displayable_pattern.coords.copy()  # Shallow copy is fine for list of tuples
+            )
+        
+        # Create new PatternGroup with converted patterns
+        new_pg = PatternGroup(
+            patterns=converted_patterns,
+            milling_current=pg.milling_current,
+            color=pg.color,
+            sequential_group=pg.sequential_group,
+            delay=pg.delay,
+            milled_status=pg.milled_status
+        )
+        converted_groups.append(new_pg)
+    return converted_groups
