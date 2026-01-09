@@ -25,7 +25,7 @@ import re
 
 PIXEL_TO_MICRON = 1/2
 MAX_DELAY_NO_HOME = 300  # seconds
-MODE = "dev" # "scope" or "dev"
+MODE = "scope" # "scope" or "dev"
 
 from src.PatternMaker import PatternMaker
 from src.SettingsPanel import SettingsPanel
@@ -2879,7 +2879,7 @@ class MainWindow(QWidget):
             'vertices',  # Polygon pattern
             'overlap_x', 'overlap_y', 'overlap', 'overlap_r', 'overlap_t',
             'pitch_x', 'pitch_y', 'pitch', 'pitch_r', 'pitch_t',
-            'dose', 'blur', 'defocus', 'enabled', 'beam_type',
+            'dose', 'blur', 'defocus', 'enabled', 'beam_type', 'pass_count',
         ]
         
         for attr_name in common_pattern_attrs:
@@ -2910,8 +2910,8 @@ class MainWindow(QWidget):
             self.pattern_properties_table.setItem(row, 0, prop_item)
             
             value_item = QTableWidgetItem(prop_value)
-            # Make 'time' and 'depth' editable
-            if prop_name.lower() in ['time', 'depth']:
+            # Make 'time', 'depth', and 'pass_count' editable
+            if prop_name.lower() in ['time', 'depth', 'pass count']:
                 value_item.setFlags(value_item.flags() | Qt.ItemIsEditable)
             else:
                 value_item.setFlags(value_item.flags() & ~Qt.ItemIsEditable)
@@ -2931,15 +2931,20 @@ class MainWindow(QWidget):
         
         prop_name = prop_name_item.text().lower().replace(' ', '_')
         
-        # Only handle time and depth properties
-        if prop_name not in ['time', 'depth']:
+        # Only handle time, depth, and pass_count properties
+        if prop_name not in ['time', 'depth', 'pass_count']:
             return
         
         # Get the new value
         try:
-            new_value = float(item.text())
-            if new_value < 0:
-                raise ValueError(f"{prop_name_item.text()} must be non-negative")
+            if prop_name == 'pass_count':
+                new_value = int(item.text())
+                if new_value < 1:
+                    raise ValueError(f"{prop_name_item.text()} must be at least 1")
+            else:
+                new_value = float(item.text())
+                if new_value < 0:
+                    raise ValueError(f"{prop_name_item.text()} must be non-negative")
         except ValueError as e:
             QMessageBox.warning(self, "Invalid Value", f"Please enter a valid positive number for {prop_name_item.text()}.\nError: {e}")
             # Restore the original value

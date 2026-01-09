@@ -28,14 +28,14 @@ class SettingsPanel(QWidget):
     
     # Fallback ScanningResolution presets (used when microscope not connected)
     FALLBACK_RESOLUTION_PRESETS = [
-        ("512x442", "PRESET_512X442"),
-        ("768x512", "PRESET_768X512"),
-        ("1024x884", "PRESET_1024X884"),
-        ("1536x1024", "PRESET_1536X1024"),
-        ("2048x1768", "PRESET_2048X1768"),
-        ("3072x2048", "PRESET_3072X2048"),
-        ("4096x3536", "PRESET_4096X3536"),
-        ("6144x4096", "PRESET_6144X4096"),
+        '512x442',
+        '768x512',
+        '1024x884',
+        '1536x1024',
+        '2048x1768',
+        '3072x2048',
+        '4096x3536',
+        '6144x4096',
     ]
     
     DEFAULT_RESOLUTION = "1536x1024"
@@ -76,8 +76,9 @@ class SettingsPanel(QWidget):
         # Scanning Resolution dropdown
         self.resolution_combo = QComboBox()
         resolution_presets = self._get_resolution_presets()
-        for display_text, preset_name in resolution_presets:
-            self.resolution_combo.addItem(display_text, preset_name)
+        print(resolution_presets)
+        for resolution in resolution_presets:
+            self.resolution_combo.addItem(resolution)
         
         # Set default resolution
         default_index = self.resolution_combo.findText(self.DEFAULT_RESOLUTION)
@@ -126,9 +127,8 @@ class SettingsPanel(QWidget):
     
     def _on_resolution_changed(self, index):
         """Handle resolution dropdown change."""
-        preset_name = self.resolution_combo.currentData()
         resolution_text = self.resolution_combo.currentText()
-        print(f"Resolution changed to: {resolution_text} ({preset_name})")
+        print(f"Resolution changed to: {resolution_text}")
         self.resolution_changed.emit(resolution_text)
     
     def _on_dwell_time_changed(self):
@@ -146,8 +146,8 @@ class SettingsPanel(QWidget):
             self.dwell_time_edit.setText("3")
     
     def get_scanning_resolution(self):
-        """Get the currently selected scanning resolution preset name."""
-        return self.resolution_combo.currentData()
+        """Get the currently selected scanning resolution (e.g., '1536x1024')."""
+        return self.resolution_combo.currentText()
     
     def get_scanning_resolution_text(self):
         """Get the currently selected scanning resolution as display text (e.g., '1536x1024')."""

@@ -3,7 +3,7 @@ from src.utils import format_current
 
 try:
     from autoscript_sdb_microscope_client import SdbMicroscopeClient
-    from autoscript_sdb_microscope_client.enumerations import PatterningState
+    from autoscript_sdb_microscope_client.enumerations import PatterningState, PatterningMode
     from autoscript_sdb_microscope_client.structures import GrabFrameSettings, StagePosition, Rectangle, Point
     
     # Set Up Microscope
@@ -474,6 +474,7 @@ class fibsem:
         try:
             # Clear any existing patterns
             microscope.patterning.clear_patterns()
+            PatterningMode = "parallel"
             
             # Create each pattern on the microscope
             for pattern_id, displayable_pattern in pattern_dict.items():
@@ -514,6 +515,7 @@ class fibsem:
         
         # Get the pattern type name - works for both proxy objects and custom dataclasses
         pattern_type = type(pattern).__name__
+        print(f"Depth for pattern type {pattern_type}: {pattern.depth}")
         
         if pattern_type == 'RectanglePattern':
             xT_pattern = microscope.patterning.create_rectangle(
@@ -650,6 +652,7 @@ class fibsem:
             if hasattr(pattern, 'application_file'):
                 app_file = pattern.application_file
                 if app_file and str(app_file).strip() and str(app_file) != "None":
+                    print(f"Setting application_file to: {app_file}")
                     xT_pattern.application_file = str(app_file)
         except Exception as e:
             print(f"Warning: Could not set application_file: {e}")
@@ -665,6 +668,12 @@ class fibsem:
                 xT_pattern.blur = float(pattern.blur)
         except Exception as e:
             print(f"Warning: Could not set blur: {e}")
+
+        try:
+            if pattern.time > 0:
+                xT_pattern.time = float(pattern.time)
+        except Exception as e:
+            print(f"Warning: Could not set time: {e}")
         
         try:
             if pattern.defocus != 0:
@@ -678,11 +687,11 @@ class fibsem:
         except Exception as e:
             print(f"Warning: Could not set dose: {e}")
         
-        try:
-            if pattern.dwell_time > 0:
-                xT_pattern.dwell_time = float(pattern.dwell_time)
-        except Exception as e:
-            print(f"Warning: Could not set dwell_time: {e}")
+        #try:
+        #    if pattern.dwell_time > 0:
+        #        xT_pattern.dwell_time = float(pattern.dwell_time)
+        #except Exception as e:
+        #    print(f"Warning: Could not set dwell_time: {e}")
         
         try:
             xT_pattern.enabled = bool(pattern.enabled)
