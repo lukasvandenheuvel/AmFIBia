@@ -1,4 +1,6 @@
 #### IMPORT MICROSCOPE
+from src.utils import format_current
+
 try:
     from autoscript_sdb_microscope_client import SdbMicroscopeClient
     from autoscript_sdb_microscope_client.enumerations import PatterningState
@@ -67,6 +69,12 @@ class fibsem:
         Get available ion beam currents from microscope
         '''
         return microscope.beams.ion_beam.beam_current.available_values
+    
+    def get_available_beam_resolutions(self):
+        '''
+        Get available ion beam resolutions from microscope
+        '''
+        return microscope.beams.ion_beam.scanning.resolution.available_values
     
     def stop(self):
         '''
@@ -265,10 +273,15 @@ class fibsem:
     
     def get_current_horizontal_field_width(self):
         return microscope.beams.ion_beam.horizontal_field_width.value
+    
+    def get_current_beam_current(self):
+        return microscope.beams.ion_beam.beam_current.value
 
-    def set_image_conditions_IB(self,resolution="1536x1024", horizontal_field_width=207e-6):
+    def set_image_conditions_IB(self,resolution="1536x1024", horizontal_field_width=207e-6, current=None):
         microscope.beams.ion_beam.scanning.resolution.value = resolution
         microscope.beams.ion_beam.horizontal_field_width.value = horizontal_field_width
+        if current is not None:
+            microscope.beams.ion_beam.beam_current.value = current
         return()
 
     def align(self,image,position_index=0,seq_group_index=0,current=1.0e-11,reduced_area=None, reset_beam_shift=True):
@@ -278,17 +291,17 @@ class fibsem:
         Action: Align the stage and beam shift to the reference image at the current stage position
         '''
         # current=self.alignment_current
-        output_dir = os.path.join(self.working_dir, f"Position{position_index:02d}")
+        output_dir = os.path.join(self.working_dir, f"Position_{position_index:02d}")
         if not(os.path.exists(output_dir)):
             os.mkdir(output_dir)
 
         try:
-            print('Running alignment')
+            print('Running alignment at current: ' + format_current(current))
             microscope.imaging.set_active_view(2)
 
             # Set alignment current
             microscope.beams.ion_beam.beam_current.value = current
-            beam_current_string = str(microscope.beams.ion_beam.beam_current.value)
+            beam_current_string = format_current(current).replace(" ", "").replace("µ","u")
 
             # Run auto contrast brightness and reset beam shift. Take an image as reference for alignment
             if reduced_area is not None: # Set reduced area if provided
@@ -317,7 +330,7 @@ class fibsem:
             move_count = 0
 
             now = datetime.datetime.now()
-            output_name = os.path.join(output_dir, now.strftime("%Y-%m-%d_%H_%M_%S_") + f'_seq{seq_group_index}_'+ beam_current_string + '_move_' + str(move_count)+'.tif')
+            output_name = os.path.join(output_dir, now.strftime("%Y%m%d_%H%M%S") + f'_seq{seq_group_index}_'+ beam_current_string + '_move_' + str(move_count)+'.tif')
             current_img.save(output_name)
             self.log_output=self.log_output+"Saved Image as : "+output_name+'\n'
 

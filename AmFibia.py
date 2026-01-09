@@ -1,3 +1,4 @@
+import shutil
 import sys
 import os
 import time
@@ -24,10 +25,11 @@ import re
 
 PIXEL_TO_MICRON = 1/2
 MAX_DELAY_NO_HOME = 300  # seconds
-MODE = "scope" # "scope" or "dev"
+MODE = "dev" # "scope" or "dev"
 
 from src.PatternMaker import PatternMaker
 from src.SettingsPanel import SettingsPanel
+from src.utils import format_current
 
 if MODE == "scope":
     from src.AutoscriptHelpers import fibsem
@@ -1332,6 +1334,8 @@ class PositionList(QListWidget):
         
         menu = QMenu(self)
         
+        move_stage_action = menu.addAction("Move stage to position")
+        menu.addSeparator()
         mark_done_action = menu.addAction("Mark as finished")
         mark_pending_action = menu.addAction("Mark as pending")
         menu.addSeparator()
@@ -1339,7 +1343,10 @@ class PositionList(QListWidget):
         
         action = menu.exec_(self.mapToGlobal(pos))
         
-        if action == mark_done_action:
+        if action == move_stage_action:
+            if self._main_window:
+                self._main_window.move_stage(item)
+        elif action == mark_done_action:
             if self._main_window:
                 self._main_window._mark_position_status(item, "done")
         elif action == mark_pending_action:
@@ -1473,11 +1480,16 @@ def format_duration(seconds):
 class MillingConfirmDialog(QDialog):
     """Dialog to confirm milling tasks before starting."""
     
-    def __init__(self, task_list, parent=None):
+    def __init__(self, task_list, available_currents, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Confirm Milling Tasks")
-        self.setMinimumWidth(600)
+        self.setMinimumWidth(650)
         self.setMinimumHeight(400)
+        
+        self.task_list = task_list
+        self.available_currents = available_currents
+        self.current_combos = []  # Store references to current dropdown widgets
+        self.delay_edits = []  # Store references to delay edit widgets
         
         layout = QVBoxLayout(self)
         
@@ -1499,42 +1511,70 @@ class MillingConfirmDialog(QDialog):
             self.task_table.setItem(row, 0, QTableWidgetItem(str(row + 1)))
             self.task_table.setItem(row, 1, QTableWidgetItem(str(task.position_index)))
             self.task_table.setItem(row, 2, QTableWidgetItem(str(len(task.pattern_group.patterns))))
-            # Format milling current
+            
+            # Milling current dropdown
+            current_combo = QComboBox()
+            current_options = [format_current(c) for c in self.available_currents]
+            current_combo.addItems(current_options)
+            
+            # Set to current value
             current_A = task.pattern_group.milling_current
-            if current_A == 0:
-                current_str = "Not set"
-            else:
-                nA = current_A * 1e9
-                current_str = f"{nA:.1f} nA" if nA < 1 else f"{nA:.0f} nA"
-            self.task_table.setItem(row, 3, QTableWidgetItem(current_str))
+            self._set_combo_to_current(current_combo, current_A)
+            
+            # Connect change handler
+            current_combo.currentIndexChanged.connect(
+                lambda idx, r=row: self._on_current_changed(r, idx)
+            )
+            self.current_combos.append(current_combo)
+            self.task_table.setCellWidget(row, 3, current_combo)
+            
             self.task_table.setItem(row, 4, QTableWidgetItem(str(task.sequential_group)))
-            self.task_table.setItem(row, 5, QTableWidgetItem(str(task.pattern_group.delay)))
+            
+            # Delay editable field
+            delay_edit = QLineEdit()
+            delay_edit.setText(str(task.pattern_group.delay))
+            delay_edit.setValidator(QIntValidator(0, 999999))
+            delay_edit.editingFinished.connect(
+                lambda r=row: self._on_delay_changed(r)
+            )
+            self.delay_edits.append(delay_edit)
+            self.task_table.setCellWidget(row, 5, delay_edit)
         
         # Resize columns to content
         self.task_table.resizeColumnsToContents()
+        # Make current column wider to fit dropdown
+        self.task_table.setColumnWidth(3, 120)
+        self.task_table.setColumnWidth(5, 80)
         
         layout.addWidget(self.task_table)
         
-        # Calculate and display timing information
-        milling_time, delay_time, first_delay = calculate_task_list_duration(task_list)
-        total_time = milling_time + delay_time
-        
-        now = datetime.now()
-        start_time = now + timedelta(seconds=first_delay)
-        end_time = now + timedelta(seconds=total_time)
-        
         # Timing info group
         timing_group = QGroupBox("Estimated Timing")
-        timing_layout = QFormLayout(timing_group)
+        self.timing_layout = QFormLayout(timing_group)
         
-        timing_layout.addRow("Milling duration:", QLabel(f"<b>{format_duration(milling_time)}</b>"))
-        timing_layout.addRow("Total delays:", QLabel(f"{format_duration(delay_time)}"))
-        timing_layout.addRow("Total duration:", QLabel(f"<b>{format_duration(total_time)}</b>"))
-        timing_layout.addRow("", QLabel(""))  # Spacer
-        timing_layout.addRow("Start time:", QLabel(f"{start_time.strftime('%H:%M:%S')} (after {first_delay}s delay)"))
-        timing_layout.addRow("Estimated end:", QLabel(f"<b>{end_time.strftime('%H:%M:%S')}</b>"))
+        # Create labels that we can update later
+        self.milling_duration_label = QLabel()
+        self.delay_duration_label = QLabel()
+        self.total_duration_label = QLabel()
+        self.start_time_label = QLabel()
+        self.end_time_label = QLabel()
+        
+        self.timing_layout.addRow("Milling duration:", self.milling_duration_label)
+        self.timing_layout.addRow("Total delays:", self.delay_duration_label)
+        self.timing_layout.addRow("Total duration:", self.total_duration_label)
+        self.timing_layout.addRow("", QLabel(""))  # Spacer
+        self.timing_layout.addRow("Start time:", self.start_time_label)
+        self.timing_layout.addRow("Estimated end:", self.end_time_label)
+        
+        # Initial timing calculation
+        self._update_timing_display()
         
         layout.addWidget(timing_group)
+        
+        # Warning label for unset currents
+        self.warning_label = QLabel("<font color='red'>⚠ All tasks must have a milling current set before starting.</font>")
+        self.warning_label.setVisible(False)
+        layout.addWidget(self.warning_label)
         
         # Buttons
         button_layout = QHBoxLayout()
@@ -1551,6 +1591,66 @@ class MillingConfirmDialog(QDialog):
         button_layout.addWidget(self.start_btn)
         
         layout.addLayout(button_layout)
+        
+        # Initial validation
+        self._validate_currents()
+    
+    def _update_timing_display(self):
+        """Recalculate and update the timing information display."""
+        milling_time, delay_time, first_delay = calculate_task_list_duration(self.task_list)
+        total_time = milling_time + delay_time
+        
+        now = datetime.now()
+        start_time = now + timedelta(seconds=first_delay)
+        end_time = now + timedelta(seconds=total_time)
+        
+        self.milling_duration_label.setText(f"<b>{format_duration(milling_time)}</b>")
+        self.delay_duration_label.setText(f"{format_duration(delay_time)}")
+        self.total_duration_label.setText(f"<b>{format_duration(total_time)}</b>")
+        self.start_time_label.setText(f"{start_time.strftime('%H:%M:%S')} (after {first_delay}s delay)")
+        self.end_time_label.setText(f"<b>{end_time.strftime('%H:%M:%S')}</b>")
+    
+    def _set_combo_to_current(self, combo, target_current_A):
+        """Set combo box to the closest available current value."""
+        closest_idx = 0
+        min_diff = float('inf')
+        for i, curr in enumerate(self.available_currents):
+            diff = abs(curr - target_current_A)
+            if diff < min_diff:
+                min_diff = diff
+                closest_idx = i
+        combo.setCurrentIndex(closest_idx)
+    
+    def _on_current_changed(self, row, index):
+        """Handle milling current dropdown change."""
+        new_current = self.available_currents[index]
+        self.task_list[row].pattern_group.milling_current = new_current
+        self._validate_currents()
+    
+    def _on_delay_changed(self, row):
+        """Handle delay value change."""
+        delay_edit = self.delay_edits[row]
+        text = delay_edit.text().strip()
+        try:
+            new_delay = int(text) if text else 0
+            if new_delay < 0:
+                new_delay = 0
+                delay_edit.setText(str(new_delay))
+        except ValueError:
+            new_delay = 0
+            delay_edit.setText(str(new_delay))
+        
+        self.task_list[row].pattern_group.delay = new_delay
+        self._update_timing_display()
+    
+    def _validate_currents(self):
+        """Check if all tasks have valid milling currents and update UI accordingly."""
+        all_set = all(
+            task.pattern_group.milling_current != 0 
+            for task in self.task_list
+        )
+        self.start_btn.setEnabled(all_set)
+        self.warning_label.setVisible(not all_set)
 
 
 # -------------------------------------------------
@@ -1559,7 +1659,7 @@ class MillingConfirmDialog(QDialog):
 
 class MainWindow(QWidget):
     # Default currents in Amperes for dev mode
-    DEV_MODE_CURRENTS = [0.0, 0.1e-9, 15e-9, 50e-9, 65e-9]  # Not set, 0.1nA, 15nA, 50nA, 65nA
+    DEV_MODE_CURRENTS = [0.0, 10e-12, 0.1e-9, 15e-9, 50e-9, 65e-9]  # Not set, 10pA, 0.1nA, 15nA, 50nA, 65nA
     
     def __init__(self):
         super().__init__()
@@ -1807,16 +1907,6 @@ class MainWindow(QWidget):
         else:
             return self.DEV_MODE_CURRENTS
     
-    def _current_to_nA_str(self, current_A):
-        """Convert current in Amperes to nA string for display."""
-        if current_A == 0:
-            return "Not set"
-        nA = current_A * 1e9
-        if nA < 1:
-            return f"{nA:.1f} nA"
-        else:
-            return f"{nA:.0f} nA"
-    
     def _on_right_mouse_mode_changed(self, index):
         """Handle right mouse mode dropdown change."""
         mode = "measure" if index == 0 else "tracking_area"
@@ -2027,6 +2117,21 @@ class MainWindow(QWidget):
         # Rebuild positions to update dot colors
         self.rebuild_positions()
 
+    def move_stage(self, item):
+        """Move the stage to the selected position."""
+        # Select the position item and update display (like clicking on it)
+        self.position_list.setCurrentItem(item)
+        self.on_item_clicked(item)
+        # Move to this position
+        if MODE=="scope":
+            data = item.data(Qt.UserRole)
+            coords = data.get('coords', None)
+            stage_moved = scope.move_stage_absolute(coords)
+            return stage_moved
+        else:
+            print("Dev mode: Simulated stage move.")
+            return True
+
     def _mark_position_status(self, item, status):
         """Mark all pattern groups in a position with the given status."""
         if not item:
@@ -2104,6 +2209,23 @@ class MainWindow(QWidget):
             print("Warning: No working directory set. Cannot save state.")
             return
         
+        # Delete existing state file if present
+        state_file_path = os.path.join(working_dir, 'AmFIBia.state')
+        if os.path.isfile(state_file_path):
+            try:
+                os.remove(state_file_path)
+            except Exception as e:
+                print(f"Warning: Could not delete existing state file: {e}")
+        # Delete existing Positions directories if present
+        positions_dir_list = [f for f in os.listdir(working_dir) if f.startswith('Position_')]
+        for pos_dir in positions_dir_list:
+            positions_dir = os.path.join(working_dir, pos_dir)
+            if os.path.isdir(positions_dir):
+                try:
+                    shutil.rmtree(positions_dir)
+                except Exception as e:
+                    print(f"Warning: Could not delete existing Position directory: {e}")
+        
         # Collect all position data
         state_data = {
             'positions': [],
@@ -2114,6 +2236,10 @@ class MainWindow(QWidget):
         for i in range(self.position_list.count()):
             item = self.position_list.item(i)
             data = item.data(Qt.UserRole)
+
+            # Save reference image path relative to working directory
+            image_path = self.save_adorned_image_to_tiff(data.get('image'), i)
+            data['image_path'] = image_path
             
             # Store position data (exclude QPixmap and AdornedImage which aren't picklable)
             position_data = {
@@ -2122,7 +2248,7 @@ class MainWindow(QWidget):
                 'pixel_to_um': data.get('pixel_to_um'),
                 'tracking_area': data.get('tracking_area'),
                 'patterns': data.get('patterns', []),  # Already converted when loaded from xT
-                'image_path': data.get('image_path'),  # Store path to TIFF file instead of object
+                'image_path': data.get('image_path'),  # Store path to TIFF file 
             }
             state_data['positions'].append(position_data)
         
@@ -2185,7 +2311,21 @@ class MainWindow(QWidget):
                     try:
                         # Load using AdornedImage.load() - works for both scope and dev mode
                         adorned_image = AdornedImage.load(image_full_path)
-                        
+                        if adorned_image.metadata.optics is None: # Can be the case for dev mode images
+                            # Create AdornedImage with properly initialized metadata
+                            from src.CustomPatterns import (
+                                AdornedImageMetadata, AdornedImageMetadataOptics, 
+                                AdornedImageMetadataOpticsScanFieldSize
+                            )
+                            optics = AdornedImageMetadataOptics(
+                                scan_field_of_view=AdornedImageMetadataOpticsScanFieldSize(
+                                    width = adorned_image.width * PIXEL_TO_MICRON * 1e-6,
+                                    height = adorned_image.height * PIXEL_TO_MICRON * 1e-6
+                                )
+                            )
+                            metadata = AdornedImageMetadata(optics=optics)
+                            adorned_image.metadata = metadata
+                                                    
                         # Create QPixmap for display
                         img_data = adorned_image.data
                         height, width = img_data.shape[:2]
@@ -2301,8 +2441,28 @@ class MainWindow(QWidget):
 
         # Auto-attach patterns if checkbox is checked
         if self.auto_attach_pattern_checkbox.isChecked():
-            self.attach_xT_pattern()      
+            self.attach_xT_pattern()   
 
+    def save_adorned_image_to_tiff(self, adorned_img, position_index):
+        """Save the given Autoscript AdornedImage to a TIFF file in the working directory."""
+        if adorned_img is None:
+            print("Warning: No AdornedImage provided to save.")
+            return None
+        # Save the Autoscript AdornedImage to a TIFF file
+        working_dir = self.settings_panel.get_working_directory()
+        if working_dir:
+            position_dir = os.path.join(working_dir, f'Position_{position_index:02d}')
+            os.makedirs(position_dir, exist_ok=True)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            image_filename = f"{timestamp}_reference.tif"
+            image_path = os.path.join(position_dir, image_filename)
+            adorned_img.save(image_path)
+            # Store relative path from working directory
+            image_rel_path = os.path.join(f'Position_{position_index:02}', image_filename)
+        else:
+            image_rel_path = None
+        return image_rel_path
+            
     def take_ion_beam_image(self):
         item = self.position_list.currentItem()
         if not item:
@@ -2325,18 +2485,7 @@ class MainWindow(QWidget):
             adorned_img = scope.take_image_IB(resolution=self.scanning_resolution, dwell_time=self.dwell_time)
             
             # Save the Autoscript AdornedImage to a TIFF file
-            working_dir = self.settings_panel.get_working_directory()
-            if working_dir:
-                images_dir = os.path.join(working_dir, 'images')
-                os.makedirs(images_dir, exist_ok=True)
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-                image_filename = f"position_{index}_{timestamp}.tif"
-                image_path = os.path.join(images_dir, image_filename)
-                adorned_img.save(image_path)
-                # Store relative path from working directory
-                image_rel_path = os.path.join('images', image_filename)
-            else:
-                image_rel_path = None
+            image_rel_path = self.save_adorned_image_to_tiff(adorned_img, index)
             
             img = adorned_img.data
             width = adorned_img.width
@@ -2351,9 +2500,9 @@ class MainWindow(QWidget):
                 )
             )
         else:
-            image_filename = os.path.join("images", np.random.choice([f for f in os.listdir("images") if ".png" in f]))
-            pixmap = QPixmap(image_filename)
-            img = cv2.imread(image_filename, cv2.IMREAD_GRAYSCALE)
+            image_rel_path = os.path.join("images", np.random.choice([f for f in os.listdir("images") if ".png" in f]))
+            pixmap = QPixmap(image_rel_path)
+            img = cv2.imread(image_rel_path, cv2.IMREAD_GRAYSCALE)
             height, width = img.shape[:2]
             # Create AdornedImage with properly initialized metadata
             from src.CustomPatterns import (
@@ -2374,7 +2523,7 @@ class MainWindow(QWidget):
         data["coords"] = coords # Update coordinates in case they changed since the position was added
         data["pixmap"] = pixmap
         data["image"] = adorned_img  # Keep in memory for current session
-        data["image_path"] = image_rel_path if MODE == "scope" else None  # Store path for persistence
+        data["image_path"] = image_rel_path # Path to saved TIFF file
         data["pixel_to_um"] = pixel_to_um
 
         item.setData(Qt.UserRole, data)
@@ -2636,7 +2785,7 @@ class MainWindow(QWidget):
             # Row 0: Milling current with dropdown
             self.group_properties_table.setItem(0, 0, QTableWidgetItem("Milling Current"))
             current_combo = QComboBox()
-            current_options = [self._current_to_nA_str(c) for c in self.available_currents]
+            current_options = [format_current(c) for c in self.available_currents]
             current_combo.addItems(current_options)
             
             if all_same_current:
@@ -3166,24 +3315,25 @@ class MainWindow(QWidget):
             )
             return
         
-        # Show confirmation dialog
-        dialog = MillingConfirmDialog(task_list, self)
+        # Show confirmation dialog with available currents
+        dialog = MillingConfirmDialog(task_list, self.available_currents, self)
         if dialog.exec_() != QDialog.Accepted:
             print("Milling cancelled by user.")
             return
         
         # User confirmed - lock patterns and disable controls
+        task_list = dialog.task_list  # Get possibly updated task list
         self._lock_all_patterns(locked=True)
         self._set_milling_controls_enabled(False)
         self._milling_stopped = False  # Reset stop flag
         QApplication.processEvents()
-
-        # Get old resolution of images to go back after alignment
-        old_resolution = scope.get_current_scanning_resolution()
-        old_fov = scope.get_current_horizontal_field_width()
         
         if MODE=='scope':
             print(f"Scope output directory: {scope.working_dir}")
+            # Get old resolution of images to go back after milling
+            old_resolution = scope.get_current_scanning_resolution()
+            old_fov = scope.get_current_horizontal_field_width()
+            old_current = scope.get_current_beam_current()
         print(f"Starting milling with {len(task_list)} tasks.")
 
         try:
@@ -3195,7 +3345,7 @@ class MainWindow(QWidget):
                     break
                 
                 print(f"Running task {task_idx+1}/{len(task_list)} with {len(task.pattern_group.patterns)} patterns, "
-                      f"position={task.position_index}, current={task.pattern_group.milling_current*1e9:.1f} nA, delay={task.pattern_group.delay} s")
+                      f"position={task.position_index}, current={format_current(task.pattern_group.milling_current)}, delay={task.pattern_group.delay} s")
                 
                 # Select the position item and update display (like clicking on it)
                 position_item = self.position_list.item(task.position_index)
@@ -3325,7 +3475,7 @@ class MainWindow(QWidget):
             self.save_state()
             if MODE == "scope":
                 # Restore old scanning resolution and FOV
-                scope.set_image_conditions_IB(resolution=old_resolution, horizontal_field_width=old_fov)
+                scope.set_image_conditions_IB(resolution=old_resolution, horizontal_field_width=old_fov, current=old_current)
         
         print("Milling complete.")
 
@@ -3354,7 +3504,6 @@ class Pattern():
 class Task(): 
     def __init__(self):
         self.patterns = [] 
-        self.milling_current = 0.0  # in Amperes
         self.delay = 0
         self.coords = None  # position coordinates for this task
         self.tracking_area = None  # dict with relative coords

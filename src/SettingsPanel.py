@@ -26,8 +26,8 @@ class SettingsPanel(QWidget):
     # Signal emitted when user wants to load a state file
     load_state_requested = pyqtSignal()
     
-    # ScanningResolution presets from Autoscript (ordered by size)
-    RESOLUTION_PRESETS = [
+    # Fallback ScanningResolution presets (used when microscope not connected)
+    FALLBACK_RESOLUTION_PRESETS = [
         ("512x442", "PRESET_512X442"),
         ("768x512", "PRESET_768X512"),
         ("1024x884", "PRESET_1024X884"),
@@ -46,6 +46,18 @@ class SettingsPanel(QWidget):
         self.scope = scope
         self._setup_ui()
     
+    def _get_resolution_presets(self):
+        """Get available beam resolutions from microscope, or use fallback if not connected."""
+        if self.scope is not None:
+            try:
+                return self.scope.get_available_beam_resolutions()
+            except Exception as e:
+                print(f"Could not get beam resolutions from microscope: {e}")
+                # Fall back to hardcoded presets
+                return self.FALLBACK_RESOLUTION_PRESETS
+        else:
+            return self.FALLBACK_RESOLUTION_PRESETS
+    
     def _setup_ui(self):
         """Set up the settings panel UI."""
         layout = QVBoxLayout(self)
@@ -63,7 +75,8 @@ class SettingsPanel(QWidget):
         
         # Scanning Resolution dropdown
         self.resolution_combo = QComboBox()
-        for display_text, preset_name in self.RESOLUTION_PRESETS:
+        resolution_presets = self._get_resolution_presets()
+        for display_text, preset_name in resolution_presets:
             self.resolution_combo.addItem(display_text, preset_name)
         
         # Set default resolution

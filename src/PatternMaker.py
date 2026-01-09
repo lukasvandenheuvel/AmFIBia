@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 
+from src.utils import format_current
 from src.CustomPatterns import RectanglePattern, PolygonPattern, DisplayablePattern, PatternGroup
 
 
@@ -22,7 +23,7 @@ class PatternMaker(QWidget):
     }
     
     # Default currents in Amperes for dev mode
-    DEV_MODE_CURRENTS = [0.1e-9, 15e-9, 50e-9, 65e-9]  # 0.1nA, 15nA, 50nA, 65nA
+    DEV_MODE_CURRENTS = [10e-12, 0.1e-9, 15e-9, 50e-9, 65e-9]  # 10pA, 0.1nA, 15nA, 50nA, 65nA
     
     # Default current selections (in Amperes)
     DEFAULT_COARSE_CURRENT = 65e-9   # 65 nA
@@ -105,19 +106,26 @@ class PatternMaker(QWidget):
         else:
             return self.DEV_MODE_CURRENTS
     
-    def _current_to_nA_str(self, current_A):
-        """Convert current in Amperes to nA string for display."""
-        nA = current_A * 1e9
-        if nA < 1:
-            return f"{nA:.1f} nA"
-        else:
-            return f"{nA:.0f} nA"
-    
-    def _nA_str_to_current(self, nA_str):
-        """Convert nA string back to Amperes."""
-        # Parse "X nA" or "X.X nA" format
-        value = float(nA_str.replace(" nA", "").strip())
-        return value * 1e-9
+    def _nA_str_to_current(self, current_str):
+        """Convert formatted current string back to Amperes."""
+        # Handle various unit formats: pA, nA, µA, mA, A
+        current_str = current_str.strip()
+        if current_str == "Not set":
+            return 0.0
+        
+        # Parse value and unit
+        import re
+        match = re.match(r"([\d.]+)\s*(pA|nA|µA|uA|mA|A)", current_str)
+        if not match:
+            # Fallback: assume nA
+            value = float(current_str.replace(" nA", "").strip())
+            return value * 1e-9
+        
+        value = float(match.group(1))
+        unit = match.group(2)
+        
+        multipliers = {"pA": 1e-12, "nA": 1e-9, "µA": 1e-6, "uA": 1e-6, "mA": 1e-3, "A": 1}
+        return value * multipliers.get(unit, 1e-9)
     
     def setup_ui_with_tabs(self):
         """Setup UI with tabs for Block Preparation and Polishing."""
@@ -188,7 +196,7 @@ class PatternMaker(QWidget):
         current_layout = QFormLayout(current_group)
         
         # Build current options list
-        current_options = [self._current_to_nA_str(c) for c in self.available_currents]
+        current_options = [format_current(c) for c in self.available_currents]
         
         # Coarse current (65nA default)
         self.do_coarse = QCheckBox()
@@ -314,7 +322,7 @@ class PatternMaker(QWidget):
         # GROUP 3: Milling current
         current_group = QGroupBox("Milling current")
         current_layout = QFormLayout(current_group)
-        current_options = [self._current_to_nA_str(c) for c in self.available_currents]
+        current_options = [format_current(c) for c in self.available_currents]
         self.polish_current_combo = QComboBox()
         self.polish_current_combo.addItems(current_options)
         self._set_combo_to_current(self.polish_current_combo, self.DEFAULT_POLISH_CURRENT)
