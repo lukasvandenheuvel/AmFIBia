@@ -1020,6 +1020,7 @@ class PatternGroup:
         color: RGB tuple for display color (assigned based on group order)
         sequential_group: Integer for ordering/grouping patterns during milling
         delay: Delay in seconds before milling this group (integer)
+        time: Milling time in seconds for this group
         milled_status: Status of milling: "pending", "busy", "done", or "failed"
     """
     patterns: dict = field(default_factory=dict)  # Dict of {id: DisplayablePattern}
@@ -1027,10 +1028,11 @@ class PatternGroup:
     color: Tuple[int, int, int] = (255, 255, 0)  # RGB color tuple, default yellow
     sequential_group: int = 0  # Group ordering for milling sequence
     delay: int = 0  # Delay in seconds before milling this group
+    time: float = 0.0  # Milling time in seconds for this group
     milled_status: str = "pending"  # "pending", "busy", "done", or "failed"
     
     @classmethod
-    def create_with_index(cls, patterns: dict, milling_current: float, index: int, sequential_group: int = 0, delay: int = 0) -> "PatternGroup":
+    def create_with_index(cls, patterns: dict, milling_current: float, index: int, sequential_group: int = 0, delay: int = 0, time: float = 0.0) -> "PatternGroup":
         """
         Create a PatternGroup with color automatically assigned based on index.
         
@@ -1040,6 +1042,7 @@ class PatternGroup:
             index: Index of this group (0=first, 1=second, etc.) for color assignment
             sequential_group: Optional group ordering number
             delay: Delay in seconds before milling this group
+            time: Milling time in seconds for this group
             
         Returns:
             PatternGroup with appropriate color assigned
@@ -1056,7 +1059,8 @@ class PatternGroup:
             milling_current=milling_current,
             color=color,
             sequential_group=sequential_group,
-            delay=delay
+            delay=delay,
+            time=time
         )
     
     def clone(self,index=0) -> "PatternGroup":
@@ -1066,6 +1070,7 @@ class PatternGroup:
             milling_current=self.milling_current,
             sequential_group=self.sequential_group,
             delay=self.delay,
+            time=self.time,
             index=index
         )
 
@@ -1084,6 +1089,7 @@ def load_patterns_for_display(
     
     This is a convenience function that combines parse_pattern_file() and
     coordinate conversion into a single call.
+    The PatternGroup's time is set to the maximum time value among all patterns.
     
     Args:
         file_path: Path to the .ptf pattern file
@@ -1111,7 +1117,15 @@ def load_patterns_for_display(
     raw_patterns = parse_pattern_file(file_path)
     
     patterns_dict = {}
+    max_time = 0.0
+    
     for pid, pattern in raw_patterns.items():
+        # Track max time from patterns
+        if hasattr(pattern, 'time') and pattern.time:
+            pattern_time = float(pattern.time)
+            if pattern_time > max_time:
+                max_time = pattern_time
+        
         patterns_dict[pid] = DisplayablePattern.from_pattern(
             pattern,
             image_width_px,
@@ -1123,7 +1137,8 @@ def load_patterns_for_display(
     return PatternGroup.create_with_index(
         patterns=patterns_dict,
         milling_current=milling_current,
-        index=group_index
+        index=group_index,
+        time=max_time
     )
 
 
@@ -1141,6 +1156,7 @@ def convert_xT_patterns_to_displayable(
     
     The xT patterns already contain all necessary attributes (depth, dwell_time, etc.),
     so this function only computes the pixel coordinates for rendering.
+    The PatternGroup's time is set to the maximum time value among all patterns.
     
     Args:
         xT_patterns: List of AutoScript pattern objects from microscope.patterning.get_patterns()
@@ -1155,9 +1171,17 @@ def convert_xT_patterns_to_displayable(
         PatternGroup containing DisplayablePatterns ready for rendering.
     """
     patterns_dict = {}
+    max_time = 0.0
+    
     for pid, xT_pattern in enumerate(xT_patterns):
         # Convert proxy pattern to dataclass immediately to avoid stale references
         dataclass_pattern = convert_proxy_pattern_to_dataclass(xT_pattern)
+        
+        # Track max time from patterns
+        if hasattr(dataclass_pattern, 'time') and dataclass_pattern.time:
+            pattern_time = float(dataclass_pattern.time)
+            if pattern_time > max_time:
+                max_time = pattern_time
         
         coords = pattern_to_image_coords(
             dataclass_pattern,
@@ -1172,7 +1196,8 @@ def convert_xT_patterns_to_displayable(
     return PatternGroup.create_with_index(
         patterns=patterns_dict,
         milling_current=milling_current,
-        index=group_index
+        index=group_index,
+        time=max_time
     )
 
 

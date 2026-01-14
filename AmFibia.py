@@ -25,7 +25,7 @@ import re
 
 PIXEL_TO_MICRON = 1/2
 MAX_DELAY_NO_HOME = 300  # seconds
-MODE = "scope" # "scope" or "dev"
+MODE = "dev" # "scope" or "dev"
 
 from src.PatternMaker import PatternMaker
 from src.SettingsPanel import SettingsPanel
@@ -1460,11 +1460,9 @@ def calculate_task_list_duration(task_list):
         if i == 0:
             first_delay = delay
         
-        # Calculate time for each pattern in the group
-        if hasattr(pg, 'patterns'):
-            for dp in pg.patterns.values():
-                if dp.pattern:
-                    total_milling_time += calculate_pattern_time(dp.pattern)
+        # Use the time property of the PatternGroup directly
+        if hasattr(pg, 'time'):
+            total_milling_time += pg.time
     
     return total_milling_time, total_delay_time, first_delay
 
@@ -1477,18 +1475,60 @@ def format_duration(seconds):
     return f"{hours:02d}h:{minutes:02d}m:{secs:02d}s"
 
 
+def seconds_to_hhmmss(seconds):
+    """Format seconds as hh:mm:ss string for display and editing."""
+    seconds = float(seconds)
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+    return f"{hours:02d}:{minutes:02d}:{secs:02d}"
+
+
+def hhmmss_to_seconds(hhmmss_str):
+    """Parse hh:mm:ss string back to seconds. Returns None if invalid."""
+    hhmmss_str = hhmmss_str.strip()
+    
+    # Try to parse as hh:mm:ss
+    if ':' in hhmmss_str:
+        parts = hhmmss_str.split(':')
+        try:
+            if len(parts) == 3:
+                hours, minutes, secs = int(parts[0]), int(parts[1]), int(parts[2])
+            elif len(parts) == 2:
+                hours = 0
+                minutes, secs = int(parts[0]), int(parts[1])
+            elif len(parts) == 1:
+                hours = minutes = 0
+                secs = int(parts[0])
+            else:
+                return None
+            return hours * 3600 + minutes * 60 + secs
+        except ValueError:
+            return None
+    else:
+        # Try to parse as plain seconds
+        try:
+            return int(hhmmss_str)
+        except ValueError:
+            try:
+                return float(hhmmss_str)
+            except ValueError:
+                return None
+
+
 class MillingConfirmDialog(QDialog):
     """Dialog to confirm milling tasks before starting."""
     
     def __init__(self, task_list, available_currents, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Confirm Milling Tasks")
-        self.setMinimumWidth(650)
+        self.setMinimumWidth(750)
         self.setMinimumHeight(400)
         
         self.task_list = task_list
         self.available_currents = available_currents
         self.current_combos = []  # Store references to current dropdown widgets
+        self.time_edits = []  # Store references to time edit widgets
         self.delay_edits = []  # Store references to delay edit widgets
         
         layout = QVBoxLayout(self)
@@ -1499,8 +1539,8 @@ class MillingConfirmDialog(QDialog):
         
         # Task table
         self.task_table = QTableWidget()
-        self.task_table.setColumnCount(6)
-        self.task_table.setHorizontalHeaderLabels(["Task #", "Position", "Patterns", "Current", "Seq. Group", "Delay (s)"])
+        self.task_table.setColumnCount(7)
+        self.task_table.setHorizontalHeaderLabels(["Task #", "Position", "Patterns", "Current", "Seq. Group", "Time (hh:mm:ss)", "Delay (hh:mm:ss)"])
         self.task_table.setRowCount(len(task_list))
         self.task_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.task_table.setSelectionMode(QAbstractItemView.NoSelection)
@@ -1530,21 +1570,32 @@ class MillingConfirmDialog(QDialog):
             
             self.task_table.setItem(row, 4, QTableWidgetItem(str(task.sequential_group)))
             
-            # Delay editable field
+            # Time editable field (hh:mm:ss format)
+            time_edit = QLineEdit()
+            time_edit.setText(seconds_to_hhmmss(task.pattern_group.time if hasattr(task.pattern_group, 'time') else 0))
+            time_edit.setPlaceholderText("hh:mm:ss")
+            time_edit.editingFinished.connect(
+                lambda r=row: self._on_time_changed(r)
+            )
+            self.time_edits.append(time_edit)
+            self.task_table.setCellWidget(row, 5, time_edit)
+            
+            # Delay editable field (hh:mm:ss format)
             delay_edit = QLineEdit()
-            delay_edit.setText(str(task.pattern_group.delay))
-            delay_edit.setValidator(QIntValidator(0, 999999))
+            delay_edit.setText(seconds_to_hhmmss(task.pattern_group.delay))
+            delay_edit.setPlaceholderText("hh:mm:ss")
             delay_edit.editingFinished.connect(
                 lambda r=row: self._on_delay_changed(r)
             )
             self.delay_edits.append(delay_edit)
-            self.task_table.setCellWidget(row, 5, delay_edit)
+            self.task_table.setCellWidget(row, 6, delay_edit)
         
         # Resize columns to content
         self.task_table.resizeColumnsToContents()
         # Make current column wider to fit dropdown
         self.task_table.setColumnWidth(3, 120)
-        self.task_table.setColumnWidth(5, 80)
+        self.task_table.setColumnWidth(5, 100)  # Time hh:mm:ss format
+        self.task_table.setColumnWidth(6, 100)  # Delay hh:mm:ss format
         
         layout.addWidget(self.task_table)
         
@@ -1607,7 +1658,7 @@ class MillingConfirmDialog(QDialog):
         self.milling_duration_label.setText(f"<b>{format_duration(milling_time)}</b>")
         self.delay_duration_label.setText(f"{format_duration(delay_time)}")
         self.total_duration_label.setText(f"<b>{format_duration(total_time)}</b>")
-        self.start_time_label.setText(f"{start_time.strftime('%H:%M:%S')} (after {first_delay}s delay)")
+        self.start_time_label.setText(f"{start_time.strftime('%H:%M:%S')} (after {seconds_to_hhmmss(first_delay)} delay)")
         self.end_time_label.setText(f"<b>{end_time.strftime('%H:%M:%S')}</b>")
     
     def _set_combo_to_current(self, combo, target_current_A):
@@ -1627,20 +1678,34 @@ class MillingConfirmDialog(QDialog):
         self.task_list[row].pattern_group.milling_current = new_current
         self._validate_currents()
     
+    def _on_time_changed(self, row):
+        """Handle time value change (hh:mm:ss format)."""
+        time_edit = self.time_edits[row]
+        text = time_edit.text().strip()
+        
+        new_time = hhmmss_to_seconds(text)
+        if new_time is None or new_time < 0:
+            new_time = 0.0
+        
+        # Update display to normalized format
+        time_edit.setText(seconds_to_hhmmss(new_time))
+        
+        self.task_list[row].pattern_group.time = float(new_time)
+        self._update_timing_display()
+    
     def _on_delay_changed(self, row):
-        """Handle delay value change."""
+        """Handle delay value change (hh:mm:ss format)."""
         delay_edit = self.delay_edits[row]
         text = delay_edit.text().strip()
-        try:
-            new_delay = int(text) if text else 0
-            if new_delay < 0:
-                new_delay = 0
-                delay_edit.setText(str(new_delay))
-        except ValueError:
-            new_delay = 0
-            delay_edit.setText(str(new_delay))
         
-        self.task_list[row].pattern_group.delay = new_delay
+        new_delay = hhmmss_to_seconds(text)
+        if new_delay is None or new_delay < 0:
+            new_delay = 0
+        
+        # Update display to normalized format
+        delay_edit.setText(seconds_to_hhmmss(new_delay))
+        
+        self.task_list[row].pattern_group.delay = int(new_delay)
         self._update_timing_display()
     
     def _validate_currents(self):
@@ -1663,7 +1728,7 @@ class MainWindow(QWidget):
     
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Protocol Editor")
+        self.setWindowTitle("AmFIBia")
         #self.showFullScreen()
 
         self.positions = {}
@@ -2055,13 +2120,49 @@ class MainWindow(QWidget):
             # The patterns are already updated by reference, but ensure data is saved
             item.setData(Qt.UserRole, data)
     
-    def _on_delay_changed(self):
-        """Handle delay edit change - updates all selected PatternGroups."""
+    def _on_time_changed(self):
+        """Handle time edit change - updates all selected PatternGroups (hh:mm:ss format)."""
         if not self.selected_pattern_groups:
             return
         
-        # Get the delay edit widget
-        delay_edit = self.group_properties_table.cellWidget(4, 1)
+        # Get the time edit widget (row 4)
+        time_edit = self.group_properties_table.cellWidget(4, 1)
+        if not time_edit:
+            return
+        
+        text = time_edit.text().strip()
+        if not text:
+            return
+        
+        new_time = hhmmss_to_seconds(text)
+        if new_time is None:
+            return
+        
+        # Ensure non-negative
+        if new_time < 0:
+            new_time = 0.0
+        
+        # Update display to normalized format
+        time_edit.setText(seconds_to_hhmmss(new_time))
+        
+        # Update all selected PatternGroups
+        for pg in self.selected_pattern_groups:
+            pg.time = float(new_time)
+        
+        # Update the stored data in position list
+        item = self.position_list.currentItem()
+        if item:
+            data = item.data(Qt.UserRole)
+            # The patterns are already updated by reference, but ensure data is saved
+            item.setData(Qt.UserRole, data)
+    
+    def _on_delay_changed(self):
+        """Handle delay edit change - updates all selected PatternGroups (hh:mm:ss format)."""
+        if not self.selected_pattern_groups:
+            return
+        
+        # Get the delay edit widget (row 5 now)
+        delay_edit = self.group_properties_table.cellWidget(5, 1)
         if not delay_edit:
             return
         
@@ -2069,15 +2170,17 @@ class MainWindow(QWidget):
         if not text:
             return
         
-        try:
-            new_delay = int(text)
-        except ValueError:
+        new_delay = hhmmss_to_seconds(text)
+        if new_delay is None:
             return
         
         # Ensure non-negative
         if new_delay < 0:
             new_delay = 0
-            delay_edit.setText(str(new_delay))
+        
+        # Update display to normalized format
+        delay_edit.setText(seconds_to_hhmmss(new_delay))
+        new_delay = int(new_delay)
         
         # Update all selected PatternGroups
         for pg in self.selected_pattern_groups:
@@ -2771,16 +2874,18 @@ class MainWindow(QWidget):
             colors = [pg.color for pg in self.selected_pattern_groups]
             sequential_groups = [pg.sequential_group for pg in self.selected_pattern_groups]
             delays = [pg.delay for pg in self.selected_pattern_groups]
+            times = [pg.time if hasattr(pg, 'time') else 0.0 for pg in self.selected_pattern_groups]
             statuses = [pg.milled_status for pg in self.selected_pattern_groups]
             
             all_same_current = len(set(milling_currents)) == 1
             all_same_color = len(set(colors)) == 1
             all_same_seq_group = len(set(sequential_groups)) == 1
             all_same_delay = len(set(delays)) == 1
+            all_same_time = len(set(times)) == 1
             all_same_status = len(set(statuses)) == 1
             
-            # 5 rows: Milling Current, Color, Sequential Group, Delay, Status
-            self.group_properties_table.setRowCount(5)
+            # 6 rows: Milling Current, Color, Status, Sequential Group, Time, Delay
+            self.group_properties_table.setRowCount(6)
             
             # Row 0: Milling current with dropdown
             self.group_properties_table.setItem(0, 0, QTableWidgetItem("Milling Current"))
@@ -2843,16 +2948,27 @@ class MainWindow(QWidget):
             seq_spinbox.valueChanged.connect(self._on_sequential_group_changed)
             self.group_properties_table.setCellWidget(3, 1, seq_spinbox)
             
-            # Row 4: Delay with editable QLineEdit (no arrows)
-            self.group_properties_table.setItem(4, 0, QTableWidgetItem("Delay (s)"))
+            # Row 4: Time with editable QLineEdit (hh:mm:ss format)
+            self.group_properties_table.setItem(4, 0, QTableWidgetItem("Time (hh:mm:ss)"))
+            time_edit = QLineEdit()
+            time_edit.setPlaceholderText("hh:mm:ss")
+            if all_same_time:
+                time_edit.setText(seconds_to_hhmmss(times[0]))
+            else:
+                time_edit.setPlaceholderText("(mixed)")
+            time_edit.editingFinished.connect(self._on_time_changed)
+            self.group_properties_table.setCellWidget(4, 1, time_edit)
+            
+            # Row 5: Delay with editable QLineEdit (hh:mm:ss format)
+            self.group_properties_table.setItem(5, 0, QTableWidgetItem("Delay (hh:mm:ss)"))
             delay_edit = QLineEdit()
-            delay_edit.setValidator(QIntValidator(0, 999999))
+            delay_edit.setPlaceholderText("hh:mm:ss")
             if all_same_delay:
-                delay_edit.setText(str(delays[0]))
+                delay_edit.setText(seconds_to_hhmmss(delays[0]))
             else:
                 delay_edit.setPlaceholderText("(mixed)")
             delay_edit.editingFinished.connect(self._on_delay_changed)
-            self.group_properties_table.setCellWidget(4, 1, delay_edit)
+            self.group_properties_table.setCellWidget(5, 1, delay_edit)
         
         # =====================
         # Populate Pattern Properties Table
@@ -2870,7 +2986,6 @@ class MainWindow(QWidget):
         # Get all attributes from first pattern (works for both dataclass and proxy objects)
         # Filter to only include relevant pattern properties
         common_pattern_attrs = [
-            'time',  # Time at the top
             'application_file',  # Application file
             'dwell_time', 'scan_type', 'scan_direction',
             'center_x', 'center_y', 'width', 'height', 'depth', 'rotation',
@@ -2910,8 +3025,8 @@ class MainWindow(QWidget):
             self.pattern_properties_table.setItem(row, 0, prop_item)
             
             value_item = QTableWidgetItem(prop_value)
-            # Make 'time', 'depth', and 'pass_count' editable
-            if prop_name.lower() in ['time', 'depth', 'pass count']:
+            # Make 'depth' and 'pass_count' editable (time is now on PatternGroup)
+            if prop_name.lower() in ['depth', 'pass count']:
                 value_item.setFlags(value_item.flags() | Qt.ItemIsEditable)
             else:
                 value_item.setFlags(value_item.flags() & ~Qt.ItemIsEditable)
@@ -2931,8 +3046,8 @@ class MainWindow(QWidget):
         
         prop_name = prop_name_item.text().lower().replace(' ', '_')
         
-        # Only handle time, depth, and pass_count properties
-        if prop_name not in ['time', 'depth', 'pass_count']:
+        # Only handle depth and pass_count properties (time is now on PatternGroup)
+        if prop_name not in ['depth', 'pass_count']:
             return
         
         # Get the new value
@@ -2946,7 +3061,7 @@ class MainWindow(QWidget):
                 if new_value < 0:
                     raise ValueError(f"{prop_name_item.text()} must be non-negative")
         except ValueError as e:
-            QMessageBox.warning(self, "Invalid Value", f"Please enter a valid positive number for {prop_name_item.text()}.\nError: {e}")
+            QMessageBox.warning(self, "Invalid Value", f"Please enter a valid value for {prop_name_item.text()}.\nError: {e}")
             # Restore the original value
             self.on_pattern_selected(self.image_widget._get_selected_displayable_patterns())
             return

@@ -31,6 +31,12 @@ class PatternMaker(QWidget):
     DEFAULT_FINE_CURRENT = 15e-9     # 15 nA
     DEFAULT_POLISH_CURRENT = 0.1e-9  # 0.1 nA for polishing
     
+    # Default milling times in seconds for each current group
+    DEFAULT_COARSE_TIME = 8 * 60     # 8 minutes for high current
+    DEFAULT_MEDIUM_TIME = 6 * 60     # 6 minutes for medium current
+    DEFAULT_FINE_TIME = 5 * 60       # 5 minutes for low current
+    DEFAULT_POLISH_TIME = 5 * 60     # 5 minutes for polishing
+    
     # Hard-coded pattern properties from reference PTF files
     # Block-prep reference: patterns/reference-pattern-blockprep_DO_NOT_REMOVE.ptf
     # Polish reference: patterns/reference-pattern-polish_DO_NOT_REMOVE.ptf
@@ -209,13 +215,20 @@ class PatternMaker(QWidget):
         self.coarse_seq_group.setMaximum(999)
         self.coarse_seq_group.setValue(0)
         self.coarse_seq_group.setFixedWidth(50)
+        self.coarse_time = QSpinBox()
+        self.coarse_time.setMinimum(0)
+        self.coarse_time.setMaximum(999)
+        self.coarse_time.setValue(self.DEFAULT_COARSE_TIME // 60)  # Default 8 min
+        self.coarse_time.setFixedWidth(50)
+        self.coarse_time.setSuffix(" min")
         coarse_row = QHBoxLayout()
         coarse_row.addWidget(self.do_coarse)
         coarse_row.addWidget(self.coarse_current_combo)
         coarse_row.addWidget(QLabel("SG"))
         coarse_row.addWidget(self.coarse_seq_group)
+        coarse_row.addWidget(self.coarse_time)
         coarse_row.addStretch()
-        current_layout.addRow("Coarse:", coarse_row)
+        current_layout.addRow(coarse_row)
         
         # Medium current (50nA default)
         self.do_medium = QCheckBox()
@@ -228,13 +241,20 @@ class PatternMaker(QWidget):
         self.medium_seq_group.setMaximum(999)
         self.medium_seq_group.setValue(0)
         self.medium_seq_group.setFixedWidth(50)
+        self.medium_time = QSpinBox()
+        self.medium_time.setMinimum(0)
+        self.medium_time.setMaximum(999)
+        self.medium_time.setValue(self.DEFAULT_MEDIUM_TIME // 60)  # Default 6 min
+        self.medium_time.setFixedWidth(50)
+        self.medium_time.setSuffix(" min")
         medium_row = QHBoxLayout()
         medium_row.addWidget(self.do_medium)
         medium_row.addWidget(self.medium_current_combo)
         medium_row.addWidget(QLabel("SG"))
         medium_row.addWidget(self.medium_seq_group)
+        medium_row.addWidget(self.medium_time)
         medium_row.addStretch()
-        current_layout.addRow("Medium:", medium_row)
+        current_layout.addRow(medium_row)
         
         # Fine current (15nA default)
         self.do_fine = QCheckBox()
@@ -247,13 +267,20 @@ class PatternMaker(QWidget):
         self.fine_seq_group.setMaximum(999)
         self.fine_seq_group.setValue(1)
         self.fine_seq_group.setFixedWidth(50)
+        self.fine_time = QSpinBox()
+        self.fine_time.setMinimum(0)
+        self.fine_time.setMaximum(999)
+        self.fine_time.setValue(self.DEFAULT_FINE_TIME // 60)  # Default 5 min
+        self.fine_time.setFixedWidth(50)
+        self.fine_time.setSuffix(" min")
         fine_row = QHBoxLayout()
         fine_row.addWidget(self.do_fine)
         fine_row.addWidget(self.fine_current_combo)
         fine_row.addWidget(QLabel("SG"))
         fine_row.addWidget(self.fine_seq_group)
+        fine_row.addWidget(self.fine_time)
         fine_row.addStretch()
-        current_layout.addRow("Fine:", fine_row)
+        current_layout.addRow(fine_row)
         
         scroll_layout.addWidget(current_group)
         
@@ -576,19 +603,24 @@ class PatternMaker(QWidget):
         # Map group name to (enabled, current in Amperes)
         current_groups = {}
         seq_groups = {}
+        time_groups = {}
         if do_coarse:
             current_groups['coarse'] = coarse_current
             seq_groups['coarse'] = self.coarse_seq_group.value()
+            time_groups['coarse'] = self.coarse_time.value() * 60  # Convert min to seconds
         if do_medium:
             current_groups['medium'] = medium_current
             seq_groups['medium'] = self.medium_seq_group.value()
+            time_groups['medium'] = self.medium_time.value() * 60  # Convert min to seconds
         if do_fine:
             current_groups['fine'] = fine_current
             seq_groups['fine'] = self.fine_seq_group.value()
+            time_groups['fine'] = self.fine_time.value() * 60  # Convert min to seconds
         
-        # Store current_groups and seq_groups for use in store_and_display_patterns
+        # Store current_groups, seq_groups, and time_groups for use in store_and_display_patterns
         self.current_groups = current_groups
         self.seq_groups = seq_groups
+        self.time_groups = time_groups
         
         # Store generated patterns grouped by current group
         self.generated_patterns = {group: {} for group in current_groups.keys()}
@@ -684,11 +716,14 @@ class PatternMaker(QWidget):
                 # Create PatternGroup with color based on index
                 milling_current = self.current_groups.get(group, 0.0)
                 sequential_group = self.seq_groups.get(group, 0)
+                group_time = self.time_groups.get(group, 0.0)
+                
                 pattern_group = PatternGroup.create_with_index(
                     patterns=converted,
                     milling_current=milling_current,
                     index=group_index,
-                    sequential_group=sequential_group
+                    sequential_group=sequential_group,
+                    time=float(group_time)
                 )
                 patterns_list.append(pattern_group)
                 group_index += 1
@@ -897,7 +932,8 @@ class PatternMaker(QWidget):
             pattern_group = PatternGroup.create_with_index(
                 patterns=converted,
                 milling_current=milling_current,
-                index=len(data["patterns"])  # Next index
+                index=len(data["patterns"]),  # Next index
+                time=float(self.DEFAULT_POLISH_TIME)
             )
             patterns_list.append(pattern_group)
         
